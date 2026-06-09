@@ -2,6 +2,10 @@ using FitForgeAI.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Railway / cloud hosting: listen on $PORT env var
+var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
+builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
+
 builder.Services.AddControllersWithViews();
 builder.Services.AddSession(o => { o.IdleTimeout = TimeSpan.FromHours(8); o.Cookie.HttpOnly = true; });
 builder.Services.AddSingleton<IJsonStorageService, JsonStorageService>();
@@ -21,7 +25,7 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
-app.UseHttpsRedirection();
+if (app.Environment.IsDevelopment()) app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
