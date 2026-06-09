@@ -1,0 +1,107 @@
+@model FitForgeAI.Models.Workout
+@{
+    var w = Model;
+    ViewBag.Title = $"{w.Name} – ShaktiFit";
+    ViewBag.ActiveNav = "workout";
+    var lang = Context.Session.GetString("Lang") ?? "en";
+    bool ne = lang == "ne";
+}
+
+<div class="page-container">
+
+    <div style="margin-bottom:20px">
+        <a href="/Workout" class="btn btn-ghost btn-sm">← @(ne?"फिर्ता":"Back to Workouts")</a>
+    </div>
+
+    <!-- Header -->
+    <div class="card card-indigo" style="margin-bottom:24px">
+        <div class="card-body" style="padding:28px">
+            <div style="display:flex;align-items:flex-start;gap:16px;flex-wrap:wrap">
+                <div style="font-size:60px">@(w.Type == "Strength" ? "🏋️" : w.Type.Contains("Run") || w.Type == "Cardio" ? "🏃" : w.Type == "Hybrid" ? "🦸" : "🧘")</div>
+                <div style="flex:1">
+                    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">
+                        <span class="wt-badge wtb-@w.Type.ToLower()">@w.Type</span>
+                        <span class="diff-badge diff-@w.FitnessLevel.ToLower()">@w.FitnessLevel</span>
+                    </div>
+                    <h1 style="font-size:26px;font-weight:900;margin-bottom:6px">@(ne && !string.IsNullOrEmpty(w.NameNepali) ? w.NameNepali : w.Name)</h1>
+                    <p style="color:var(--text-secondary);margin-bottom:16px">@w.Description</p>
+                    <div style="display:flex;gap:12px;flex-wrap:wrap">
+                        <span class="badge badge-gray">⏱️ @w.DurationMinutes @(ne?"मिनेट":"min")</span>
+                        <span class="badge badge-gray">🔥 ~@w.EstimatedCalories kcal</span>
+                        <span class="badge badge-gray">💪 @w.Exercises.Count @(ne?"व्यायाम":"exercises")</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:2fr 1fr;gap:24px">
+
+        <!-- Exercise Table -->
+        <div class="card">
+            <div class="card-header"><div class="card-title">💪 @(ne?"व्यायाम सूची":"Exercise List")</div></div>
+            <div class="card-body">
+                <table class="ex-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>@(ne?"व्यायाम":"Exercise")</th>
+                            <th>@(ne?"सेट":"Sets")</th>
+                            <th>@(ne?"रेप्स":"Reps")</th>
+                            <th>@(ne?"आराम":"Rest")</th>
+                            <th>@(ne?"नोट":"Notes")</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @{ int i = 1; }
+                        @foreach (var ex in w.Exercises)
+                        {
+                        <tr>
+                            <td style="color:var(--text-muted)">@(i++)</td>
+                            <td>
+                                <strong>@ex.ExerciseName</strong>
+                                @if (!string.IsNullOrEmpty(ex.ExerciseId))
+                                { <a href="/Exercise/Details/@ex.ExerciseId" style="font-size:11px;color:var(--indigo);margin-left:6px">@(ne?"हेर्नुहोस्":"view")</a> }
+                            </td>
+                            <td>@ex.Sets</td>
+                            <td style="color:var(--green);font-weight:600">@ex.Reps</td>
+                            <td>@ex.RestSeconds s</td>
+                            <td style="color:var(--text-muted);font-size:12px">@(ex.Notes ?? "")</td>
+                        </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div style="display:flex;flex-direction:column;gap:16px">
+            <div class="card">
+                <div class="card-header"><div class="card-title">🚀 @(ne?"सुरु गर्नुहोस्":"Start Workout")</div></div>
+                <div class="card-body" style="display:flex;flex-direction:column;gap:10px">
+                    <form method="post" action="/Dashboard/CompleteWorkout">
+                        <input type="hidden" name="workoutId" value="@w.Id" />
+                        <input type="hidden" name="duration" value="@w.DurationMinutes" />
+                        <button type="submit" class="btn btn-success btn-block">✅ @(ne?"व्यायाम सम्पन्न":"Mark Complete")</button>
+                    </form>
+                    <a href="/Workout" class="btn btn-ghost btn-block" style="justify-content:center">← @(ne?"सबै योजनाहरू":"All Plans")</a>
+                </div>
+            </div>
+
+            @if (w.Goals.Any())
+            {
+            <div class="card">
+                <div class="card-header"><div class="card-title">🎯 @(ne?"लक्ष्य":"Target Goals")</div></div>
+                <div class="card-body">
+                    <div style="display:flex;flex-wrap:wrap;gap:6px">
+                        @foreach (var g in w.Goals)
+                        { <span class="badge badge-indigo">@g</span> }
+                    </div>
+                </div>
+            </div>
+            }
+        </div>
+
+    </div>
+
+</div>

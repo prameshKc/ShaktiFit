@@ -1,0 +1,151 @@
+@model List<FitForgeAI.Models.ProgressEntry>
+@{
+    ViewBag.Title = "Progress – ShaktiFit";
+    ViewBag.ActiveNav = "progress";
+    var lang = Context.Session.GetString("Lang") ?? "en";
+    bool ne = lang == "ne";
+    var entries = Model ?? new List<FitForgeAI.Models.ProgressEntry>();
+    var user = (FitForgeAI.Models.User?)ViewBag.User;
+}
+
+<div class="page-container">
+
+    <div style="margin-bottom:24px">
+        <h1 style="font-size:26px;font-weight:900;margin-bottom:4px">📊 @(ne?"प्रगति ट्र्याकर":"Progress Tracker")</h1>
+        <p style="color:var(--text-secondary)">@(ne?"तौल, मापन र फिटनेस मेट्रिक ट्र्याक गर्नुहोस्।":"Track weight, measurements, and fitness metrics over time.")</p>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px">
+
+        <!-- Log Form -->
+        <div class="card">
+            <div class="card-header"><div class="card-title">➕ @(ne?"नयाँ प्रगति लग":"Log Progress")</div></div>
+            <div class="card-body">
+                <form method="post" action="/Progress/LogProgress">
+                    <div class="form-group">
+                        <label class="form-label">@(ne?"मिति":"Date")</label>
+                        <input type="date" name="Date" class="form-control" value="@DateTime.Today.ToString("yyyy-MM-dd")" required />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">@(ne?"तौल (kg)":"Weight (kg)")</label>
+                        <input type="number" name="weight" class="form-control" placeholder="@(user?.WeightKg.ToString("0.0") ?? "70")" min="30" max="300" step="0.1" />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">@(ne?"छाती (cm)":"Chest (cm)")</label>
+                        <input type="number" name="chest" class="form-control" placeholder="90" min="50" max="200" step="0.1" />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">@(ne?"कम्मर (cm)":"Waist (cm)")</label>
+                        <input type="number" name="waist" class="form-control" placeholder="80" min="40" max="200" step="0.1" />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">@(ne?"हिप (cm)":"Hip (cm)")</label>
+                        <input type="number" name="hips" class="form-control" placeholder="95" min="50" max="200" step="0.1" />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">@(ne?"नोट":"Notes") (@(ne?"वैकल्पिक":"optional"))</label>
+                        <textarea name="notes" class="form-control" rows="2" placeholder="@(ne?"आज कस्तो महसुस गर्नुभयो?":"How are you feeling today?")"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block">💾 @(ne?"प्रगति सुरक्षित गर्नुहोस्":"Save Progress")</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Summary -->
+        <div style="display:flex;flex-direction:column;gap:16px">
+            @if (user != null)
+            {
+            <div class="card" style="background:var(--indigo-bg);border-color:rgba(79,70,229,0.2)">
+                <div class="card-header"><div class="card-title">⚖️ @(ne?"हालको BMI":"Current BMI")</div></div>
+                <div class="card-body" style="text-align:center">
+                    @{
+                        double hm = user.HeightCm / 100.0;
+                        double bmi = hm > 0 ? Math.Round(user.WeightKg / (hm * hm), 1) : 0;
+                        string cat = bmi < 18.5 ? "Underweight" : bmi < 25 ? "Normal" : bmi < 30 ? "Overweight" : "Obese";
+                        string clr = bmi < 18.5 ? "#3b82f6" : bmi < 25 ? "#059669" : bmi < 30 ? "#d97706" : "#dc2626";
+                    }
+                    <div style="font-size:42px;font-weight:900;color:@clr">@bmi</div>
+                    <div style="font-weight:700;color:@clr;margin:4px 0">@cat</div>
+                    <div style="font-size:12px;color:var(--text-muted)">@user.HeightCm cm · @user.WeightKg kg (@(ne?"प्रोफाइल":"profile"))</div>
+                    <a href="/Bmi" class="btn btn-ghost btn-sm" style="margin-top:12px;width:100%;justify-content:center">@(ne?"विस्तृत सुझाव":"Detailed Suggestions")</a>
+                </div>
+            </div>
+            }
+
+            @if (entries.Any())
+            {
+            <div class="card">
+                <div class="card-header"><div class="card-title">📈 @(ne?"ट्रेन्ड":"Trend")</div></div>
+                <div class="card-body">
+                    @{
+                        var first = entries.OrderBy(e => e.Date).First();
+                        var latest = entries.OrderByDescending(e => e.Date).First();
+                        var wDiff = (latest.WeightKg ?? 0) - (first.WeightKg ?? 0);
+                    }
+                    @if (first.WeightKg.HasValue && latest.WeightKg.HasValue)
+                    {
+                    <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);font-size:14px">
+                        <span style="color:var(--text-muted)">@(ne?"शुरु तौल":"Start Weight")</span>
+                        <span style="font-weight:700">@first.WeightKg?.ToString("0.1") kg</span>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);font-size:14px">
+                        <span style="color:var(--text-muted)">@(ne?"हालको तौल":"Current Weight")</span>
+                        <span style="font-weight:700">@latest.WeightKg?.ToString("0.1") kg</span>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;padding:10px 0;font-size:14px">
+                        <span style="color:var(--text-muted)">@(ne?"परिवर्तन":"Change")</span>
+                        <span style="font-weight:700;color:@(wDiff < 0 ? "var(--green)" : "var(--red)")">@(wDiff >= 0 ? "+" : "")@wDiff.ToString("0.1") kg</span>
+                    </div>
+                    }
+                </div>
+            </div>
+            }
+        </div>
+
+    </div>
+
+    <!-- History -->
+    <div class="card" style="margin-top:24px">
+        <div class="card-header"><div class="card-title">📋 @(ne?"प्रगति इतिहास":"Progress History")</div></div>
+        <div class="card-body">
+            @if (entries.Any())
+            {
+            <div style="overflow-x:auto">
+                <table class="ex-table">
+                    <thead>
+                        <tr>
+                            <th>@(ne?"मिति":"Date")</th>
+                            <th>@(ne?"तौल":"Weight")</th>
+                            <th>@(ne?"छाती":"Chest")</th>
+                            <th>@(ne?"कम्मर":"Waist")</th>
+                            <th>@(ne?"हिप":"Hip")</th>
+                            <th>@(ne?"नोट":"Notes")</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var e in entries.OrderByDescending(e => e.Date).Take(20))
+                        {
+                        <tr>
+                            <td>@e.Date.ToString("MMM dd, yyyy")</td>
+                            <td><strong>@(e.WeightKg.HasValue ? e.WeightKg?.ToString("0.1")+" kg" : "—")</strong></td>
+                            <td>@(e.ChestCm.HasValue ? e.ChestCm?.ToString("0.0") : "—")</td>
+                            <td>@(e.WaistCm.HasValue ? e.WaistCm?.ToString("0.0") : "—")</td>
+                            <td>@(e.HipsCm.HasValue ? e.HipsCm?.ToString("0.0") : "—")</td>
+                            <td style="color:var(--text-muted);font-size:12px">@(e.Notes ?? "—")</td>
+                        </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+            }
+            else
+            {
+            <div style="text-align:center;padding:48px;color:var(--text-muted)">
+                <div style="font-size:48px;margin-bottom:12px">📊</div>
+                <div>@(ne?"कुनै प्रगति लग छैन। माथि पहिलो प्रगति लग गर्नुहोस्।":"No progress logged yet. Log your first entry above.")</div>
+            </div>
+            }
+        </div>
+    </div>
+
+</div>

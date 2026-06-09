@@ -1,0 +1,10 @@
+[
+  { "id": "ach001", "name": "First Workout", "nameNepali": "पहिलो व्यायाम", "description": "Complete your very first workout", "icon": "🏋️", "category": "Milestone", "requiredValue": 1 },
+  { "id": "ach002", "name": "7 Day Streak", "nameNepali": "७ दिनको लहर", "description": "Complete workouts for 7 consecutive days", "icon": "🔥", "category": "Streak", "requiredValue": 7 },
+  { "id": "ach003", "name": "30 Day Warrior", "nameNepali": "३० दिनको योद्धा", "description": "Maintain a 30-day workout streak", "icon": "⚡", "category": "Streak", "requiredValue": 30 },
+  { "id": "ach004", "name": "Century Club", "nameNepali": "शताब्दी क्लब", "description": "Complete 100 total workouts", "icon": "💯", "category": "Milestone", "requiredValue": 100 },
+  { "id": "ach005", "name": "Speed Demon", "nameNepali": "गति दानव", "description": "Run a sub-25 minute 5K", "icon": "🏃", "category": "Running", "requiredValue": 1 },
+  { "id": "ach006", "name": "Sub-20 Legend", "nameNepali": "सब-२० किंवदन्ती", "description": "Achieve a sub-20 minute 5K", "icon": "🥇", "category": "Running", "requiredValue": 1 },
+  { "id": "ach007", "name": "Iron Will", "nameNepali": "फलामको इच्छाशक्ति", "description": "Complete 50 strength workouts", "icon": "💪", "category": "Strength", "requiredValue": 50 },
+  { "id": "ach008", "name": "Hybrid Hero", "nameNepali": "हाइब्रिड नायक", "description": "Complete a full hybrid athlete week", "icon": "🦸", "category": "Hybrid", "requiredValue": 1 }
+]

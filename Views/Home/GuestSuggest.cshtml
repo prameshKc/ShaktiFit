@@ -1,0 +1,148 @@
+@{ ViewBag.Title = "Fitness Suggestions – ShaktiFit"; ViewBag.IsLanding = true; }
+@{
+    var goal = (string)(ViewBag.Goal ?? "general");
+    var level = (string)(ViewBag.Level ?? "beginner");
+    var lang = Context.Session.GetString("Lang") ?? "en";
+    bool ne = lang == "ne";
+
+    var plans = new Dictionary<string, (string icon, string en, string np, string[] tips, string[] exercises)>
+    {
+        ["weight-loss"] = ("🔥","Weight Loss","तौल घटाउने",
+            new[]{"Create 500 cal daily deficit","30-45 min cardio 4-5x/week","High protein diet (1.8g/kg)","Drink 2-3L water daily","Sleep 7-8 hours"},
+            new[]{"Running / Jogging","Jump Rope","Burpees","Mountain Climbers","Cycling","Push-Ups"}),
+        ["muscle-gain"] = ("💪","Muscle Gain","मांसपेशी बढाउने",
+            new[]{"Eat 200-300 cal surplus","1.6-2.2g protein per kg bodyweight","Progressive overload each week","4-5 strength sessions/week","Rest 48h between muscle groups"},
+            new[]{"Bench Press","Squat","Deadlift","Pull-Up","Overhead Press","Dumbbell Curls"}),
+        ["running"] = ("🏃","Running Improvement","दौड सुधार",
+            new[]{"Build mileage gradually (10% rule)","Include 1 interval session/week","Easy runs at conversational pace","Strength train 2x/week","Prioritize sleep for recovery"},
+            new[]{"Interval 400m Repeats","Tempo Run","Easy Long Run","Hill Repeats","Strides","Hip Flexor Stretches"}),
+        ["strength"] = ("⚡","Strength Training","शक्ति प्रशिक्षण",
+            new[]{"Focus on compound lifts","Progressive overload is key","Train 3-5 days/week","Eat enough protein and calories","Rest 2-3 min between heavy sets"},
+            new[]{"Squat","Deadlift","Bench Press","Overhead Press","Barbell Row","Pull-Up"}),
+        ["general"] = ("✨","General Fitness","सामान्य स्वास्थ्य",
+            new[]{"Move for 30 min every day","Mix cardio and strength","Eat whole foods, limit processed","Manage stress with mindfulness","Consistency beats perfection"},
+            new[]{"Push-Up","Squat","Plank","Walking","Jump Rope","Stretching"}),
+        ["hybrid"] = ("🦸","Hybrid Athlete","हाइब्रिड एथलीट",
+            new[]{"Strength train 3x, run 3x per week","Prioritize recovery between sessions","Periodize your training blocks","Fuel well for dual-mode training","Track both lifting and running PRs"},
+            new[]{"Deadlift","Squat","Bench Press","Interval Running","Long Run","Tempo Run"})
+    };
+
+    var p = plans.ContainsKey(goal) ? plans[goal] : plans["general"];
+    string LevelColor(string l) => l == "beginner" ? "var(--green)" : l == "intermediate" ? "var(--amber)" : "var(--red)";
+}
+
+<!-- Nav -->
+<nav class="landing-nav">
+    <div class="landing-nav-logo">
+        <div class="logo-icon-box" style="width:36px;height:36px;font-size:16px">💪</div>
+        <div><div style="font-size:16px;font-weight:800">ShaktiFit</div><div style="font-size:11px;color:var(--text-muted)">स्वास्थ्य फिट</div></div>
+    </div>
+    <div class="landing-nav-links">
+        <a href="/" class="landing-nav-link">← @(ne?"फिर्ता":"Back")</a>
+        <a href="/Account/Register" class="btn btn-primary btn-sm">@(ne?"दर्ता गर्नुहोस्":"Register to Save")</a>
+    </div>
+</nav>
+
+<div style="min-height:100vh;background:var(--bg-primary);padding:100px 20px 60px">
+    <div style="max-width:900px;margin:0 auto">
+
+        <!-- Header -->
+        <div style="text-align:center;margin-bottom:40px">
+            <div style="font-size:64px;margin-bottom:12px">@p.icon</div>
+            <h1 style="font-size:32px;font-weight:900;margin-bottom:8px">
+                @(ne ? p.np : p.en) @(ne?"सुझाव":"Plan")
+            </h1>
+            <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:12px">
+                <span class="badge badge-indigo">@(ne?"स्तर:":"Level:") <span style="color:@LevelColor(level)">@level</span></span>
+                <span class="badge badge-gray">@(ne?"पाहुना सुझाव":"Guest Suggestion")</span>
+            </div>
+            <div class="alert alert-info" style="max-width:480px;margin:20px auto 0;font-size:13px">
+                💡 @(ne?"यो सामान्य सुझाव हो। व्यक्तिगत योजनाको लागि दर्ता गर्नुहोस्।":"This is a general suggestion. Register for a personalized plan based on your profile.")
+            </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px">
+
+            <!-- Suggested Exercises -->
+            <div class="card card-indigo">
+                <div class="card-header"><div class="card-title">💪 @(ne?"सिफारिश व्यायामहरू":"Recommended Exercises")</div></div>
+                <div class="card-body">
+                    @{ int i = 1; }
+                    @foreach (var ex in p.exercises)
+                    {
+                    <div style="display:flex;align-items:center;gap:14px;padding:12px 0;border-bottom:1px solid var(--border)">
+                        <div style="width:32px;height:32px;background:var(--indigo-bg);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--indigo);flex-shrink:0">@(i++)</div>
+                        <div style="font-size:14px;font-weight:600">@ex</div>
+                    </div>
+                    }
+                    <div style="margin-top:16px">
+                        <a href="/Exercise" class="btn btn-outline btn-sm btn-block">@(ne?"सबै व्यायाम हेर्नुहोस्":"View Exercise Library →")</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tips -->
+            <div class="card card-green">
+                <div class="card-header"><div class="card-title">📋 @(ne?"जीवनशैली सुझावहरू":"Lifestyle Tips")</div></div>
+                <div class="card-body">
+                    @foreach (var tip in p.tips)
+                    {
+                    <div style="display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);font-size:14px;color:var(--text-secondary)">
+                        <span style="color:var(--green);flex-shrink:0;margin-top:1px">✓</span>
+                        @tip
+                    </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Weekly Schedule -->
+            <div class="card">
+                <div class="card-header"><div class="card-title">📅 @(ne?"साप्ताहिक संरचना":"Sample Weekly Structure")</div></div>
+                <div class="card-body">
+                    @{
+                        var schedule = goal switch {
+                            "weight-loss" => new[]{"Mon: Cardio 30min","Tue: Strength","Wed: Rest/Walk","Thu: Cardio 30min","Fri: Strength","Sat: Cardio 45min","Sun: Rest"},
+                            "muscle-gain" => new[]{"Mon: Upper Body","Tue: Lower Body","Wed: Rest","Thu: Push","Fri: Pull","Sat: Legs","Sun: Rest"},
+                            "running" => new[]{"Mon: Easy Run 5K","Tue: Strength","Wed: Intervals","Thu: Rest","Fri: Tempo Run","Sat: Long Run","Sun: Recovery"},
+                            "hybrid" => new[]{"Mon: Strength","Tue: Run","Wed: Strength","Thu: Intervals","Fri: Strength","Sat: Long Run","Sun: Recovery"},
+                            _ => new[]{"Mon: Full Body","Tue: Walk/Cardio","Wed: Rest","Thu: Full Body","Fri: Walk/Cardio","Sat: Active Fun","Sun: Rest"}
+                        };
+                    }
+                    @foreach (var day in schedule)
+                    {
+                    <div style="padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;color:var(--text-secondary)">
+                        <span style="font-weight:700;color:var(--text-primary);min-width:36px;display:inline-block">@day.Split(':')[0]:</span>
+                        @day.Substring(day.IndexOf(':')+1)
+                    </div>
+                    }
+                </div>
+            </div>
+
+            <!-- BMI + Register CTA -->
+            <div style="display:flex;flex-direction:column;gap:16px">
+                <div class="card" style="background:var(--indigo-bg);border-color:rgba(79,70,229,0.2)">
+                    <div class="card-body" style="text-align:center">
+                        <div style="font-size:40px;margin-bottom:10px">⚖️</div>
+                        <h3 style="margin-bottom:8px">@(ne?"BMI पनि जाँच्नुहोस्":"Also Check Your BMI")</h3>
+                        <p style="font-size:13px;color:var(--text-secondary);margin-bottom:16px">@(ne?"आफ्नो स्वास्थ्य अवस्था बुझेर अझ राम्रो योजना बनाउनुहोस्।":"Understand your health status for better planning.")</p>
+                        <a href="/Bmi" class="btn btn-primary btn-block">@(ne?"BMI जाँच्नुहोस्":"Open BMI Calculator")</a>
+                    </div>
+                </div>
+                <div class="card" style="background:linear-gradient(135deg,#4f46e5,#7c3aed);border:none">
+                    <div class="card-body" style="text-align:center;color:white">
+                        <div style="font-size:32px;margin-bottom:8px">🏆</div>
+                        <h3 style="margin-bottom:8px;color:white">@(ne?"व्यक्तिगत योजना पाउनुहोस्":"Get a Personalized Plan")</h3>
+                        <p style="opacity:0.85;font-size:13px;margin-bottom:16px">@(ne?"दर्ता गरेर तपाईंको प्रगति ट्र्याक गर्नुहोस् र थप सुझाव पाउनुहोस्।":"Register to track progress and get plans based on your actual profile.")</p>
+                        <a href="/Account/Register" class="btn" style="background:white;color:var(--indigo);font-weight:700">@(ne?"निःशुल्क दर्ता →":"Register Free →")</a>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Try another -->
+        <div style="margin-top:32px;text-align:center">
+            <a href="/#guest" class="btn btn-ghost">← @(ne?"अर्को लक्ष्य छान्नुहोस्":"Try Another Goal")</a>
+        </div>
+    </div>
+</div>

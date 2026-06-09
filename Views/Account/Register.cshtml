@@ -1,0 +1,151 @@
+@model FitForgeAI.ViewModels.RegisterViewModel
+@{ ViewBag.Title = "Register – ShaktiFit"; ViewBag.IsLanding = true; }
+@{ var lang = Context.Session.GetString("Lang") ?? "en"; bool ne = lang == "ne"; }
+
+<div class="auth-page">
+    <div class="auth-left">
+        <div class="auth-box">
+            <div class="auth-logo-wrap">
+                <div class="logo-icon-box">💪</div>
+                <div>
+                    <div style="font-size:18px;font-weight:800">ShaktiFit</div>
+                    <div style="font-size:11px;color:var(--text-muted)">स्वास्थ्य फिट</div>
+                </div>
+            </div>
+            <h1 class="auth-title">@(ne?"तपाईंको यात्रा सुरु गर्नुहोस्":"Start Your Journey")</h1>
+            <p class="auth-sub">@(ne?"निःशुल्क खाता बनाउनुहोस्।":"Create your free account.")</p>
+
+            @if (!ViewData.ModelState.IsValid)
+            {
+            <div class="alert alert-danger">
+                @foreach (var err in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                { <div>@err.ErrorMessage</div> }
+            </div>
+            }
+
+            <form method="post" action="/Account/Register">
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+                    <div class="form-group" style="grid-column:1/-1">
+                        <label class="form-label">@(ne?"पूरा नाम":"Full Name")</label>
+                        <input type="text" name="Name" class="form-control" placeholder="@(ne?"तपाईंको नाम":"Your name")" required />
+                    </div>
+                    <div class="form-group" style="grid-column:1/-1">
+                        <label class="form-label">@(ne?"इमेल":"Email")</label>
+                        <input type="email" name="Email" class="form-control" placeholder="you@example.com" required />
+                    </div>
+                    <div class="form-group" style="grid-column:1/-1">
+                        <label class="form-label">@(ne?"पासवर्ड":"Password")</label>
+                        <input type="password" name="Password" class="form-control" placeholder="••••••••" required />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">@(ne?"उमेर":"Age")</label>
+                        <input type="number" name="Age" class="form-control" placeholder="25" min="10" max="100" />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">@(ne?"लिङ्ग":"Gender")</label>
+                        <select name="Gender" class="form-control">
+                            <option value="Male">@(ne?"पुरुष":"Male")</option>
+                            <option value="Female">@(ne?"महिला":"Female")</option>
+                            <option value="Other">@(ne?"अन्य":"Other")</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">@(ne?"उचाइ (cm)":"Height (cm)")</label>
+                        <input type="number" name="Height" class="form-control" placeholder="170" min="100" max="250" step="0.1" />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">@(ne?"तौल (kg)":"Weight (kg)")</label>
+                        <input type="number" name="Weight" class="form-control" placeholder="70" min="30" max="300" step="0.1" />
+                    </div>
+                    <div class="form-group" style="grid-column:1/-1">
+                        <label class="form-label">@(ne?"फिटनेस स्तर":"Fitness Level")</label>
+                        <select name="FitnessLevel" class="form-control">
+                            <option value="Beginner">@(ne?"शुरुआती":"Beginner")</option>
+                            <option value="Intermediate">@(ne?"मध्यम":"Intermediate")</option>
+                            <option value="Advanced">@(ne?"उन्नत":"Advanced")</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="grid-column:1/-1">
+                        <label class="form-label">@(ne?"हप्तामा व्यायाम दिन":"Workout Days/Week")</label>
+                        <select name="WorkoutDaysPerWeek" class="form-control">
+                            @foreach (var d in new[]{2,3,4,5,6}) {
+                            <option value="@d">@d @(ne?"दिन":"days")</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">@(ne?"तपाईंको लक्ष्यहरू":"Your Goals") (@(ne?"एक वा बढी छान्नुहोस्":"select one or more"))</label>
+                    <div style="display:flex;flex-wrap:wrap;gap:7px;margin-top:6px">
+                        @foreach (var g in new[]{
+                            "Weight Loss","Muscle Building","Lean Muscle Gain","Strength Training",
+                            "Running Improvement","General Fitness","Hybrid Athlete","Fat Loss",
+                            "Endurance","Flexibility","Health Maintenance"})
+                        {
+                        <label class="goal-chip">
+                            <input type="checkbox" name="Goals" value="@g" style="display:none" />
+                            <span>@g</span>
+                        </label>
+                        }
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div style="display:flex;gap:20px;flex-wrap:wrap">
+                        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:14px">
+                            <input type="checkbox" name="HasGymAccess" value="true" class="form-check" />
+                            @(ne?"जिम सदस्यता छ":"Gym Access")
+                        </label>
+                        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:14px">
+                            <input type="checkbox" name="PrefersHomeWorkout" value="true" class="form-check" />
+                            @(ne?"घरमा व्यायाम":"Home Workout Preferred")
+                        </label>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-block" style="padding:13px;margin-top:8px">
+                    🚀 @(ne?"खाता बनाउनुहोस्":"Create My Account")
+                </button>
+            </form>
+
+            <div style="text-align:center;margin-top:20px;font-size:14px;color:var(--text-secondary)">
+                @(ne?"पहिले नै सदस्य?":"Already a member?")
+                <a href="/Account/Login" style="color:var(--indigo);font-weight:600">@(ne?"लगइन →":"Login →")</a>
+            </div>
+        </div>
+    </div>
+    <div class="auth-right">
+        <div style="text-align:center;max-width:360px">
+            <div style="font-size:68px;margin-bottom:20px">🏆</div>
+            <h2 style="font-size:26px;font-weight:900;margin-bottom:16px">@(ne?"ShaktiFit मा किन दर्ता गर्ने?":"Why Join ShaktiFit?")</h2>
+            <div style="display:flex;flex-direction:column;gap:14px;text-align:left">
+                @foreach (var f in new[]{
+                    ("📊", ne?"व्यक्तिगत व्यायाम योजना":"Personalized Workout Plans"),
+                    ("⚖️", ne?"BMI ट्र्याकिङ र सुझाव":"BMI Tracking & Suggestions"),
+                    ("🏃", ne?"दौड र प्रगति लग":"Running & Progress Logs"),
+                    ("🏥", ne?"स्वास्थ्य जानकारी":"Health Information"),
+                    ("🔥", ne?"स्ट्रीक र उपलब्धिहरू":"Streaks & Achievements"),
+                    ("🌐", ne?"नेपाली/अंग्रेजी भाषा":"Nepali / English Language")})
+                {
+                <div style="display:flex;align-items:center;gap:12px;background:white;border:1px solid var(--border);border-radius:10px;padding:12px 16px">
+                    <span style="font-size:22px;flex-shrink:0">@f.Item1</span>
+                    <span style="font-size:13px;font-weight:600;color:var(--text-secondary)">@f.Item2</span>
+                </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+document.querySelectorAll('.goal-chip').forEach(chip => {
+    const cb = chip.querySelector('input');
+    chip.addEventListener('click', () => {
+        cb.checked = !cb.checked;
+        chip.classList.toggle('active', cb.checked);
+    });
+});
+</script>
+}

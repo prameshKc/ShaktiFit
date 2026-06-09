@@ -1,0 +1,246 @@
+@model FitForgeAI.ViewModels.DashboardViewModel
+@{ ViewBag.Title = "Dashboard – ShaktiFit"; ViewBag.ActiveNav = "dashboard"; }
+@{
+    var t = Model.Translations;
+    string Tr(string key) => t.ContainsKey(key) ? t[key] : key;
+    var pct = Model.WorkoutDaysTarget > 0
+        ? Math.Min(100, (int)((double)Model.WeeklyCompleted / Model.WorkoutDaysTarget * 100))
+        : 0;
+    var user = Model.User;
+    var ne = Model.Lang == "ne";
+}
+
+<div class="page-container">
+
+    @if (TempData["Success"] != null)
+    {
+    <div class="alert alert-success">✅ @TempData["Success"]</div>
+    }
+
+    <!-- Welcome Strip -->
+    <div class="welcome-strip">
+        <div class="ws-greeting">@(ne?"नमस्ते":"Welcome back"), @user.Name! 👋</div>
+        <div class="ws-quote">"@Model.MotivationalQuote"</div>
+        <div class="ws-streak">🔥 @user.WorkoutStreak @(ne?"दिनको लहर":"day streak")</div>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon">🏋️</div>
+            <div class="stat-label">@Tr("today_workout")</div>
+            <div class="stat-value text-gradient">@(Model.TodaysWorkout?.Type ?? (ne?"आराम":"Rest"))</div>
+            <div class="stat-sub">@(Model.TodaysWorkout?.Name ?? (ne?"पुनःप्राप्ति दिन":"Recovery Day"))</div>
+        </div>
+        <div class="stat-card sc-green">
+            <div class="stat-icon">🔥</div>
+            <div class="stat-label">@Tr("workout_streak")</div>
+            <div class="stat-value" data-counter data-target="@user.WorkoutStreak">0</div>
+            <div class="stat-sub">@(ne?"लगातार दिनहरू":"days in a row")</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">✅</div>
+            <div class="stat-label">@(ne?"कुल व्यायाम":"Total Workouts")</div>
+            <div class="stat-value text-gradient" data-counter data-target="@user.TotalWorkoutsCompleted">0</div>
+            <div class="stat-sub">@(ne?"सबै समय":"all time")</div>
+        </div>
+        <div class="stat-card sc-green">
+            <div class="stat-icon">🏃</div>
+            <div class="stat-label">@(ne?"साप्ताहिक किमी":"Weekly km")</div>
+            <div class="stat-value">@Model.WeeklyMileage.ToString("0.0")</div>
+            <div class="stat-sub">@(ne?"यस हप्ता":"this week")</div>
+        </div>
+    </div>
+
+    <!-- Main Grid -->
+    <div class="dash-grid">
+
+        <!-- Today's Workout -->
+        <div class="card card-indigo span2">
+            <div class="card-header">
+                <div class="card-title">🏋️ @Tr("today_workout")</div>
+                @if (Model.TodaysWorkout != null)
+                {
+                <span class="wt-badge wtb-@(Model.TodaysWorkout.Type.ToLower())">@(ne && !string.IsNullOrEmpty(Model.TodaysWorkout.NameNepali) ? Model.TodaysWorkout.Type : Model.TodaysWorkout.Type)</span>
+                }
+            </div>
+            <div class="card-body">
+                @if (Model.TodaysWorkout != null)
+                {
+                <div style="margin-bottom:18px">
+                    <div style="font-size:20px;font-weight:800;margin-bottom:6px">@(ne && !string.IsNullOrEmpty(Model.TodaysWorkout.NameNepali) ? Model.TodaysWorkout.NameNepali : Model.TodaysWorkout.Name)</div>
+                    <div style="color:var(--text-secondary);font-size:13px">⏱️ @Model.TodaysWorkout.DurationMinutes @(ne?"मिनेट":"min") &nbsp;·&nbsp; 🔥 ~@Model.TodaysWorkout.EstimatedCalories kcal &nbsp;·&nbsp; 💪 @Model.TodaysWorkout.Exercises.Count @(ne?"व्यायाम":"exercises")</div>
+                </div>
+                <table class="ex-table" style="margin-bottom:20px">
+                    <thead><tr><th>@(ne?"व्यायाम":"Exercise")</th><th>@Tr("sets")</th><th>@Tr("reps")</th><th>@Tr("rest")</th></tr></thead>
+                    <tbody>
+                        @foreach (var ex in Model.TodaysWorkout.Exercises)
+                        {
+                        <tr>
+                            <td><strong>@ex.ExerciseName</strong></td>
+                            <td>@ex.Sets</td>
+                            <td style="color:var(--green);font-weight:600">@ex.Reps</td>
+                            <td>@ex.RestSeconds s</td>
+                        </tr>
+                        }
+                    </tbody>
+                </table>
+                <div style="display:flex;gap:10px;flex-wrap:wrap">
+                    <form method="post" action="/Dashboard/CompleteWorkout" style="display:inline">
+                        <input type="hidden" name="workoutId" value="@Model.TodaysWorkout.Id" />
+                        <input type="hidden" name="duration" value="@Model.TodaysWorkout.DurationMinutes" />
+                        <button type="submit" class="btn btn-success">✅ @Tr("complete_workout")</button>
+                    </form>
+                    <a href="/Workout/Details/@Model.TodaysWorkout.Id" class="btn btn-ghost">📋 @(ne?"विवरण हेर्नुहोस्":"Full Details")</a>
+                </div>
+                }
+                else
+                {
+                <div style="text-align:center;padding:40px 0">
+                    <div style="font-size:48px;margin-bottom:12px">🌟</div>
+                    <div style="font-size:18px;font-weight:700;margin-bottom:8px">@(ne?"आराम दिन":"Recovery Day")</div>
+                    <div style="color:var(--text-secondary)">@(ne?"आराम गर्नुहोस् र भोलिको लागि तयार हुनुहोस्।":"Rest, recover, and come back stronger tomorrow.")</div>
+                    <a href="/Running" class="btn btn-outline" style="margin-top:16px">🏃 @(ne?"सजिलो दौड लग गर्नुहोस्":"Log an Easy Run")</a>
+                </div>
+                }
+            </div>
+        </div>
+
+        <!-- Weekly Progress Ring -->
+        <div class="card">
+            <div class="card-header"><div class="card-title">📊 @Tr("weekly_progress")</div></div>
+            <div class="card-body" style="display:flex;flex-direction:column;align-items:center;padding:28px">
+                <div class="progress-ring-container">
+                    <svg class="ring-svg" width="130" height="130">
+                        <defs>
+                            <linearGradient id="rg" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#4f46e5"/>
+                                <stop offset="100%" stop-color="#10b981"/>
+                            </linearGradient>
+                        </defs>
+                        <circle class="ring-track" cx="65" cy="65" r="52"/>
+                        <circle class="ring-progress" cx="65" cy="65" r="52"
+                                style="stroke-dasharray:326.7;stroke-dashoffset:@(326.7 - (pct/100.0*326.7))"/>
+                    </svg>
+                    <div class="ring-center">
+                        <div class="ring-pct">@pct%</div>
+                        <div class="ring-sub">@(ne?"लक्ष्य":"of goal")</div>
+                    </div>
+                </div>
+                <div style="margin-top:16px;text-align:center">
+                    <div style="font-size:22px;font-weight:800">@Model.WeeklyCompleted / @Model.WorkoutDaysTarget</div>
+                    <div style="color:var(--text-muted);font-size:13px">@(ne?"यस हप्ता व्यायाम":"workouts this week")</div>
+                </div>
+                <div class="prog-bar-track" style="width:100%;margin-top:14px">
+                    <div class="prog-bar-fill pbf-green" data-pct="@pct" style="width:0%"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- BMI Card -->
+        <div class="card">
+            <div class="card-header"><div class="card-title">⚖️ @(ne?"BMI अवस्था":"BMI Status")</div><a href="/Bmi" class="btn btn-outline btn-sm">@(ne?"जाँच्नुहोस्":"Check")</a></div>
+            <div class="card-body" style="text-align:center">
+                @{
+                    double heightM = user.HeightCm / 100.0;
+                    double bmi = heightM > 0 ? Math.Round(user.WeightKg / (heightM * heightM), 1) : 0;
+                    string bmiCat = bmi < 18.5 ? (ne?"कम तौल":"Underweight") : bmi < 25 ? (ne?"सामान्य":"Normal") : bmi < 30 ? (ne?"अधिक तौल":"Overweight") : (ne?"मोटोपन":"Obese");
+                    string bmiClr = bmi < 18.5 ? "#3b82f6" : bmi < 25 ? "#059669" : bmi < 30 ? "#d97706" : "#dc2626";
+                }
+                <div style="font-size:44px;font-weight:900;color:@bmiClr;line-height:1">@bmi</div>
+                <div style="font-weight:700;color:@bmiClr;margin:4px 0">@bmiCat</div>
+                <div style="font-size:12px;color:var(--text-muted)">@user.HeightCm cm · @user.WeightKg kg</div>
+                <a href="/Bmi" class="btn btn-ghost btn-sm" style="margin-top:14px;width:100%;justify-content:center">@(ne?"विस्तृत सुझाव पाउनुहोस्":"Get Detailed Suggestions →")</a>
+            </div>
+        </div>
+
+        <!-- Recent Runs -->
+        <div class="card span2">
+            <div class="card-header">
+                <div class="card-title">🏃 @(ne?"हालका दौडहरू":"Recent Runs")</div>
+                <a href="/Running" class="btn btn-ghost btn-sm">@(ne?"सबै हेर्नुहोस्":"View All")</a>
+            </div>
+            <div class="card-body">
+                @if (Model.RecentRuns.Any())
+                {
+                    @foreach (var run in Model.RecentRuns.Take(3))
+                    {
+                    <div class="run-item">
+                        <div class="run-dot">🏃</div>
+                        <div class="run-main">
+                            <div class="run-dist">@run.DistanceKm km</div>
+                            <div class="run-meta">@run.RunType · @run.Date.ToString("MMM dd") · @run.DurationMinutes @(ne?"मिनेट":"min")</div>
+                        </div>
+                        <div>
+                            <div class="run-pace-val">@run.PaceMinPerKm.ToString("0.0")</div>
+                            <div class="run-pace-lbl">min/km</div>
+                        </div>
+                    </div>
+                    }
+                }
+                else
+                {
+                <div style="text-align:center;padding:30px;color:var(--text-muted)">
+                    🏃 @(ne?"कुनै दौड लग छैन।":"No runs logged yet.") <a href="/Running">@(ne?"पहिलो दौड लग गर्नुहोस् →":"Log your first run →")</a>
+                </div>
+                }
+            </div>
+        </div>
+
+        <!-- Weight Progress -->
+        <div class="card">
+            <div class="card-header"><div class="card-title">⚖️ @(ne?"तौल प्रगति":"Weight Progress")</div><a href="/Progress" class="btn btn-ghost btn-sm">@(ne?"ट्र्याक":"Track")</a></div>
+            <div class="card-body" style="text-align:center">
+                @if (Model.LatestProgress?.WeightKg != null)
+                {
+                    var diff = (Model.LatestProgress.WeightKg ?? user.WeightKg) - user.WeightKg;
+                    var sign = diff >= 0 ? "+" : "";
+                <div style="font-size:38px;font-weight:900;color:var(--indigo)">@Model.LatestProgress.WeightKg kg</div>
+                <div style="color:var(--text-muted);font-size:12px;margin-top:4px">@Model.LatestProgress.Date.ToString("MMM dd")</div>
+                <div style="margin-top:12px;background:var(--bg-secondary);border-radius:8px;padding:10px;font-size:13px">
+                    @(ne?"शुरुवातदेखि:":"Change from start:")
+                    <span style="font-weight:700;color:@(diff < 0 ? "var(--green)" : "var(--red)")">@sign@diff.ToString("0.1") kg</span>
+                </div>
+                }
+                else
+                {
+                <div style="padding:24px;color:var(--text-muted)">
+                    <div style="font-size:32px;margin-bottom:8px">⚖️</div>
+                    <a href="/Progress">@(ne?"तौल लग गर्नुहोस् →":"Log weight →")</a>
+                </div>
+                }
+            </div>
+        </div>
+
+        <!-- Goals + Quick Actions -->
+        <div class="card">
+            <div class="card-header"><div class="card-title">🎯 @(ne?"मेरो लक्ष्यहरू":"My Goals")</div><a href="/Settings" class="btn btn-ghost btn-sm">@(ne?"सम्पादन":"Edit")</a></div>
+            <div class="card-body">
+                <div style="display:flex;flex-wrap:wrap;gap:7px;margin-bottom:16px">
+                    @if (user.Goals.Any()) {
+                        @foreach (var g in user.Goals) { <span class="badge badge-indigo">@g</span> }
+                    } else { <a href="/Settings" class="btn btn-ghost btn-sm">@(ne?"लक्ष्य थप्नुहोस्":"Add goals →")</a> }
+                </div>
+                <hr class="divider" />
+                <div style="display:flex;flex-direction:column;gap:8px">
+                    <a href="/Running" class="btn btn-ghost btn-sm" style="justify-content:flex-start">🏃 @Tr("log_run")</a>
+                    <a href="/Progress" class="btn btn-ghost btn-sm" style="justify-content:flex-start">📊 @Tr("track_progress")</a>
+                    <a href="/Bmi" class="btn btn-ghost btn-sm" style="justify-content:flex-start">⚖️ @(ne?"BMI जाँच्नुहोस्":"Check BMI")</a>
+                    <a href="/Health" class="btn btn-ghost btn-sm" style="justify-content:flex-start">🏥 @(ne?"स्वास्थ्य जानकारी":"Health Info")</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quote -->
+        <div class="card span3" style="background:linear-gradient(135deg,var(--indigo-bg),var(--green-bg))">
+            <div class="card-body" style="display:flex;align-items:center;gap:18px;padding:24px">
+                <div style="font-size:40px">💡</div>
+                <div>
+                    <div style="font-size:16px;font-weight:700;font-style:italic">"@Model.MotivationalQuote"</div>
+                    <div style="font-size:12px;color:var(--indigo);font-weight:600;margin-top:5px">— @(ne?"दैनिक प्रेरणा":"Daily Motivation")</div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>

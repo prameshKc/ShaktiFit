@@ -1,0 +1,80 @@
+@model List<FitForgeAI.Models.Workout>
+@{
+    ViewBag.Title = "Workout Plans – ShaktiFit";
+    ViewBag.ActiveNav = "workout";
+    var lang = Context.Session.GetString("Lang") ?? "en";
+    bool ne = lang == "ne";
+    var workouts = Model ?? new List<FitForgeAI.Models.Workout>();
+}
+
+<div class="page-container">
+
+    <div style="margin-bottom:24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+        <div>
+            <h1 style="font-size:26px;font-weight:900;margin-bottom:4px">🏋️ @(ne?"व्यायाम योजनाहरू":"Workout Plans")</h1>
+            <p style="color:var(--text-secondary)">@(ne?"तपाईंको लक्ष्यमा आधारित योजनाहरू।":"Plans tailored to your goals and fitness level.")</p>
+        </div>
+        <a href="/Workout/Hybrid" class="btn btn-primary">🦸 @(ne?"हाइब्रिड एथलीट":"Hybrid Athlete")</a>
+    </div>
+
+    <!-- Filters -->
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px">
+        <button class="filter-chip active" data-type="all" onclick="filterWorkout(this)">@(ne?"सबै":"All")</button>
+        @foreach (var wt in new[]{"Strength","Cardio","Running","Hybrid","Mobility"}) {
+        <button class="filter-chip" data-type="@wt.ToLower()" onclick="filterWorkout(this)">@wt</button>
+        }
+    </div>
+
+    <div class="workout-grid" id="workoutGrid">
+        @foreach (var w in workouts)
+        {
+        <div class="card workout-card" data-type="@w.Type.ToLower()">
+            <div class="card-body" style="padding:22px">
+                <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px">
+                    <div style="font-size:36px">@(w.Type == "Strength" ? "🏋️" : w.Type == "Running" || w.Type == "Cardio" ? "🏃" : w.Type == "Hybrid" ? "🦸" : "🧘")</div>
+                    <span class="wt-badge wtb-@w.Type.ToLower()">@w.Type</span>
+                </div>
+                <h3 style="font-size:17px;font-weight:800;margin-bottom:6px">@(ne && !string.IsNullOrEmpty(w.NameNepali) ? w.NameNepali : w.Name)</h3>
+                <p style="font-size:13px;color:var(--text-secondary);margin-bottom:14px;line-height:1.5">@w.Description</p>
+                <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px">
+                    <span class="badge badge-gray">⏱️ @w.DurationMinutes @(ne?"मिनेट":"min")</span>
+                    <span class="badge badge-gray">🔥 ~@w.EstimatedCalories kcal</span>
+                    <span class="badge badge-gray">💪 @w.Exercises.Count @(ne?"व्यायाम":"exercises")</span>
+                    <span class="diff-badge diff-@w.FitnessLevel.ToLower()">@w.FitnessLevel</span>
+                </div>
+                <div style="display:flex;gap:8px">
+                    <a href="/Workout/Details/@w.Id" class="btn btn-primary btn-sm" style="flex:1;justify-content:center">@(ne?"विवरण हेर्नुहोस्":"View Details")</a>
+                    <form method="post" action="/Dashboard/CompleteWorkout" style="display:contents">
+                        <input type="hidden" name="workoutId" value="@w.Id" />
+                        <input type="hidden" name="duration" value="@w.DurationMinutes" />
+                        <button type="submit" class="btn btn-ghost btn-sm">✅ @(ne?"सम्पन्न":"Done")</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        }
+    </div>
+
+    @if (!workouts.Any())
+    {
+    <div style="text-align:center;padding:80px;color:var(--text-muted)">
+        <div style="font-size:48px;margin-bottom:16px">🏋️</div>
+        <h3 style="margin-bottom:8px">@(ne?"कुनै योजना भेटिएन।":"No workout plans found.")</h3>
+        <a href="/Settings" class="btn btn-outline">@(ne?"लक्ष्य अपडेट गर्नुहोस्":"Update Your Goals")</a>
+    </div>
+    }
+
+</div>
+
+@section Scripts {
+<script>
+function filterWorkout(btn) {
+    document.querySelectorAll('.filter-chip').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const type = btn.dataset.type;
+    document.querySelectorAll('.workout-card').forEach(card => {
+        card.style.display = (type === 'all' || card.dataset.type === type) ? '' : 'none';
+    });
+}
+</script>
+}

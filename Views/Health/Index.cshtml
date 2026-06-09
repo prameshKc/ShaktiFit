@@ -1,0 +1,130 @@
+@{
+    ViewBag.Title = "Health Information – ShaktiFit | स्वास्थ्य फिट";
+    var isAuth = Context.Session.GetString("UserId") != null;
+    if (!isAuth) { ViewBag.IsLanding = true; }
+    ViewBag.ActiveNav = "health";
+    var lang = Context.Session.GetString("Lang") ?? "en";
+    bool ne = lang == "ne";
+}
+
+@{
+    var topics = new[]
+    {
+        new { id="diabetes", icon="🩺", en="Diabetes & Exercise", np="मधुमेह र व्यायाम", color="var(--red)",
+            sub= ne?"मधुमेह नियन्त्रणमा व्यायामको भूमिका":"Role of exercise in diabetes management",
+            tips= ne? new[]{"हप्तामा कम्तीमा १५० मिनेट मध्यम व्यायाम गर्नुहोस्","खाना खाएको १–२ घण्टापछि हिड्नुहोस्","रगतमा चिनीको स्तर नियमित जाँच्नुहोस्","शक्ति प्रशिक्षणले इन्सुलिन संवेदनशीलता बढाउँछ","व्यायाम गर्दा सँगै चिनी वा मीठो पेय राख्नुहोस्"} :
+            new[]{"Aim for 150 min moderate exercise weekly","Walk 1-2 hours after meals to manage blood sugar","Monitor blood glucose before and after exercise","Strength training improves insulin sensitivity","Carry fast-acting sugar during workouts"} },
+        new { id="heart", icon="❤️", en="Heart Health & Fitness", np="हृदय स्वास्थ्य र फिटनेस", color="var(--red)",
+            sub= ne?"हृदयलाई स्वस्थ राख्ने व्यायाम र जीवनशैली":"Exercise and lifestyle for a healthy heart",
+            tips= ne? new[]{"हप्तामा ५ दिन ३० मिनेट कार्डियो गर्नुहोस्","तनाव कम गर्नुहोस् — ध्यान र योग गर्नुहोस्","धुम्रपान छोड्नुहोस्","कोलेस्ट्रोल र रक्तचाप नियन्त्रण गर्नुहोस्","ओमेगा-३ भएको खाना (माछा, अखरोट) खानुहोस्"} :
+            new[]{"Do 30 min cardio 5 days/week (walking, swimming)","Manage stress with meditation and yoga","Quit smoking — it's the #1 heart risk factor","Monitor blood pressure and cholesterol regularly","Eat omega-3 rich foods: fish, walnuts, flaxseed"} },
+        new { id="bp", icon="💊", en="Blood Pressure Control", np="रक्तचाप नियन्त्रण", color="var(--orange)",
+            sub= ne?"उच्च रक्तचाप घटाउने प्राकृतिक तरिका":"Natural ways to lower high blood pressure",
+            tips= ne? new[]{"नुन कम खानुहोस् (दिनमा ५ ग्राम भन्दा कम)","नियमित कार्डियो व्यायाम गर्नुहोस्","स्वस्थ तौल कायम गर्नुहोस्","मदिरा र क्याफिन सीमित गर्नुहोस्","पोटासियम भएको खाना (केरा, आलु) खानुहोस्"} :
+            new[]{"Reduce sodium intake below 2,300mg daily","Regular aerobic exercise lowers BP by 5-8mmHg","Maintain healthy weight (each kg lost lowers BP)","Limit alcohol and caffeine consumption","Eat potassium-rich foods: banana, sweet potato, spinach"} },
+        new { id="nutrition", icon="🥗", en="Sports Nutrition", np="खेलकुद पोषण", color="var(--green)",
+            sub= ne?"व्यायामको लागि सही पोषण":"Right nutrition for exercise and performance",
+            tips= ne? new[]{"व्यायाम अघि कार्बोहाइड्रेट र पछि प्रोटिन खानुहोस्","प्रोटिन: प्रतिकिलो तौलमा १.६–२.२ ग्राम","हाइड्रेसन: व्यायाम अघि, दौरान र पछि पिउनुहोस्","प्रशोधित खाना र चिनी घटाउनुहोस्","हरियो तरकारी, फल र दाल नियमित खानुहोस्"} :
+            new[]{"Eat carbs before and protein after workouts","Protein target: 1.6-2.2g per kg bodyweight","Hydration: drink before, during, and after exercise","Minimize processed foods and added sugar","Eat plenty of vegetables, legumes, and whole grains"} },
+        new { id="mental", icon="🧠", en="Mental Health & Exercise", np="मानसिक स्वास्थ्य र व्यायाम", color="var(--indigo)",
+            sub= ne?"व्यायामले मानसिक स्वास्थ्य कसरी सुधार्छ":"How exercise improves mental wellbeing",
+            tips= ne? new[]{"व्यायामले एन्डोर्फिन उत्पादन गर्छ जसले मनोबल बढाउँछ","दिनमा ३० मिनेट हिड्नुले अवसाद घटाउँछ","योग र ध्यानले तनाव कम गर्छ","नियमित निद्रा मानसिक स्वास्थ्यको लागि महत्त्वपूर्ण छ","सामाजिक व्यायाम (ग्रुप क्लास) एक्लोपनलाई घटाउँछ"} :
+            new[]{"Exercise releases endorphins — natural mood boosters","30 min daily walking reduces depression by 30%","Yoga and meditation significantly reduce stress","Regular sleep (7-9h) is critical for mental health","Group exercise combats loneliness and social anxiety"} },
+        new { id="bone", icon="🦴", en="Bone & Joint Health", np="हड्डी र जोर्नी स्वास्थ्य", color="var(--amber)",
+            sub= ne?"बलियो हड्डीको लागि व्यायाम र पोषण":"Exercise and nutrition for strong bones and joints",
+            tips= ne? new[]{"भार बोक्ने व्यायाम (स्क्वाट, हिड्नु) गर्नुहोस्","क्याल्सियम (दूध, दही, हरियो सब्जी) र भिटामिन D लिनुहोस्","पिच्छे मांसपेशी बलियो पार्नुहोस्","उच्च-प्रभाव व्यायाम जोर्नी समस्यामा सावधान गर्नुहोस्","नियमित स्ट्रेचिङ गतिशीलता कायम राख्छ"} :
+            new[]{"Weight-bearing exercises (squats, walking) build bone density","Get adequate calcium (1000mg+) and Vitamin D","Strengthen muscles around joints to protect them","Avoid high-impact exercise with existing joint problems","Regular stretching maintains joint flexibility and mobility"} },
+        new { id="sleep", icon="😴", en="Sleep & Recovery", np="निद्रा र पुनःप्राप्ति", color="var(--indigo)",
+            sub= ne?"गुणस्तरीय निद्रा र शारीरिक पुनःप्राप्ति":"Quality sleep and physical recovery for athletes",
+            tips= ne? new[]{"वयस्कहरूको लागि ७–९ घण्टा निद्रा आवश्यक छ","सुत्ने समय नियमित राख्नुहोस्","व्यायामको ४८ घण्टापछि उही मांसपेशी काम नगर्नुहोस्","सुत्नु अगाडि स्क्रिन हेर्नु बन्द गर्नुहोस्","म्याग्नेसियम भएको खाना निद्रा सुधार्छ"} :
+            new[]{"Adults need 7-9 hours of quality sleep nightly","Keep a consistent sleep schedule (even weekends)","Allow 48h recovery between training same muscle group","Avoid screens 1 hour before bed","Magnesium-rich foods (spinach, nuts) improve sleep quality"} },
+        new { id="respiratory", icon="🫁", en="Breathing & Lungs", np="श्वास र फोक्सो", color="var(--blue)",
+            sub= ne?"श्वास प्रणाली सुधार्ने व्यायाम र सुझाव":"Exercises and tips to improve respiratory health",
+            tips= ne? new[]{"कार्डियो व्यायामले फोक्सोको क्षमता बढाउँछ","नाकबाट सास लिनुहोस् र मुखबाट छोड्नुहोस्","ध्यान श्वास प्रश्वास (Diaphragmatic breathing) अभ्यास गर्नुहोस्","धुम्रपान पूर्णतः छोड्नुहोस्","वायु प्रदूषण भएको ठाउँमा बाहिर व्यायाम नगर्नुहोस्"} :
+            new[]{"Cardio exercise increases lung capacity over time","Breathe through nose — filters and humidifies air","Practice diaphragmatic breathing daily for lung health","Quit smoking to prevent irreversible lung damage","Avoid outdoor exercise in high pollution conditions"} }
+    };
+}
+
+
+<div style="min-height:100vh;background:#0d0b09">
+<div class="page-container" style="max-width:1200px">
+
+    <div style="margin-bottom:32px">
+        <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--indigo);margin-bottom:6px">@(ne?"स्वास्थ्य जानकारी":"Health Information")</div>
+        <h1 style="font-size:28px;font-weight:900;margin-bottom:8px">🏥 @(ne?"स्वास्थ्य र फिटनेस जानकारी":"Health & Medical Information")</h1>
+        <p style="color:var(--text-secondary)">@(ne?"प्रमुख स्वास्थ्य विषयहरूमा विश्वसनीय जानकारी र व्यावहारिक सुझाव।":"Reliable information and practical tips on major health topics.")</p>
+        <div class="alert alert-warning" style="max-width:600px;margin-top:16px;font-size:13px">
+            ⚕️ @(ne?"यो जानकारी शैक्षिक उद्देश्यको लागि हो। कुनै पनि स्वास्थ्य समस्याको लागि डाक्टरसँग परामर्श लिनुहोस्।":"This information is for educational purposes only. Always consult a qualified doctor for medical advice.")
+        </div>
+    </div>
+
+    <div class="health-grid">
+        @foreach (var topic in topics)
+        {
+        <div class="health-card" onclick="toggleHealthCard('@topic.id')">
+            <div class="health-card-header">
+                <div class="health-icon-lg">@topic.icon</div>
+                <div class="health-card-title">@(ne ? topic.np : topic.en)</div>
+                <div class="health-card-sub">@topic.sub</div>
+            </div>
+            <div class="health-card-body" id="health-@topic.id" style="display:none">
+                @foreach (var tip in topic.tips)
+                {
+                <div class="health-tip">
+                    <span class="health-tip-icon" style="color:@topic.color">●</span>
+                    @tip
+                </div>
+                }
+                <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap">
+                    <a href="/Exercise" class="btn btn-outline btn-sm">@(ne?"सम्बन्धित व्यायाम":"Related Exercises")</a>
+                    @if (!isAuth)
+                    {
+                    <a href="/Account/Register" class="btn btn-primary btn-sm">@(ne?"व्यक्तिगत योजना":"Get Personal Plan")</a>
+                    }
+                </div>
+            </div>
+        </div>
+        }
+    </div>
+
+    <!-- Disclaimer -->
+    <div class="card" style="margin-top:32px;background:var(--indigo-bg);border-color:rgba(79,70,229,0.2)">
+        <div class="card-body" style="display:flex;align-items:flex-start;gap:16px">
+            <div style="font-size:32px;flex-shrink:0">⚕️</div>
+            <div>
+                <h3 style="font-size:16px;margin-bottom:6px">@(ne?"महत्त्वपूर्ण सूचना":"Medical Disclaimer")</h3>
+                <p style="font-size:13px;color:var(--text-secondary);line-height:1.7">
+                    @(ne
+                        ? "ShaktiFit मा प्रदान गरिएको जानकारी सामान्य शैक्षिक उद्देश्यको लागि मात्र हो। यसलाई चिकित्सकीय सल्लाहको विकल्प मानिँदैन। कुनै पनि स्वास्थ्य समस्याको लागि योग्य स्वास्थ्यकर्मी वा डाक्टरसँग परामर्श लिनुहोस्।"
+                        : "Information provided on ShaktiFit is for general educational purposes only and should not be considered as medical advice. Always consult with a qualified healthcare professional or doctor before making any health decisions or starting a new exercise or nutrition program.")
+                </p>
+            </div>
+        </div>
+    </div>
+
+    @if (!isAuth)
+    {
+    <div class="card" style="margin-top:24px;text-align:center;padding:32px">
+        <div style="font-size:48px;margin-bottom:12px">🏋️</div>
+        <h2 style="margin-bottom:8px">@(ne?"व्यक्तिगत स्वास्थ्य योजना पाउनुहोस्":"Get a Personalized Health Plan")</h2>
+        <p style="color:var(--text-secondary);margin-bottom:24px">@(ne?"दर्ता गरेर आफ्नो BMI, लक्ष्य र स्वास्थ्य अनुसार व्यक्तिगत व्यायाम र पोषण योजना पाउनुहोस्।":"Register to get a personalized workout and nutrition plan based on your BMI, goals, and health profile.")</p>
+        <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+            <a href="/Account/Register" class="btn btn-primary btn-lg">@(ne?"निःशुल्क दर्ता गर्नुहोस्":"Register Free")</a>
+            <a href="/Bmi" class="btn btn-outline btn-lg">⚖️ @(ne?"BMI जाँच्नुहोस्":"Check BMI")</a>
+        </div>
+    </div>
+    }
+</div>
+</div>
+
+@section Scripts {
+<script>
+function toggleHealthCard(id) {
+    const el = document.getElementById('health-' + id);
+    if (!el) return;
+    const isVisible = el.style.display !== 'none';
+    document.querySelectorAll('[id^="health-"]').forEach(e => e.style.display = 'none');
+    if (!isVisible) { el.style.display = 'block'; el.scrollIntoView({behavior:'smooth',block:'nearest'}); }
+}
+</script>
+}

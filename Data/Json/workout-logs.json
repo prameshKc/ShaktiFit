@@ -1,0 +1,13 @@
+[
+  {
+    "id": "7e76f1b8-537e-4724-8c30-a3f444b97fe5",
+    "userId": "18dffb62-938a-464e-b9b2-fb6453151f7e",
+    "workoutId": "wk001",
+    "workoutName": "Full Body Strength - Monday",
+    "completedAt": "2026-06-08T03:59:07.0226124Z",
+    "durationMinutes": 40,
+    "caloriesBurned": 280,
+    "notes": "",
+    "exerciseLogs": []
+  }
+]

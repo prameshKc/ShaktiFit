@@ -1,0 +1,221 @@
+@{
+    ViewBag.Title = "BMI Calculator – ShaktiFit";
+    var isAuth = Context.Session.GetString("UserId") != null;
+    if (!isAuth) { ViewBag.IsLanding = true; }
+    ViewBag.ActiveNav = "bmi";
+    var lang = Context.Session.GetString("Lang") ?? "en";
+    bool ne = lang == "ne";
+
+    double? bmi = ViewBag.Bmi as double?;
+    double height = ViewBag.Height is double h ? h : 0;
+    double weight = ViewBag.Weight is double w ? w : 0;
+
+    string bmiCategory = "", bmiColor = "", bmiEmoji = "";
+    List<string> suggestions = new();
+    List<string> exercises = new();
+    List<string> lifestyle = new();
+    double markerPct = 0;
+
+    if (bmi.HasValue)
+    {
+        double b = bmi.Value;
+        markerPct = Math.Min(Math.Max((b - 10) / (45 - 10) * 100, 2), 98);
+        if (b < 18.5)      { bmiCategory = ne?"कम तौल":"Underweight";  bmiColor="#3b82f6"; bmiEmoji="🔵"; suggestions=ne?new List<string>{"क्यालोरी बढाउनुहोस्","प्रोटिन धेरै खानुहोस्","शक्ति प्रशिक्षण गर्नुहोस्","दिनमा ३ पटक खाना खानुहोस्"}:new List<string>{"Increase caloric intake by 400-600 cal/day","Prioritize protein (2g/kg bodyweight)","Start strength training to build muscle","Eat 3 meals + 2-3 healthy snacks daily"}; exercises=new List<string>{"Squats","Deadlifts","Bench Press","Overhead Press","Pull-Ups","Dumbbell Rows"}; lifestyle=ne?new List<string>{"नट्स, एभोकाडो, जैतुनको तेल खानुहोस्","२.५–३ लिटर पानी पिउनुहोस्","८ घण्टा सुत्नुहोस्"}:new List<string>{"Eat calorie-dense whole foods (nuts, avocado)","Drink 2.5-3L water daily","Get 8 hours of quality sleep"}; }
+        else if (b < 25)   { bmiCategory = ne?"सामान्य तौल":"Normal Weight"; bmiColor="#22c55e"; bmiEmoji="🟢"; suggestions=ne?new List<string>{"उत्कृष्ट! तपाईंको तौल सामान्य दायरामा छ","स्वस्थ खानपान जारी राख्नुहोस्","नियमित व्यायाम जारी राख्नुहोस्","वार्षिक स्वास्थ्य जाँच गर्नुहोस्"}:new List<string>{"Excellent! You're in the healthy range","Maintain balanced nutrition","Continue your regular exercise routine","Schedule annual health checkups"}; exercises=new List<string>{"Running","Strength Training","HIIT","Swimming","Cycling","Yoga"}; lifestyle=ne?new List<string>{"फल, सब्जी, प्रोटिन र कार्बोहाइड्रेट सन्तुलन","हप्तामा ५ दिन व्यायाम","तनाव व्यवस्थापन"}:new List<string>{"Balance macros: protein, carbs, healthy fats","Exercise 4-5 days/week","Manage stress with meditation"}; }
+        else if (b < 30)   { bmiCategory = ne?"अधिक तौल":"Overweight"; bmiColor="#f59e0b"; bmiEmoji="🟡"; suggestions=ne?new List<string>{"प्रतिदिन ३००–५०० क्यालोरी घटाउनुहोस्","हप्तामा ५ दिन ३०–४५ मिनेट कार्डियो","प्रशोधित खाना र चिनी घटाउनुहोस्","शक्ति प्रशिक्षण थप्नुहोस्"}:new List<string>{"Create a 300-500 cal daily deficit","Do 30-45 min cardio 5x per week","Reduce processed foods and sugar","Add strength training 2-3x/week"}; exercises=new List<string>{"Brisk Walking","Running","Jump Rope","Cycling","Swimming","Bodyweight Circuits"}; lifestyle=ne?new List<string>{"प्लेटको आधा भाग सब्जीले भर्नुहोस्","मीठो पेय पदार्थ बन्द गर्नुहोस्","बिस्तारै खानुहोस्"}:new List<string>{"Fill half your plate with vegetables","Eliminate sugary drinks","Eat slowly and mindfully"}; }
+        else               { bmiCategory = ne?"मोटोपन":"Obese"; bmiColor="#ef4444"; bmiEmoji="🔴"; suggestions=ne?new List<string>{"डाक्टरसँग परामर्श लिनुहोस्","हिड्नबाट सुरु गर्नुहोस् (दिनमा ३०+ मिनेट)","प्रशोधित खाना र मिठाइ घटाउनुहोस्","पानी र फलफूल बढाउनुहोस्"}:new List<string>{"Consult a doctor or dietitian","Start with walking 30+ min daily","Eliminate junk food and sugary drinks","Increase vegetables and water intake"}; exercises=new List<string>{"Walking","Water Aerobics","Chair Exercises","Light Yoga","Cycling","Swimming"}; lifestyle=ne?new List<string>{"बिस्तारै तौल घटाउनुहोस्","हप्तामा एक पटक तौल मापन","विशेषज्ञको मार्गदर्शनमा अगाडि बढ्नुहोस्"}:new List<string>{"Lose weight gradually — no crash diets","Weigh yourself weekly for accountability","Work closely with healthcare providers"}; }
+    }
+}
+
+<style>
+  .bp { background:#0d0b09; min-height:100vh; padding:20px 16px 40px; }
+  .bp-inner { max-width:860px; margin:0 auto; }
+  .bp-title { font-size:24px; font-weight:900; color:#f5f0e8; letter-spacing:-0.02em; margin-bottom:4px; }
+  .bp-sub { font-size:13px; color:rgba(245,240,232,0.4); margin-bottom:24px; }
+  .bp-tag { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; color:var(--accent,#f5c542); margin-bottom:6px; }
+
+  /* form card */
+  .bp-form { background:#131110; border:1px solid rgba(255,255,255,0.08); border-radius:18px; padding:20px; margin-bottom:20px; }
+  .bp-form-title { font-size:15px; font-weight:800; color:#f5f0e8; margin-bottom:18px; padding-bottom:12px; border-bottom:1px solid rgba(255,255,255,0.07); }
+  .bp-lbl { font-size:12px; font-weight:700; color:rgba(245,240,232,0.45); margin-bottom:6px; letter-spacing:0.03em; }
+  .bp-inp { width:100%; background:#1c1917; border:1.5px solid rgba(255,255,255,0.1); border-radius:12px; color:#f5f0e8; padding:14px 16px; font-size:20px; font-family:inherit; outline:none; margin-bottom:16px; transition:border-color .15s; -webkit-appearance:none; }
+  .bp-inp:focus { border-color:var(--accent,#f5c542); }
+  .bp-btn { width:100%; padding:15px; background:var(--accent,#f5c542); color:#1c1917; font-weight:800; font-size:15px; border:none; border-radius:12px; cursor:pointer; font-family:inherit; letter-spacing:0.01em; }
+
+  /* reference table */
+  .bp-ref { margin-top:18px; padding-top:14px; border-top:1px solid rgba(255,255,255,0.06); }
+  .bp-ref-title { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; color:rgba(245,240,232,0.3); margin-bottom:10px; }
+  .bp-ref-row { display:flex; align-items:center; gap:10px; padding:7px 0; border-bottom:1px solid rgba(255,255,255,0.05); }
+  .bp-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+  .bp-ref-range { font-size:12px; color:rgba(245,240,232,0.4); flex:1; }
+  .bp-ref-cat { font-size:12px; font-weight:700; }
+
+  /* result card */
+  .bp-result { background:#131110; border-radius:18px; padding:24px 20px; text-align:center; margin-bottom:16px; border-width:1.5px; border-style:solid; }
+  .bp-result-label { font-size:13px; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; margin-bottom:6px; }
+  .bp-result-num { font-size:72px; font-weight:900; letter-spacing:-0.05em; line-height:1; margin-bottom:4px; }
+  .bp-result-sub { font-size:12px; color:rgba(245,240,232,0.35); margin-bottom:16px; }
+  .bp-bar { height:10px; background:linear-gradient(90deg,#3b82f6 0%,#22c55e 35%,#f59e0b 65%,#ef4444 100%); border-radius:999px; position:relative; margin:0 0 6px; }
+  .bp-marker { position:absolute; top:-5px; width:20px; height:20px; border-radius:50%; background:#f5f0e8; border:3px solid #0d0b09; transform:translateX(-50%); box-shadow:0 2px 8px rgba(0,0,0,0.5); }
+  .bp-bar-labels { display:flex; justify-content:space-between; font-size:10px; color:rgba(245,240,232,0.3); margin-bottom:18px; }
+  .bp-stats { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .bp-stat { background:rgba(255,255,255,0.05); border-radius:12px; padding:14px; }
+  .bp-stat-val { font-size:24px; font-weight:800; color:#f5f0e8; }
+  .bp-stat-lbl { font-size:11px; color:rgba(245,240,232,0.35); margin-top:2px; }
+
+  /* info cards */
+  .bp-card { background:#131110; border:1px solid rgba(255,255,255,0.08); border-radius:18px; margin-bottom:16px; overflow:hidden; }
+  .bp-card-head { padding:14px 18px; border-bottom:1px solid rgba(255,255,255,0.07); font-size:14px; font-weight:800; color:#f5f0e8; }
+  .bp-card-body { padding:4px 18px 16px; }
+  .bp-item { display:flex; align-items:flex-start; gap:10px; padding:10px 0; border-bottom:1px solid rgba(255,255,255,0.05); font-size:13px; color:rgba(245,240,232,0.65); line-height:1.5; }
+  .bp-item:last-child { border-bottom:none; }
+  .bp-chips { display:flex; flex-wrap:wrap; gap:8px; padding:14px 0 4px; }
+  .bp-chip { padding:7px 14px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); border-radius:999px; font-size:12px; font-weight:600; color:rgba(245,240,232,0.7); text-decoration:none; display:inline-block; }
+  .bp-chip:hover { border-color:rgba(245,197,66,0.4); color:var(--accent,#f5c542); }
+  .bp-browse { display:block; text-align:center; padding:12px; border:1px solid rgba(255,255,255,0.1); border-radius:12px; color:rgba(245,240,232,0.5); font-size:13px; font-weight:600; margin-top:10px; }
+
+  /* CTA */
+  .bp-cta { background:linear-gradient(135deg,rgba(168,85,247,0.18),rgba(79,70,229,0.18)); border:1px solid rgba(168,85,247,0.25); border-radius:18px; padding:28px 20px; text-align:center; }
+  .bp-cta-btn { display:inline-block; padding:13px 28px; background:var(--accent,#f5c542); color:#1c1917; font-weight:800; border-radius:12px; font-size:14px; margin-top:14px; }
+
+  /* empty state */
+  .bp-empty { background:#131110; border:1px solid rgba(255,255,255,0.08); border-radius:18px; padding:60px 20px; text-align:center; }
+
+  /* two-col on wide screens only */
+  @@media (min-width: 680px) {
+    .bp { padding:28px 24px 60px; }
+    .bp-layout { display:grid; grid-template-columns:320px 1fr; gap:20px; align-items:start; }
+    .bp-form { position:sticky; top:80px; margin-bottom:0; }
+  }
+</style>
+
+<div class="bp">
+<div class="bp-inner">
+
+  <div class="bp-tag">⚖️ @(ne?"स्वास्थ्य उपकरण":"Health Tool")</div>
+  <div class="bp-title">@(ne?"BMI क्यालकुलेटर":"BMI Calculator")</div>
+  <div class="bp-sub">@(ne?"Body Mass Index मापन गर्नुहोस् र व्यक्तिगत स्वास्थ्य सुझाव पाउनुहोस्।":"Calculate your Body Mass Index and get personalized health & exercise recommendations.")</div>
+
+  <div class="bp-layout">
+
+    <!-- FORM (always first on mobile, sticky on desktop) -->
+    <div class="bp-form">
+      <div class="bp-form-title">📐 @(ne?"मापन जानकारी":"Your Measurements")</div>
+      <form method="post" action="/Bmi/Calculate">
+        <div class="bp-lbl">@(ne?"उचाइ (सेन्टिमिटर)":"Height (cm)")</div>
+        <input type="number" name="height" class="bp-inp" placeholder="e.g. 172"
+               value="@(height > 0 ? height.ToString() : "")" step="0.1" min="100" max="250" required inputmode="decimal" />
+
+        <div class="bp-lbl">@(ne?"तौल (किलोग्राम)":"Weight (kg)")</div>
+        <input type="number" name="weight" class="bp-inp" placeholder="e.g. 65"
+               value="@(weight > 0 ? weight.ToString() : "")" step="0.1" min="20" max="300" required inputmode="decimal" />
+
+        <button type="submit" class="bp-btn">⚖️ @(ne?"BMI मापन गर्नुहोस्":"Calculate BMI")</button>
+      </form>
+
+      <div class="bp-ref">
+        <div class="bp-ref-title">BMI @(ne?"दायरा":"Reference")</div>
+        @foreach (var row in new[] {
+            ("#3b82f6","< 18.5", ne?"कम तौल":"Underweight"),
+            ("#22c55e","18.5–24.9", ne?"सामान्य":"Normal"),
+            ("#f59e0b","25.0–29.9", ne?"अधिक तौल":"Overweight"),
+            ("#ef4444","30.0+", ne?"मोटोपन":"Obese")
+        })
+        {
+        <div class="bp-ref-row">
+          <div class="bp-dot" style="background:@row.Item1"></div>
+          <span class="bp-ref-range">@row.Item2</span>
+          <span class="bp-ref-cat" style="color:@row.Item1">@row.Item3</span>
+        </div>
+        }
+      </div>
+    </div>
+
+    <!-- RESULTS -->
+    <div>
+      @if (bmi.HasValue)
+      {
+      <div class="bp-result" style="border-color:@bmiColor">
+        <div class="bp-result-label" style="color:@bmiColor">@bmiEmoji @bmiCategory</div>
+        <div class="bp-result-num" style="color:@bmiColor">@bmi.Value.ToString("0.0")</div>
+        <div class="bp-result-sub">@(ne?"तपाईंको BMI स्कोर":"Your BMI Score")</div>
+
+        <div class="bp-bar">
+          <div class="bp-marker" style="left:@markerPct%"></div>
+        </div>
+        <div class="bp-bar-labels">
+          <span>@(ne?"कम":"Low")</span><span>@(ne?"सामान्य":"Normal")</span><span>@(ne?"अधिक":"Over")</span><span>@(ne?"मोटो":"Obese")</span>
+        </div>
+
+        <div class="bp-stats">
+          <div class="bp-stat">
+            <div class="bp-stat-val">@height cm</div>
+            <div class="bp-stat-lbl">@(ne?"उचाइ":"Height")</div>
+          </div>
+          <div class="bp-stat">
+            <div class="bp-stat-val">@weight kg</div>
+            <div class="bp-stat-lbl">@(ne?"तौल":"Weight")</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="bp-card">
+        <div class="bp-card-head">💡 @(ne?"मुख्य सुझावहरू":"Key Recommendations")</div>
+        <div class="bp-card-body">
+          @foreach (var s in suggestions)
+          {
+          <div class="bp-item">
+            <span style="color:var(--accent,#f5c542);font-size:15px;margin-top:1px;flex-shrink:0">✓</span>
+            <span>@s</span>
+          </div>
+          }
+        </div>
+      </div>
+
+      <div class="bp-card">
+        <div class="bp-card-head">🏋️ @(ne?"सिफारिश व्यायाम":"Recommended Exercises")</div>
+        <div class="bp-card-body">
+          <div class="bp-chips">
+            @foreach (var ex in exercises)
+            { <a href="/Exercise" class="bp-chip">@ex</a> }
+          </div>
+          <a href="/Exercise" class="bp-browse">@(ne?"व्यायाम पुस्तकालय हेर्नुहोस्":"Browse Exercise Library →")</a>
+        </div>
+      </div>
+
+      <div class="bp-card">
+        <div class="bp-card-head">🌿 @(ne?"जीवनशैली सुझाव":"Lifestyle Tips")</div>
+        <div class="bp-card-body">
+          @foreach (var tip in lifestyle)
+          {
+          <div class="bp-item">
+            <span style="color:#a78bfa;font-size:15px;margin-top:1px;flex-shrink:0">→</span>
+            <span>@tip</span>
+          </div>
+          }
+        </div>
+      </div>
+
+      @if (!isAuth)
+      {
+      <div class="bp-cta">
+        <div style="font-size:36px;margin-bottom:10px">📊</div>
+        <div style="font-size:17px;font-weight:800;color:#f5f0e8;margin-bottom:6px">@(ne?"BMI प्रगति ट्र्याक गर्नुहोस्":"Track Your BMI Over Time")</div>
+        <div style="font-size:13px;color:rgba(245,240,232,0.45)">@(ne?"दर्ता गरेर समयसँगै आफ्नो प्रगति हेर्नुहोस्।":"Register to track progress and get a personalized fitness plan.")</div>
+        <a href="/Account/Register" class="bp-cta-btn">@(ne?"निःशुल्क दर्ता →":"Register Free →")</a>
+      </div>
+      }
+      }
+      else
+      {
+      <div class="bp-empty">
+        <div style="font-size:56px;margin-bottom:14px">⚖️</div>
+        <div style="font-size:16px;font-weight:700;color:rgba(245,240,232,0.5);margin-bottom:6px">@(ne?"आफ्नो BMI जाँच्नुहोस्":"Enter your measurements")</div>
+        <div style="font-size:13px;color:rgba(245,240,232,0.3)">@(ne?"माथिको फारम भर्नुहोस् र तुरुन्त नतिजा पाउनुहोस्।":"Fill in the form above to get instant results.")</div>
+      </div>
+      }
+    </div>
+
+  </div>
+</div>
+</div>

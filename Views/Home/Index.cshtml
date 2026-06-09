@@ -1,0 +1,562 @@
+@{ ViewBag.Title = "ShaktiFit – Nepal's Fitness App"; ViewBag.IsLanding = true; }
+@{
+    var lang = Context.Session.GetString("Lang") ?? "en";
+    bool ne = lang == "ne";
+}
+
+<style>
+/* ── APP LANDING PAGE STYLES ── */
+.app-page { background:#0d0b09; min-height:100vh; color:#f5f0e8; }
+
+/* NAV */
+.app-nav {
+  position:fixed; top:0; left:0; right:0; z-index:999;
+  display:flex; align-items:center; justify-content:space-between;
+  padding:0 40px; height:60px;
+  background:rgba(13,11,9,0.85);
+  backdrop-filter:blur(20px);
+  border-bottom:1px solid rgba(255,255,255,0.06);
+}
+.app-nav-logo { display:flex; align-items:center; gap:10px; }
+.app-nav-logo-icon { width:32px; height:32px; background:#f5c542; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:16px; }
+.app-nav-logo-text { font-size:15px; font-weight:800; color:#f5f0e8; letter-spacing:-0.02em; }
+.app-nav-links { display:flex; align-items:center; gap:4px; }
+.app-nav-link { padding:6px 14px; font-size:13px; font-weight:500; color:rgba(245,240,232,0.55); border-radius:6px; transition:all 0.15s; cursor:pointer; }
+.app-nav-link:hover { color:#f5f0e8; background:rgba(255,255,255,0.06); }
+.app-nav-link.active { color:#f5f0e8; font-weight:700; }
+.app-nav-lang { display:flex; gap:2px; margin-right:8px; padding:3px; background:rgba(255,255,255,0.06); border-radius:6px; }
+.lang-btn { padding:4px 10px; font-size:12px; font-weight:600; border-radius:4px; color:rgba(245,240,232,0.5); cursor:pointer; transition:all 0.15s; }
+.lang-btn.active { background:rgba(245,197,66,0.2); color:#f5c542; }
+.app-nav-actions { display:flex; gap:8px; align-items:center; }
+.app-btn-login { padding:7px 16px; font-size:13px; font-weight:600; color:rgba(245,240,232,0.7); border:1px solid rgba(255,255,255,0.12); border-radius:8px; transition:all 0.15s; }
+.app-btn-login:hover { color:#f5f0e8; border-color:rgba(255,255,255,0.25); background:rgba(255,255,255,0.05); }
+.app-btn-start { padding:7px 18px; font-size:13px; font-weight:700; color:#1c1917; background:#f5c542; border-radius:8px; transition:all 0.15s; }
+.app-btn-start:hover { background:#fde047; }
+
+/* HERO */
+.app-hero {
+  min-height:100vh; display:flex; flex-direction:column;
+  align-items:center; justify-content:center; text-align:center;
+  padding:100px 24px 60px;
+  position:relative; overflow:hidden;
+  background: radial-gradient(ellipse 80% 60% at 50% -10%, rgba(245,197,66,0.12) 0%, transparent 60%),
+              radial-gradient(ellipse 60% 50% at 80% 80%, rgba(245,197,66,0.05) 0%, transparent 50%),
+              #0d0b09;
+}
+.hero-eyebrow {
+  display:inline-flex; align-items:center; gap:8px;
+  padding:6px 14px; background:rgba(245,197,66,0.1); border:1px solid rgba(245,197,66,0.25);
+  border-radius:999px; font-size:12px; font-weight:600; color:#f5c542;
+  letter-spacing:0.04em; margin-bottom:28px;
+}
+.hero-eyebrow-dot { width:6px; height:6px; border-radius:50%; background:#f5c542; animation:pulse 2s infinite; }
+@@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+.app-hero h1 {
+  font-size:clamp(42px,6vw,80px); font-weight:900; line-height:1.05;
+  letter-spacing:-0.04em; margin-bottom:24px; max-width:800px;
+}
+.app-hero h1 em { font-style:normal; color:#f5c542; }
+.app-hero-sub {
+  font-size:clamp(15px,2vw,18px); color:rgba(245,240,232,0.5);
+  max-width:520px; line-height:1.7; margin-bottom:40px;
+}
+.hero-actions { display:flex; gap:12px; justify-content:center; flex-wrap:wrap; margin-bottom:60px; }
+.hero-btn-primary {
+  display:inline-flex; align-items:center; gap:8px;
+  padding:14px 28px; background:#f5c542; color:#1c1917;
+  font-size:15px; font-weight:700; border-radius:12px;
+  transition:all 0.2s; box-shadow:0 0 0 0 rgba(245,197,66,0.4);
+}
+.hero-btn-primary:hover { transform:translateY(-1px); box-shadow:0 8px 28px rgba(245,197,66,0.3); }
+.hero-btn-secondary {
+  display:inline-flex; align-items:center; gap:8px;
+  padding:14px 28px; border:1px solid rgba(255,255,255,0.12);
+  color:rgba(245,240,232,0.8); font-size:15px; font-weight:600;
+  border-radius:12px; transition:all 0.2s;
+}
+.hero-btn-secondary:hover { background:rgba(255,255,255,0.05); border-color:rgba(255,255,255,0.2); color:#f5f0e8; }
+
+/* HERO STAT PILLS */
+.hero-pills { display:flex; gap:8px; justify-content:center; flex-wrap:wrap; margin-bottom:64px; }
+.hero-pill {
+  display:inline-flex; align-items:center; gap:6px;
+  padding:6px 14px; background:rgba(255,255,255,0.04);
+  border:1px solid rgba(255,255,255,0.08); border-radius:999px;
+  font-size:12px; color:rgba(245,240,232,0.55); font-weight:500;
+}
+.hero-pill strong { color:#f5f0e8; font-weight:700; }
+
+/* BENTO GRID */
+.bento-wrap { max-width:1100px; margin:0 auto; padding:0 24px 80px; }
+.bento-grid {
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  grid-template-rows:auto;
+  gap:12px;
+}
+.bento-card {
+  background:#131110; border:1px solid rgba(255,255,255,0.07);
+  border-radius:20px; padding:28px; overflow:hidden; position:relative;
+  transition:border-color 0.2s;
+}
+.bento-card:hover { border-color:rgba(245,197,66,0.25); }
+.bento-card.span2 { grid-column:span 2; }
+.bento-card.span3 { grid-column:span 3; }
+.bento-card.tall { min-height:280px; }
+.bento-card.accent { background:linear-gradient(135deg,#f5c542 0%,#f59e0b 100%); border-color:transparent; }
+.bento-card.accent * { color:#1c1917 !important; }
+.bento-card.dark2 { background:#1c1917; }
+.bento-icon { font-size:28px; margin-bottom:16px; }
+.bento-tag {
+  display:inline-block; padding:3px 10px; background:rgba(245,197,66,0.12);
+  border:1px solid rgba(245,197,66,0.2); border-radius:999px;
+  font-size:10px; font-weight:700; color:#f5c542; letter-spacing:0.08em;
+  text-transform:uppercase; margin-bottom:12px;
+}
+.bento-title { font-size:20px; font-weight:800; color:#f5f0e8; letter-spacing:-0.02em; margin-bottom:8px; }
+.bento-desc { font-size:13px; color:rgba(245,240,232,0.45); line-height:1.65; }
+.bento-num { font-size:52px; font-weight:900; color:#f5c542; letter-spacing:-0.04em; line-height:1; }
+.bento-num-label { font-size:13px; color:rgba(245,240,232,0.4); margin-top:6px; }
+
+/* INLINE BMI WIDGET */
+.bento-bmi { display:flex; flex-direction:column; gap:10px; margin-top:16px; }
+.bento-bmi-inputs { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.bento-bmi-input {
+  background:#0d0b09; border:1px solid rgba(255,255,255,0.1);
+  border-radius:8px; color:#f5f0e8; padding:10px 12px;
+  font-size:15px; font-weight:600; width:100%; font-family:inherit;
+  outline:none;
+}
+.bento-bmi-input:focus { border-color:#f5c542; }
+.bento-bmi-input::placeholder { color:rgba(245,240,232,0.2); font-weight:400; }
+.bento-bmi-result {
+  text-align:center; padding:14px; background:#0d0b09;
+  border-radius:10px; border:1px solid rgba(255,255,255,0.06);
+}
+.bento-bmi-val { font-size:36px; font-weight:900; color:#f5c542; line-height:1; }
+.bento-bmi-cat { font-size:12px; color:rgba(245,240,232,0.45); margin-top:4px; }
+
+/* FEATURE ROWS */
+.feature-rows { max-width:1100px; margin:0 auto; padding:0 24px 80px; display:flex; flex-direction:column; gap:1px; }
+.feature-row {
+  display:grid; grid-template-columns:1fr 1fr; gap:0; align-items:center;
+  border:1px solid rgba(255,255,255,0.07); border-radius:20px; overflow:hidden;
+  background:#131110; margin-bottom:12px;
+}
+.feature-row.rev { direction:rtl; }
+.feature-row.rev > * { direction:ltr; }
+.feature-row-text { padding:48px; }
+.feature-row-tag {
+  display:inline-block; padding:4px 12px; background:rgba(245,197,66,0.1);
+  border:1px solid rgba(245,197,66,0.2); border-radius:999px;
+  font-size:11px; font-weight:700; color:#f5c542; letter-spacing:0.06em;
+  text-transform:uppercase; margin-bottom:16px;
+}
+.feature-row-title { font-size:28px; font-weight:800; color:#f5f0e8; letter-spacing:-0.025em; margin-bottom:12px; }
+.feature-row-desc { font-size:14px; color:rgba(245,240,232,0.45); line-height:1.7; margin-bottom:24px; }
+.feature-row-link {
+  display:inline-flex; align-items:center; gap:6px;
+  font-size:13px; font-weight:700; color:#f5c542;
+  border-bottom:1px solid rgba(245,197,66,0.3); padding-bottom:2px;
+}
+.feature-row-visual {
+  background:#0d0b09; height:100%; min-height:280px;
+  display:flex; align-items:center; justify-content:center;
+  font-size:72px; border-left:1px solid rgba(255,255,255,0.06);
+  flex-direction:column; gap:8px;
+}
+.feature-row.rev .feature-row-visual { border-left:none; border-right:1px solid rgba(255,255,255,0.06); }
+
+/* MOCK UI INSIDE VISUAL */
+.mock-card {
+  background:#131110; border:1px solid rgba(255,255,255,0.1);
+  border-radius:16px; padding:20px; width:240px;
+}
+.mock-stat-row { display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; }
+.mock-label { font-size:11px; color:rgba(245,240,232,0.35); }
+.mock-val { font-size:18px; font-weight:800; color:#f5f0e8; }
+.mock-accent { color:#f5c542 !important; }
+.mock-bar { height:6px; background:rgba(255,255,255,0.08); border-radius:999px; overflow:hidden; margin-bottom:8px; }
+.mock-bar-fill { height:100%; background:linear-gradient(90deg,#f5c542,#f59e0b); border-radius:999px; }
+.mock-chips { display:flex; flex-wrap:wrap; gap:4px; }
+.mock-chip { padding:3px 10px; background:rgba(245,197,66,0.15); border-radius:999px; font-size:10px; font-weight:600; color:#f5c542; }
+
+/* SOCIAL PROOF STRIP */
+.social-strip { border-top:1px solid rgba(255,255,255,0.06); border-bottom:1px solid rgba(255,255,255,0.06); padding:20px 24px; overflow:hidden; background:#0d0b09; }
+.social-strip-inner { display:flex; gap:40px; align-items:center; justify-content:center; flex-wrap:wrap; }
+.social-item { display:flex; align-items:center; gap:8px; }
+.social-avatar { width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; color:#1c1917; }
+.social-quote { font-size:13px; color:rgba(245,240,232,0.5); max-width:220px; }
+.social-quote strong { color:#f5f0e8; }
+
+/* FINAL CTA */
+.app-cta {
+  margin:0 24px 80px; border-radius:24px;
+  background:linear-gradient(135deg,#f5c542 0%,#f59e0b 100%);
+  padding:64px 48px; text-align:center; position:relative; overflow:hidden;
+}
+.app-cta::before {
+  content:''; position:absolute; top:-50%; right:-10%;
+  width:400px; height:400px;
+  background:radial-gradient(circle,rgba(255,255,255,0.15) 0%,transparent 60%);
+  border-radius:50%; pointer-events:none;
+}
+.app-cta h2 { font-size:clamp(28px,4vw,48px); font-weight:900; color:#1c1917; letter-spacing:-0.03em; margin-bottom:12px; }
+.app-cta p { font-size:16px; color:rgba(28,25,23,0.6); margin-bottom:32px; }
+.cta-btn-dark {
+  display:inline-flex; align-items:center; gap:8px;
+  padding:14px 32px; background:#1c1917; color:#f5c542;
+  font-size:15px; font-weight:700; border-radius:12px; transition:all 0.2s;
+}
+.cta-btn-dark:hover { background:#292524; transform:translateY(-1px); }
+.cta-btn-ghost {
+  display:inline-flex; align-items:center; gap:8px;
+  padding:14px 32px; border:2px solid rgba(28,25,23,0.2);
+  color:#1c1917; font-size:15px; font-weight:600; border-radius:12px;
+  transition:all 0.2s; background:transparent;
+}
+.cta-btn-ghost:hover { background:rgba(28,25,23,0.06); }
+
+/* FOOTER */
+.app-footer {
+  background:#0a0907; border-top:1px solid rgba(255,255,255,0.06);
+  padding:48px 40px 32px;
+}
+.app-footer-grid { display:grid; grid-template-columns:2fr 1fr 1fr 1fr; gap:40px; max-width:1100px; margin:0 auto 40px; }
+.app-footer-brand { font-size:15px; font-weight:800; color:#f5f0e8; margin-bottom:10px; display:flex; align-items:center; gap:8px; }
+.app-footer-brand-sub { font-size:13px; color:rgba(245,240,232,0.35); line-height:1.6; max-width:260px; }
+.app-footer-col h4 { font-size:11px; font-weight:700; color:rgba(245,240,232,0.35); text-transform:uppercase; letter-spacing:0.1em; margin-bottom:14px; }
+.app-footer-col a { display:block; font-size:13px; color:rgba(245,240,232,0.5); margin-bottom:8px; transition:color 0.15s; }
+.app-footer-col a:hover { color:#f5f0e8; }
+.app-footer-bottom { max-width:1100px; margin:0 auto; display:flex; justify-content:space-between; align-items:center; padding-top:24px; border-top:1px solid rgba(255,255,255,0.05); font-size:12px; color:rgba(245,240,232,0.3); }
+
+@@media (max-width:768px) {
+  .bento-grid { grid-template-columns:1fr; }
+  .bento-card.span2, .bento-card.span3 { grid-column:span 1; }
+  .feature-row { grid-template-columns:1fr; }
+  .feature-row.rev { direction:ltr; }
+  .feature-row-visual { min-height:180px; }
+  .app-footer-grid { grid-template-columns:1fr 1fr; }
+  .app-nav-links { display:none; }
+}
+</style>
+
+<div class="app-page">
+
+<!-- NAV -->
+<nav class="app-nav">
+    <div class="app-nav-logo">
+        <div class="app-nav-logo-icon">💪</div>
+        <span class="app-nav-logo-text">ShaktiFit</span>
+    </div>
+    <div class="app-nav-links">
+        <a href="/Exercise" class="app-nav-link">@(ne?"व्यायाम":"Exercises")</a>
+        <a href="/Bmi" class="app-nav-link">@(ne?"BMI":"BMI")</a>
+        <a href="/Health" class="app-nav-link">@(ne?"स्वास्थ्य":"Health")</a>
+        <a href="/Running" class="app-nav-link">@(ne?"दौड":"Running")</a>
+    </div>
+    <div class="app-nav-actions">
+        <div class="app-nav-lang">
+            <a href="/Home/SetLang?lang=en&returnUrl=/" class="lang-btn @(lang=="en"?"active":"")">EN</a>
+            <a href="/Home/SetLang?lang=ne&returnUrl=/" class="lang-btn @(lang=="ne"?"active":"")">ने</a>
+        </div>
+        <a href="/Account/Login" class="app-btn-login">@(ne?"लगइन":"Login")</a>
+        <a href="/Account/Register" class="app-btn-start">@(ne?"सुरु गर्नुहोस्":"Get Started")</a>
+    </div>
+</nav>
+
+<!-- HERO -->
+<section class="app-hero">
+    <div class="hero-eyebrow">
+        <span class="hero-eyebrow-dot"></span>
+        🇳🇵 @(ne ? "नेपालको #१ फिटनेस एप" : "Nepal's #1 Fitness App")
+    </div>
+    <h1>
+        @if (ne) {
+            <text>बलियो बन्नुहोस्।<br/><em>स्वस्थ जीवन</em> जिउनुहोस्।</text>
+        } else {
+            <text>Train Smarter.<br/>Live <em>Stronger.</em></text>
+        }
+    </h1>
+    <p class="app-hero-sub">
+        @(ne
+            ? "BMI ट्र्याकर, व्यक्तिगत व्यायाम, दौड कोचिङ र स्वास्थ्य जानकारी — सबै एकै एपमा।"
+            : "BMI tracker, personalized workouts, running coaching, and health info — one app, zero excuses.")
+    </p>
+    <div class="hero-actions">
+        <a href="/Account/Register" class="hero-btn-primary">🚀 @(ne?"निःशुल्क सुरु गर्नुहोस्":"Start for Free")</a>
+        <a href="/Bmi" class="hero-btn-secondary">⚖️ @(ne?"BMI जाँच्नुहोस्":"Check My BMI")</a>
+    </div>
+    <div class="hero-pills">
+        <span class="hero-pill"><strong>5,000+</strong> @(ne?"सक्रिय प्रयोगकर्ता":"active users")</span>
+        <span class="hero-pill"><strong>50+</strong> @(ne?"व्यायाम":"exercises")</span>
+        <span class="hero-pill"><strong>20+</strong> @(ne?"स्वास्थ्य विषय":"health topics")</span>
+        <span class="hero-pill">✓ @(ne?"लगइन बिना पनि":"No login required")</span>
+        <span class="hero-pill">🇳🇵 @(ne?"नेपाली / अंग्रेजी":"Nepali + English")</span>
+    </div>
+</section>
+
+<!-- BENTO GRID -->
+<div class="bento-wrap">
+    <div class="bento-grid">
+
+        <!-- Live BMI Calculator — large card -->
+        <div class="bento-card span2 tall dark2">
+            <div class="bento-tag">⚖️ @(ne?"लाइभ BMI":"Live BMI")</div>
+            <div class="bento-title">@(ne?"अहिले नै आफ्नो BMI जाँच्नुहोस्":"Check Your BMI Instantly")</div>
+            <div class="bento-desc" style="margin-bottom:18px">@(ne?"कुनै खाता चाहिँदैन।":"No account needed — get your result right now.")</div>
+            <div class="bento-bmi">
+                <div class="bento-bmi-inputs">
+                    <div>
+                        <div style="font-size:10px;font-weight:600;color:rgba(245,240,232,0.3);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px">@(ne?"उचाइ cm":"Height cm")</div>
+                        <input type="number" class="bento-bmi-input" id="bH" placeholder="172" min="100" max="250" oninput="calcBmi()" />
+                    </div>
+                    <div>
+                        <div style="font-size:10px;font-weight:600;color:rgba(245,240,232,0.3);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px">@(ne?"तौल kg":"Weight kg")</div>
+                        <input type="number" class="bento-bmi-input" id="bW" placeholder="70" min="30" max="300" oninput="calcBmi()" />
+                    </div>
+                </div>
+                <div class="bento-bmi-result">
+                    <div class="bento-bmi-val" id="bVal">—</div>
+                    <div class="bento-bmi-cat" id="bCat">@(ne?"उचाइ र तौल भर्नुहोस्":"Enter height & weight above")</div>
+                </div>
+                <a href="/Bmi" style="display:flex;align-items:center;justify-content:center;gap:6px;background:#f5c542;color:#1c1917;font-weight:700;font-size:13px;padding:11px;border-radius:10px;">
+                    @(ne?"विस्तृत विश्लेषण →":"Full Analysis →")
+                </a>
+            </div>
+        </div>
+
+        <!-- Stat: Streak -->
+        <div class="bento-card accent">
+            <div class="bento-icon">🔥</div>
+            <div class="bento-num" style="color:#1c1917">21</div>
+            <div class="bento-num-label" style="color:rgba(28,25,23,0.6);margin-top:6px">@(ne?"दिनको लहर":"day streak avg")</div>
+            <div style="margin-top:16px;font-size:13px;font-weight:600;color:rgba(28,25,23,0.55)">@(ne?"सदस्यहरूको औसत streak":"average member streak")</div>
+        </div>
+
+        <!-- Workout plans -->
+        <div class="bento-card">
+            <div class="bento-tag">🏋️ @(ne?"व्यायाम":"Workouts")</div>
+            <div class="bento-title">@(ne?"व्यक्तिगत योजना":"Personalized Plans")</div>
+            <div class="bento-desc">@(ne?"तपाईंको लक्ष्य र स्तर अनुसार कस्टम व्यायाम योजना।":"Custom workout plans based on your goal and fitness level.")</div>
+            <div class="mock-chips" style="margin-top:18px">
+                <span class="mock-chip">Beginner</span>
+                <span class="mock-chip">Strength</span>
+                <span class="mock-chip">Fat Loss</span>
+                <span class="mock-chip">Hybrid</span>
+                <span class="mock-chip">Running</span>
+            </div>
+        </div>
+
+        <!-- Running -->
+        <div class="bento-card dark2">
+            <div class="bento-icon">🏃</div>
+            <div class="bento-title">@(ne?"दौड कोचिङ":"Running Coach")</div>
+            <div class="bento-desc">@(ne?"5K र 10K योजना, गति क्यालकुलेटर।":"5K & 10K plans, pace calculator, weekly tracking.")</div>
+            <div style="margin-top:20px">
+                <div style="display:flex;justify-content:space-between;font-size:12px;color:rgba(245,240,232,0.35);margin-bottom:6px"><span>@(ne?"साप्ताहिक किमी":"Weekly km")</span><span style="color:#f5c542;font-weight:700">32.4</span></div>
+                <div class="mock-bar"><div class="mock-bar-fill" style="width:65%"></div></div>
+                <div style="display:flex;justify-content:space-between;font-size:12px;color:rgba(245,240,232,0.35);margin-bottom:6px;margin-top:10px"><span>@(ne?"यस हप्ता":"This week")</span><span style="color:#4ade80;font-weight:700">4 @(ne?"दौड":"runs")</span></div>
+                <div class="mock-bar"><div class="mock-bar-fill" style="width:80%;background:linear-gradient(90deg,#4ade80,#16a34a)"></div></div>
+            </div>
+        </div>
+
+        <!-- Progress -->
+        <div class="bento-card">
+            <div class="bento-tag">📈 @(ne?"प्रगति":"Progress")</div>
+            <div class="bento-title">@(ne?"ट्र्याक गर्नुहोस्":"Track Everything")</div>
+            <div class="bento-desc">@(ne?"तौल, मापन, र व्यायाम इतिहास — सबै एकै ठाउँमा।":"Weight, measurements, and workout history in one place.")</div>
+            <div class="mock-card" style="margin-top:16px;width:100%;padding:14px">
+                <div class="mock-stat-row">
+                    <div><div class="mock-label">@(ne?"तौल":"Weight")</div><div class="mock-val">72 <span style="font-size:12px;color:#4ade80">↓2kg</span></div></div>
+                    <div><div class="mock-label">BMI</div><div class="mock-val mock-accent">22.4</div></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Health topics -->
+        <div class="bento-card span2">
+            <div class="bento-tag">🏥 @(ne?"स्वास्थ्य":"Health")</div>
+            <div class="bento-title">@(ne?"२०+ स्वास्थ्य विषयहरू":"20+ Health Topics in Nepali")</div>
+            <div class="bento-desc" style="margin-bottom:20px">@(ne?"मधुमेह, हृदय, रक्तचाप, पोषण — नेपाली भाषामा।":"Diabetes, heart health, blood pressure, nutrition — in your language.")</div>
+            <div style="display:flex;flex-wrap:wrap;gap:7px">
+                @foreach (var h in new[]{"🩺 Diabetes","❤️ Heart","💊 Blood Pressure","🥗 Nutrition","🧘 Mental Health","😴 Sleep","🦴 Bone","🫁 Respiratory"})
+                {<span style="padding:5px 12px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:999px;font-size:12px;color:rgba(245,240,232,0.55);">@h</span>}
+            </div>
+        </div>
+
+        <!-- Language -->
+        <div class="bento-card" style="background:linear-gradient(135deg,rgba(245,197,66,0.08),rgba(245,197,66,0.03));border-color:rgba(245,197,66,0.15)">
+            <div style="font-size:32px;margin-bottom:14px">🇳🇵</div>
+            <div class="bento-title">@(ne?"नेपाली भाषा":"नेपाली / English")</div>
+            <div class="bento-desc">@(ne?"सम्पूर्ण नेपाली भाषा समर्थन — आफ्नै भाषामा तालिम लिनुहोस्।":"Full Nepali language support. Switch anytime.")</div>
+        </div>
+
+    </div>
+</div>
+
+<!-- SOCIAL PROOF -->
+<div class="social-strip">
+    <div class="social-strip-inner">
+        @foreach (var r in new[]{
+            ("#f5c542","P","Pramesh KC", ne?"BMI र व्यायाम दुवै एकै ठाउँमा! 🔥":"BMI + workouts in one app!"),
+            ("#4ade80","S","Sunita T.", ne?"नेपाली भाषामा पाएर खुसी लाग्यो।":"Love the Nepali language support."),
+            ("#60a5fa","R","Rajesh S.", ne?"5K मा 24 मिनेट पुगें! धन्यवाद 🏃":"Hit 24min 5K after 8 weeks!")
+        }) {
+        <div class="social-item">
+            <div class="social-avatar" style="background:@r.Item1">@r.Item2</div>
+            <div class="social-quote">"<strong>@r.Item4</strong>" — @r.Item3 ⭐⭐⭐⭐⭐</div>
+        </div>
+        }
+    </div>
+</div>
+
+<!-- FEATURE DEEP DIVES -->
+<div class="feature-rows" style="margin-top:60px">
+
+    <div class="feature-row">
+        <div class="feature-row-text">
+            <div class="feature-row-tag">⚖️ @(ne?"BMI":"BMI")</div>
+            <div class="feature-row-title">@(ne?"तुरुन्त BMI जाँच्नुहोस्":"Instant BMI + Advice")</div>
+            <div class="feature-row-desc">@(ne?"उचाइ र तौल हाल्नुहोस् र तुरुन्त परिणाम पाउनुहोस्। लगइन आवश्यक छैन।":"Enter your height and weight — get your BMI, category, and personalized lifestyle advice instantly. No account needed.")</div>
+            <a href="/Bmi" class="feature-row-link">@(ne?"BMI जाँच्नुहोस्":"Try BMI Calculator") →</a>
+        </div>
+        <div class="feature-row-visual">
+            <div class="mock-card" style="width:220px">
+                <div style="font-size:10px;color:rgba(245,240,232,0.3);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:12px">BMI Result</div>
+                <div style="font-size:48px;font-weight:900;color:#4ade80;line-height:1">22.4</div>
+                <div style="color:#4ade80;font-weight:700;font-size:13px;margin:6px 0 12px">✅ Normal Weight</div>
+                <div style="font-size:12px;color:rgba(245,240,232,0.35)">Height: 172cm · Weight: 66kg</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="feature-row rev">
+        <div class="feature-row-text">
+            <div class="feature-row-tag">🏋️ @(ne?"व्यायाम":"Workouts")</div>
+            <div class="feature-row-title">@(ne?"तपाईंको लागि बनाइएको योजना":"Your Personal Workout Plan")</div>
+            <div class="feature-row-desc">@(ne?"Beginner देखि Advanced सम्म — शक्ति, दौड, हाइब्रिड सबै।":"From beginner to advanced — strength, cardio, hybrid. AI-matched to your goals and available equipment.")</div>
+            <a href="/Workout" class="feature-row-link">@(ne?"योजनाहरू हेर्नुहोस्":"Browse Plans") →</a>
+        </div>
+        <div class="feature-row-visual">
+            <div class="mock-card" style="width:220px">
+                <div style="font-size:10px;color:rgba(245,240,232,0.3);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px">Today's Workout</div>
+                <div style="font-size:15px;font-weight:800;color:#f5f0e8;margin-bottom:4px">Upper Body Power</div>
+                <div style="font-size:12px;color:rgba(245,240,232,0.35);margin-bottom:12px">⏱ 45min · 🔥 420 kcal</div>
+                @foreach (var ex in new[]{"Bench Press","Pull-Ups","OHP"})
+                {<div style="display:flex;justify-content:space-between;font-size:12px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.05)"><span style="color:rgba(245,240,232,0.6)">@ex</span><span style="color:#f5c542;font-weight:700">4×8</span></div>}
+            </div>
+        </div>
+    </div>
+
+    <div class="feature-row">
+        <div class="feature-row-text">
+            <div class="feature-row-tag">🏃 @(ne?"दौड":"Running")</div>
+            <div class="feature-row-title">@(ne?"दौड ट्रेकर र कोच":"Run Tracker & Coach")</div>
+            <div class="feature-row-desc">@(ne?"5K र 10K प्रशिक्षण योजना, गति क्यालकुलेटर, र साप्ताहिक किमी ट्र्याकिङ।":"Structured 5K & 10K training plans, pace calculator, and weekly mileage tracking with personal bests.")</div>
+            <a href="/Running" class="feature-row-link">@(ne?"दौड लग गर्नुहोस्":"Log a Run") →</a>
+        </div>
+        <div class="feature-row-visual">
+            <div class="mock-card" style="width:220px">
+                <div style="font-size:10px;color:rgba(245,240,232,0.3);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px">This Week</div>
+                @foreach (var r in new[]{("Mon","5.2km","28:30"),("Wed","8.0km","44:10"),("Sat","3.1km","17:45")})
+                {
+                <div style="display:flex;justify-content:space-between;font-size:12px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.05)">
+                    <span style="color:rgba(245,240,232,0.4)">@r.Item1</span>
+                    <span style="color:#f5f0e8;font-weight:700">@r.Item2</span>
+                    <span style="color:#f5c542">@r.Item3</span>
+                </div>
+                }
+                <div style="margin-top:10px;font-size:11px;color:rgba(245,240,232,0.3)">Total · <strong style="color:#4ade80">16.3km</strong></div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- CTA -->
+<div class="app-cta" style="max-width:1100px;margin:0 auto 80px">
+    <h2>@(ne?"आजै सुरु गर्नुहोस्!":"Ready to Get Fit?")</h2>
+    <p>@(ne?"निःशुल्क खाता बनाउनुहोस् र आफ्नो यात्रा सुरु गर्नुहोस्।":"Create your free account and start your fitness journey today.")</p>
+    <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+        <a href="/Account/Register" class="cta-btn-dark">🚀 @(ne?"निःशुल्क दर्ता":"Register Free")</a>
+        <a href="/Home/GuestSuggest?goal=general&level=beginner" class="cta-btn-ghost">@(ne?"पहिले सुझाव हेर्नुहोस्":"Explore First")</a>
+    </div>
+</div>
+
+<!-- FOOTER -->
+<footer class="app-footer">
+    <div class="app-footer-grid">
+        <div>
+            <div class="app-footer-brand">
+                <div class="app-nav-logo-icon" style="width:26px;height:26px;font-size:13px">💪</div>
+                ShaktiFit
+            </div>
+            <div class="app-footer-brand-sub">@(ne?"नेपालको स्वास्थ्य र फिटनेस एप। व्यायाम, BMI ट्र्याकिङ र स्वास्थ्य जानकारी।":"Nepal's fitness app. Workouts, BMI tracking, and health info all in one place.")</div>
+        </div>
+        <div class="app-footer-col">
+            <h4>App</h4>
+            <a href="/Exercise">@(ne?"व्यायाम":"Exercises")</a>
+            <a href="/Workout">@(ne?"योजनाहरू":"Plans")</a>
+            <a href="/Running">@(ne?"दौड":"Running")</a>
+            <a href="/Bmi">BMI</a>
+        </div>
+        <div class="app-footer-col">
+            <h4>@(ne?"स्वास्थ्य":"Health")</h4>
+            <a href="/Health">@(ne?"मधुमेह":"Diabetes")</a>
+            <a href="/Health">@(ne?"हृदय":"Heart")</a>
+            <a href="/Health">@(ne?"पोषण":"Nutrition")</a>
+            <a href="/Health">@(ne?"मानसिक":"Mental")</a>
+        </div>
+        <div class="app-footer-col">
+            <h4>@(ne?"खाता":"Account")</h4>
+            <a href="/Account/Register">@(ne?"दर्ता":"Register")</a>
+            <a href="/Account/Login">@(ne?"लगइन":"Login")</a>
+            <a href="/Dashboard">@(ne?"ड्यासबोर्ड":"Dashboard")</a>
+        </div>
+    </div>
+    <div class="app-footer-bottom">
+        <span>© 2026 ShaktiFit | स्वास्थ्य फिट</span>
+        <span>Made with ❤️ for Nepal 🇳🇵</span>
+    </div>
+</footer>
+
+</div>
+
+@section Scripts {
+<script>
+const bmiData = {
+  en: [
+    {max:18.5,label:'Underweight',color:'#60a5fa'},
+    {max:25,label:'Normal Weight ✅',color:'#4ade80'},
+    {max:30,label:'Overweight ⚡',color:'#fbbf24'},
+    {max:999,label:'Obese 🩺',color:'#f87171'}
+  ],
+  ne: [
+    {max:18.5,label:'कम तौल',color:'#60a5fa'},
+    {max:25,label:'सामान्य तौल ✅',color:'#4ade80'},
+    {max:30,label:'अधिक तौल ⚡',color:'#fbbf24'},
+    {max:999,label:'मोटोपन 🩺',color:'#f87171'}
+  ]
+};
+const pageLang = '@lang';
+function calcBmi() {
+  const h = parseFloat(document.getElementById('bH').value);
+  const w = parseFloat(document.getElementById('bW').value);
+  const valEl = document.getElementById('bVal');
+  const catEl = document.getElementById('bCat');
+  if (!h || !w || h < 100 || w < 20) {
+    valEl.textContent = '—'; valEl.style.color = '#f5c542';
+    catEl.textContent = pageLang === 'ne' ? 'उचाइ र तौल भर्नुहोस्' : 'Enter height & weight above';
+    catEl.style.color = 'rgba(245,240,232,0.45)'; return;
+  }
+  const bmi = Math.round(w / Math.pow(h/100,2) * 10) / 10;
+  const cats = bmiData[pageLang === 'ne' ? 'ne' : 'en'];
+  const cat = cats.find(c => bmi < c.max) || cats[cats.length-1];
+  valEl.textContent = bmi.toFixed(1);
+  valEl.style.color = cat.color;
+  catEl.textContent = cat.label;
+  catEl.style.color = cat.color;
+}
+</script>
+}

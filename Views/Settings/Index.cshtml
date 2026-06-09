@@ -1,0 +1,150 @@
+@model FitForgeAI.Models.User
+@{
+    ViewBag.Title = "Settings – ShaktiFit";
+    ViewBag.ActiveNav = "settings";
+    var lang = Context.Session.GetString("Lang") ?? "en";
+    bool ne = lang == "ne";
+    var user = Model;
+}
+
+<div class="page-container" style="max-width:800px">
+
+    <div style="margin-bottom:24px">
+        <h1 style="font-size:26px;font-weight:900;margin-bottom:4px">⚙️ @(ne?"सेटिङ्स":"Settings")</h1>
+        <p style="color:var(--text-secondary)">@(ne?"आफ्नो प्रोफाइल र प्राथमिकताहरू अपडेट गर्नुहोस्।":"Update your profile and preferences.")</p>
+    </div>
+
+    @if (TempData["Success"] != null)
+    { <div class="alert alert-success">✅ @TempData["Success"]</div> }
+
+    @if (user == null)
+    {
+    <div class="alert alert-danger">@(ne?"प्रयोगकर्ता भेटिएन।":"User not found.")</div>
+    }
+    else
+    {
+    <form method="post" action="/Settings/UpdateProfile">
+
+        <!-- Personal Info -->
+        <div class="card" style="margin-bottom:20px">
+            <div class="card-header"><div class="card-title">👤 @(ne?"व्यक्तिगत जानकारी":"Personal Information")</div></div>
+            <div class="card-body">
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+                    <div class="form-group" style="grid-column:1/-1">
+                        <label class="form-label">@(ne?"पूरा नाम":"Full Name")</label>
+                        <input type="text" name="Name" class="form-control" value="@user.Name" required />
+                    </div>
+                    <div class="form-group" style="grid-column:1/-1">
+                        <label class="form-label">@(ne?"इमेल":"Email")</label>
+                        <input type="email" name="Email" class="form-control" value="@user.Email" required />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">@(ne?"उमेर":"Age")</label>
+                        <input type="number" name="Age" class="form-control" value="@user.Age" min="10" max="100" />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">@(ne?"लिङ्ग":"Gender")</label>
+                        <select name="Gender" class="form-control">
+                            @if (user.Gender == "Male") { <option value="Male" selected>@(ne?"पुरुष":"Male")</option> } else { <option value="Male">@(ne?"पुरुष":"Male")</option> }
+                            @if (user.Gender == "Female") { <option value="Female" selected>@(ne?"महिला":"Female")</option> } else { <option value="Female">@(ne?"महिला":"Female")</option> }
+                            @if (user.Gender == "Other") { <option value="Other" selected>@(ne?"अन्य":"Other")</option> } else { <option value="Other">@(ne?"अन्य":"Other")</option> }
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">@(ne?"उचाइ (cm)":"Height (cm)")</label>
+                        <input type="number" name="HeightCm" class="form-control" value="@user.HeightCm" min="100" max="250" step="0.1" />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">@(ne?"तौल (kg)":"Weight (kg)")</label>
+                        <input type="number" name="WeightKg" class="form-control" value="@user.WeightKg" min="30" max="300" step="0.1" />
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Fitness -->
+        <div class="card" style="margin-bottom:20px">
+            <div class="card-header"><div class="card-title">🏋️ @(ne?"फिटनेस प्राथमिकताहरू":"Fitness Preferences")</div></div>
+            <div class="card-body">
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+                    <div class="form-group">
+                        <label class="form-label">@(ne?"फिटनेस स्तर":"Fitness Level")</label>
+                        <select name="FitnessLevel" class="form-control">
+                            @foreach (var lv in new[]{"Beginner","Intermediate","Advanced"})
+                            {
+                            @if (user.FitnessLevel == lv) { <option value="@lv" selected>@lv</option> } else { <option value="@lv">@lv</option> }
+                            }
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">@(ne?"हप्तामा दिन":"Days/Week")</label>
+                        <select name="WorkoutDaysPerWeek" class="form-control">
+                            @foreach (var d in new[]{2,3,4,5,6})
+                            {
+                            @if (user.WorkoutDaysPerWeek == d) { <option value="@d" selected>@d @(ne?"दिन":"days")</option> } else { <option value="@d">@d @(ne?"दिन":"days")</option> }
+                            }
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">@(ne?"लक्ष्यहरू":"Goals")</label>
+                    <div style="display:flex;flex-wrap:wrap;gap:7px;margin-top:6px">
+                        @foreach (var g in new[]{"Weight Loss","Muscle Building","Lean Muscle Gain","Strength Training","Running Improvement","General Fitness","Hybrid Athlete","Fat Loss","Endurance","Flexibility","Health Maintenance"})
+                        {
+                        <label class="goal-chip @(user.Goals.Contains(g) ? "active" : "")">
+                            <input type="checkbox" name="Goals" value="@g" @(user.Goals.Contains(g) ? "checked" : "") style="display:none" />
+                            <span>@g</span>
+                        </label>
+                        }
+                    </div>
+                </div>
+
+                <div style="display:flex;gap:20px;flex-wrap:wrap;margin-top:8px">
+                    <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:14px">
+                        <input type="checkbox" name="HasGymAccess" value="true" @(user.HasGymAccess ? "checked" : "") class="form-check" />
+                        @(ne?"जिम सदस्यता छ":"Gym Access")
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Language -->
+        <div class="card" style="margin-bottom:20px">
+            <div class="card-header"><div class="card-title">🌐 @(ne?"भाषा":"Language")</div></div>
+            <div class="card-body">
+                <div style="display:flex;gap:12px">
+                    <label style="flex:1;cursor:pointer">
+                        <input type="radio" name="Language" value="en" @(user.Language != "ne" ? "checked" : "") style="display:none" />
+                        <div class="lang-option @(user.Language != "ne" ? "active" : "")" onclick="this.parentElement.querySelector('input').checked=true;document.querySelectorAll('.lang-option').forEach(l=>l.classList.remove('active'));this.classList.add('active')">
+                            🇬🇧 English
+                        </div>
+                    </label>
+                    <label style="flex:1;cursor:pointer">
+                        <input type="radio" name="Language" value="ne" @(user.Language == "ne" ? "checked" : "") style="display:none" />
+                        <div class="lang-option @(user.Language == "ne" ? "active" : "")" onclick="this.parentElement.querySelector('input').checked=true;document.querySelectorAll('.lang-option').forEach(l=>l.classList.remove('active'));this.classList.add('active')">
+                            🇳🇵 नेपाली
+                        </div>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary" style="padding:13px 32px">💾 @(ne?"परिवर्तन सुरक्षित गर्नुहोस्":"Save Changes")</button>
+
+    </form>
+    }
+
+</div>
+
+@section Scripts {
+<script>
+document.querySelectorAll('.goal-chip').forEach(chip => {
+    const cb = chip.querySelector('input');
+    chip.addEventListener('click', () => {
+        cb.checked = !cb.checked;
+        chip.classList.toggle('active', cb.checked);
+    });
+});
+</script>
+}

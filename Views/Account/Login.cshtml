@@ -1,0 +1,67 @@
+@model FitForgeAI.ViewModels.LoginViewModel
+@{ ViewBag.Title = "Login – ShaktiFit"; ViewBag.IsLanding = true; }
+@{ var lang = Context.Session.GetString("Lang") ?? "en"; bool ne = lang == "ne"; }
+
+<div class="auth-page">
+    <div class="auth-left">
+        <div class="auth-box">
+            <div class="auth-logo-wrap">
+                <div class="logo-icon-box">💪</div>
+                <div>
+                    <div style="font-size:18px;font-weight:800">ShaktiFit</div>
+                    <div style="font-size:11px;color:var(--text-muted)">स्वास्थ्य फिट</div>
+                </div>
+            </div>
+            <h1 class="auth-title">@(ne?"स्वागत छ! फेरि आउनुभयो":"Welcome back, Athlete")</h1>
+            <p class="auth-sub">@(ne?"आफ्नो यात्रा जारी राख्नुहोस्।":"Continue your fitness journey.")</p>
+
+            @if (!ViewData.ModelState.IsValid)
+            {
+            <div class="alert alert-danger">@(ne?"इमेल वा पासवर्ड गलत छ।":"Invalid email or password.")</div>
+            }
+
+            <form method="post" action="/Account/Login">
+                <div class="form-group">
+                    <label class="form-label">@(ne?"इमेल ठेगाना":"Email Address")</label>
+                    <input type="email" name="Email" class="form-control" placeholder="you@example.com" required />
+                </div>
+                <div class="form-group">
+                    <label class="form-label">@(ne?"पासवर्ड":"Password")</label>
+                    <input type="password" name="Password" class="form-control" placeholder="••••••••" required />
+                </div>
+                <button type="submit" class="btn btn-primary btn-block" style="margin-top:4px;padding:13px">
+                    💪 @(ne?"लगइन गर्नुहोस्":"Login to ShaktiFit")
+                </button>
+            </form>
+
+            <div style="text-align:center;margin-top:20px;font-size:14px;color:var(--text-secondary)">
+                @(ne?"नयाँ सदस्य?":"New here?")
+                <a href="/Account/Register" style="color:var(--indigo);font-weight:600">@(ne?"दर्ता गर्नुहोस् →":"Create account →")</a>
+            </div>
+
+            <hr class="divider" />
+            <div style="text-align:center;font-size:13px;color:var(--text-muted)">@(ne?"खाता बिना पनि":"No account? Still explore")</div>
+            <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+                <a href="/Bmi" class="btn btn-ghost btn-sm" style="flex:1;justify-content:center">⚖️ BMI @(ne?"जाँच":"Check")</a>
+                <a href="/Exercise" class="btn btn-ghost btn-sm" style="flex:1;justify-content:center">🏋️ @(ne?"व्यायाम":"Exercises")</a>
+                <a href="/Health" class="btn btn-ghost btn-sm" style="flex:1;justify-content:center">🏥 @(ne?"स्वास्थ्य":"Health")</a>
+            </div>
+        </div>
+    </div>
+    <div class="auth-right">
+        <div style="text-align:center;max-width:360px">
+            <div style="font-size:72px;margin-bottom:20px">💪</div>
+            <h2 style="font-size:26px;margin-bottom:12px">@(ne?"तपाईंको शक्ति।":"Your Goals.") <br/><span class="text-gradient">@(ne?"तपाईंको लक्ष्य।":"Your Progress.")</span><br/>@(ne?"तपाईंको नतिजा।":"Your Results.")</h2>
+            <p style="color:var(--text-secondary);font-size:14px;margin-top:12px">@(ne?"लगइन गरेर आफ्नो व्यक्तिगत योजना, BMI ट्र्याकिङ र प्रगति हेर्नुहोस्।":"Login to access your personalized plan, BMI tracking, and progress history.")</p>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:24px">
+                @foreach (var f in new[]{("📊","Dashboard"),("⚖️","BMI Track"),("🏋️","Workouts"),("📈","Progress")})
+                {
+                <div style="background:white;border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center">
+                    <div style="font-size:24px;margin-bottom:4px">@f.Item1</div>
+                    <div style="font-size:12px;font-weight:600;color:var(--text-secondary)">@f.Item2</div>
+                </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,77 @@
+@model List<FitForgeAI.Models.Workout>
+@{
+    ViewBag.Title = "Hybrid Athlete Plan – ShaktiFit";
+    ViewBag.ActiveNav = "workout";
+    var lang = Context.Session.GetString("Lang") ?? "en";
+    bool ne = lang == "ne";
+    var days = new[] { "Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday" };
+    var dayNe = new[] { "सोमबार","मंगलबार","बुधबार","बिहिबार","शुक्रबार","शनिबार","आइतबार" };
+    var dayData = new[] {
+        new { icon="🏋️", type="Strength", focus=ne?"माथिल्लो शरीर":"Upper Body Strength", color="var(--indigo)",
+            exercises=new[]{"Bench Press 4×5","Overhead Press 3×8","Pull-Up 3×6","Dumbbell Row 3×10","Plank 3×45s"} },
+        new { icon="🏃", type="Running", focus=ne?"सजिलो दौड":"Easy Run 8-10km", color="var(--green)",
+            exercises=new[]{"Warm-up 10 min walk","Easy pace 8-10km","Cool-down 5 min walk","Hip flexor stretch","Calf stretch"} },
+        new { icon="🏋️", type="Strength", focus=ne?"तल्लो शरीर":"Lower Body Power", color="var(--indigo)",
+            exercises=new[]{"Squat 4×5","Romanian Deadlift 3×8","Leg Press 3×10","Calf Raise 3×15","Core work 15 min"} },
+        new { icon="⚡", type="Intervals", focus=ne?"अन्तराल दौड":"Track Intervals", color="var(--amber)",
+            exercises=new[]{"2km warm-up","6×400m @ 5K pace (90s rest)","2km cool-down","Strides 4×100m","Mobility work"} },
+        new { icon="🏋️", type="Strength", focus=ne?"पुश/पुल":"Push / Pull Day", color="var(--indigo)",
+            exercises=new[]{"Deadlift 3×5","Barbell Row 3×8","Push-Up 3×12","Lat Pulldown 3×10","Farmer's Carry 3×30m"} },
+        new { icon="🏃", type="Long Run", focus=ne?"लामो दौड":"Long Run 15-20km", color="var(--green)",
+            exercises=new[]{"Easy conversational pace","Negative split second half","Post-run nutrition within 30 min","20 min foam roll","Sleep 8+ hours tonight"} },
+        new { icon="🧘", type="Recovery", focus=ne?"पुनःप्राप्ति":"Active Recovery", color="var(--blue)",
+            exercises=new[]{"20 min yoga or mobility","Light walk 20-30 min","Cold shower or ice bath","Meal prep for next week","Review training log"} }
+    };
+}
+
+<div class="page-container">
+
+    <div style="margin-bottom:24px">
+        <a href="/Workout" class="btn btn-ghost btn-sm" style="margin-bottom:12px">← @(ne?"फिर्ता":"Back")</a>
+        <h1 style="font-size:26px;font-weight:900;margin-bottom:6px">🦸 @(ne?"हाइब्रिड एथलीट योजना":"Hybrid Athlete Plan")</h1>
+        <p style="color:var(--text-secondary)">@(ne?"शक्ति प्रशिक्षण र दौड एकसाथ — ७ दिनको सम्पूर्ण योजना।":"Strength + Running combined — complete 7-day program.")</p>
+    </div>
+
+    <!-- Week Grid -->
+    <div class="week-grid">
+        @for (int i = 0; i < 7; i++)
+        {
+        var d = dayData[i];
+        <div class="week-day-card" style="border-top:3px solid @d.color">
+            <div class="wdc-header">
+                <div style="font-size:28px">@d.icon</div>
+                <div>
+                    <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-muted)">@(ne ? dayNe[i] : days[i])</div>
+                    <div style="font-size:14px;font-weight:700;color:var(--text-primary)">@d.focus</div>
+                </div>
+            </div>
+            <div class="wdc-type" style="background:@d.color">@d.type</div>
+            <ul class="wdc-list">
+                @foreach (var ex in d.exercises)
+                { <li>@ex</li> }
+            </ul>
+        </div>
+        }
+    </div>
+
+    <!-- Tips -->
+    <div class="card" style="margin-top:28px;background:var(--indigo-bg);border-color:rgba(79,70,229,0.2)">
+        <div class="card-header"><div class="card-title">💡 @(ne?"हाइब्रिड एथलीट सुझावहरू":"Hybrid Athlete Tips")</div></div>
+        <div class="card-body">
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px">
+                @foreach (var tip in new[]{
+                    (ne?"पोषण":"Nutrition", ne?"व्यायाम अघि कार्बोहाइड्रेट र पछि प्रोटिन खानुहोस्":"Fuel with carbs before, protein after sessions"),
+                    (ne?"निद्रा":"Sleep", ne?"प्रत्येक रात ७-९ घण्टा निद्रा लिनुहोस्":"7-9h sleep is non-negotiable for dual training"),
+                    (ne?"प्रगति":"Progression", ne?"हरेक हप्ता ५-१०% मात्र लोड बढाउनुहोस्":"Increase load or mileage by 5-10% per week only"),
+                    (ne?"पुनःप्राप्ति":"Recovery", ne?"कठिन दौडपछि शक्ति प्रशिक्षण नगर्नुहोस्":"Never do heavy lifting day after a hard run")})
+                {
+                <div style="background:white;border-radius:10px;padding:14px;border:1px solid var(--border)">
+                    <div style="font-size:12px;font-weight:700;color:var(--indigo);margin-bottom:4px;text-transform:uppercase">@tip.Item1</div>
+                    <div style="font-size:13px;color:var(--text-secondary)">@tip.Item2</div>
+                </div>
+                }
+            </div>
+        </div>
+    </div>
+
+</div>

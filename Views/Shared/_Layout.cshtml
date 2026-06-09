@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#f5c542" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <title>@(ViewBag.Title ?? "ShaktiFit | स्वास्थ्य फिट")</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="~/css/fitforge.css" asp-append-version="true" />
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💪</text></svg>">
+    <style>
+    /* ── THEME SWITCHER ── */
+    :root {
+      --accent-h: 43; --accent-s: 91%; --accent-l: 61%;
+    }
+    [data-accent="yellow"]  { --accent:#f5c542; --accent-dark:#e0ae28; --shadow-accent:0 4px 20px rgba(245,197,66,0.35); }
+    [data-accent="blue"]    { --accent:#3b82f6; --accent-dark:#2563eb; --shadow-accent:0 4px 20px rgba(59,130,246,0.35); }
+    [data-accent="green"]   { --accent:#22c55e; --accent-dark:#16a34a; --shadow-accent:0 4px 20px rgba(34,197,94,0.35); }
+    [data-accent="purple"]  { --accent:#a855f7; --accent-dark:#9333ea; --shadow-accent:0 4px 20px rgba(168,85,247,0.35); }
+    [data-accent="red"]     { --accent:#ef4444; --accent-dark:#dc2626; --shadow-accent:0 4px 20px rgba(239,68,68,0.35); }
+    [data-accent="orange"]  { --accent:#f97316; --accent-dark:#ea580c; --shadow-accent:0 4px 20px rgba(249,115,22,0.35); }
+
+    /* ── MOBILE TOP NAV (authenticated) ── */
+    .mobile-topbar {
+      display:none; position:fixed; top:0; left:0; right:0; z-index:950;
+      height:56px; background:#1c1917;
+      border-bottom:1px solid rgba(255,255,255,0.06);
+      align-items:center; justify-content:space-between;
+      padding:0 16px; gap:12px;
+    }
+    .mobile-topbar-logo { display:flex; align-items:center; gap:8px; }
+    .mobile-topbar-logo-icon { width:28px; height:28px; background:var(--accent); border-radius:7px; display:flex; align-items:center; justify-content:center; font-size:14px; }
+    .mobile-topbar-title { font-size:15px; font-weight:800; color:#f5f0e8; }
+    .mobile-topbar-user { width:30px; height:30px; background:var(--accent); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; color:#1c1917; cursor:pointer; }
+
+    /* ── MOBILE BOTTOM NAV ── */
+    .mobile-bottom-nav {
+      display:none; position:fixed; bottom:0; left:0; right:0; z-index:950;
+      background:#1c1917; border-top:1px solid rgba(255,255,255,0.08);
+      padding:8px 4px calc(8px + env(safe-area-inset-bottom));
+      grid-template-columns:repeat(5,1fr);
+    }
+    .mbn-item {
+      display:flex; flex-direction:column; align-items:center; gap:3px;
+      padding:6px 4px; border-radius:10px; text-decoration:none;
+      color:rgba(245,240,232,0.4); transition:all 0.15s; cursor:pointer;
+    }
+    .mbn-item.active { color:var(--accent); }
+    .mbn-item:hover { color:rgba(245,240,232,0.8); }
+    .mbn-icon { font-size:20px; line-height:1; }
+    .mbn-label { font-size:9px; font-weight:600; letter-spacing:0.02em; }
+
+    /* ── MOBILE DRAWER OVERLAY ── */
+    .drawer-overlay {
+      display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6);
+      z-index:960; backdrop-filter:blur(4px);
+    }
+    .drawer-overlay.open { display:block; }
+    .sidebar-drawer {
+      position:fixed; top:0; left:-100%; bottom:0; width:280px; z-index:970;
+      background:#1c1917; transition:left 0.3s cubic-bezier(0.4,0,0.2,1);
+      overflow-y:auto; display:flex; flex-direction:column;
+    }
+    .sidebar-drawer.open { left:0; }
+
+    /* ── THEME PANEL ── */
+    .theme-panel {
+      position:fixed; right:-320px; top:0; bottom:0; width:300px; z-index:980;
+      background:#131110; border-left:1px solid rgba(255,255,255,0.08);
+      transition:right 0.3s cubic-bezier(0.4,0,0.2,1); padding:24px;
+      overflow-y:auto;
+    }
+    .theme-panel.open { right:0; }
+    .theme-swatch {
+      width:40px; height:40px; border-radius:10px; cursor:pointer;
+      border:2px solid transparent; transition:all 0.15s; display:flex;
+      align-items:center; justify-content:center; font-size:16px;
+    }
+    .theme-swatch.active { border-color:#f5f0e8; transform:scale(1.1); }
+    .theme-swatch:hover { transform:scale(1.05); }
+
+    /* ── GUEST NAV (dark style) ── */
+    .guest-nav {
+      position:fixed; top:0; left:0; right:0; z-index:900;
+      display:flex; align-items:center; justify-content:space-between;
+      padding:0 32px; height:60px;
+      background:rgba(13,11,9,0.92);
+      backdrop-filter:blur(20px);
+      border-bottom:1px solid rgba(255,255,255,0.07);
+    }
+    .guest-nav-logo { display:flex; align-items:center; gap:10px; text-decoration:none; }
+    .guest-nav-logo-icon { width:32px; height:32px; background:var(--accent); border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:16px; flex-shrink:0; }
+    .guest-nav-logo-text { font-size:15px; font-weight:800; color:#f5f0e8; }
+    .guest-nav-links { display:flex; align-items:center; gap:4px; }
+    .guest-nav-link { padding:7px 14px; font-size:13px; font-weight:500; color:rgba(245,240,232,0.65); border-radius:8px; transition:all 0.15s; text-decoration:none; }
+    .guest-nav-link:hover { color:#f5f0e8; background:rgba(255,255,255,0.07); }
+    .guest-nav-actions { display:flex; gap:8px; align-items:center; }
+    .guest-btn-login { padding:7px 16px; font-size:13px; font-weight:600; color:rgba(245,240,232,0.75); border:1px solid rgba(255,255,255,0.14); border-radius:8px; transition:all 0.15s; text-decoration:none; }
+    .guest-btn-login:hover { color:#f5f0e8; border-color:rgba(255,255,255,0.28); background:rgba(255,255,255,0.05); }
+    .guest-btn-start { padding:7px 18px; font-size:13px; font-weight:700; color:#1c1917; background:var(--accent); border-radius:8px; transition:all 0.15s; text-decoration:none; }
+    .guest-btn-start:hover { filter:brightness(1.08); }
+    .guest-nav-hamburger { display:none; background:none; border:none; color:#f5f0e8; font-size:22px; cursor:pointer; padding:4px; }
+
+    /* ── RESPONSIVE ── */
+    @@media (max-width: 768px) {
+      .app-wrapper { grid-template-columns:1fr !important; }
+      .sidebar { display:none !important; }
+      .mobile-toggle { display:none !important; }
+      .mobile-topbar { display:flex !important; }
+      .mobile-bottom-nav { display:grid !important; }
+      .main-content { padding-top:56px !important; padding-bottom:80px !important; }
+      .guest-nav { padding:0 16px; height:56px; }
+      .guest-nav-links { display:none; }
+      .guest-nav-hamburger { display:block; }
+      .page-container { padding:16px !important; }
+      .stats-grid { grid-template-columns:1fr 1fr !important; gap:10px !important; }
+      .dash-grid { grid-template-columns:1fr !important; }
+      .span2, .span3 { grid-column:span 1 !important; }
+      .bento-grid, .features-grid { grid-template-columns:1fr !important; }
+      .feature-row { grid-template-columns:1fr !important; }
+      .builder-wrap { grid-template-columns:1fr !important; }
+      .ex-grid, #exGrid { grid-template-columns:1fr 1fr !important; gap:10px !important; }
+      .hero-visual { display:none !important; }
+      .hero-inner { grid-template-columns:1fr !important; }
+      .app-footer-grid { grid-template-columns:1fr 1fr !important; }
+    }
+    @@media (max-width: 480px) {
+      .ex-grid, #exGrid { grid-template-columns:1fr !important; }
+      .stats-grid { grid-template-columns:1fr 1fr !important; }
+      .plan-templates { grid-template-columns:repeat(2,1fr) !important; }
+      .hero-actions { flex-direction:column !important; align-items:stretch; }
+      .hero-actions a { text-align:center !important; justify-content:center !important; }
+    }
+    </style>
+</head>
+<body>
+@{
+    var userId = Context.Session.GetString("UserId");
+    var userName = Context.Session.GetString("UserName") ?? "Athlete";
+    var lang = Context.Session.GetString("Lang") ?? "en";
+    bool isAuth = userId != null;
+    bool isLanding = ViewBag.IsLanding == true;
+    string activeNav = ViewBag.ActiveNav ?? "";
+    string userInitial = (userName.Length > 0 ? userName[0].ToString().ToUpper() : "A");
+}
+
+@if (!isLanding && isAuth)
+{
+    <!-- Mobile Top Bar -->
+    <div class="mobile-topbar">
+        <div class="mobile-topbar-logo">
+            <button onclick="openDrawer()" style="background:none;border:none;color:rgba(245,240,232,0.6);font-size:22px;cursor:pointer;padding:0;margin-right:4px">☰</button>
+            <div class="mobile-topbar-logo-icon">💪</div>
+            <span class="mobile-topbar-title">ShaktiFit</span>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center">
+            <button onclick="openTheme()" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#f5f0e8;font-size:16px;width:36px;height:36px;cursor:pointer">🎨</button>
+            <div class="mobile-topbar-user" onclick="window.location='/Settings'">@userInitial</div>
+        </div>
+    </div>
+
+    <!-- Mobile Bottom Nav -->
+    <nav class="mobile-bottom-nav">
+        <a href="/Dashboard" class="mbn-item @(activeNav=="dashboard"?"active":"")">
+            <span class="mbn-icon">📊</span><span class="mbn-label">@(lang=="ne"?"होम":"Home")</span>
+        </a>
+        <a href="/Workout" class="mbn-item @(activeNav=="workouts"?"active":"")">
+            <span class="mbn-icon">🏋️</span><span class="mbn-label">@(lang=="ne"?"योजना":"Workout")</span>
+        </a>
+        <a href="/Exercise" class="mbn-item @(activeNav=="exercises"?"active":"")">
+            <span class="mbn-icon">📚</span><span class="mbn-label">@(lang=="ne"?"व्यायाम":"Exercise")</span>
+        </a>
+        <a href="/Running" class="mbn-item @(activeNav=="running"?"active":"")">
+            <span class="mbn-icon">🏃</span><span class="mbn-label">@(lang=="ne"?"दौड":"Run")</span>
+        </a>
+        <a href="/Progress" class="mbn-item @(activeNav=="progress"?"active":"")">
+            <span class="mbn-icon">📈</span><span class="mbn-label">@(lang=="ne"?"प्रगति":"Progress")</span>
+        </a>
+    </nav>
+
+    <!-- Drawer Overlay -->
+    <div class="drawer-overlay" id="drawerOverlay" onclick="closeDrawer()"></div>
+
+    <!-- Sidebar Drawer (mobile) -->
+    <div class="sidebar-drawer" id="sidebarDrawer">
+        <div style="padding:20px 16px;border-bottom:1px solid rgba(255,255,255,0.07)">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+                <div style="width:36px;height:36px;background:var(--accent);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:18px">💪</div>
+                <div>
+                    <div style="font-size:15px;font-weight:800;color:#f5f0e8">ShaktiFit</div>
+                    <div style="font-size:11px;color:rgba(245,240,232,0.4)">स्वास्थ्य फिट</div>
+                </div>
+                <button onclick="closeDrawer()" style="margin-left:auto;background:none;border:none;color:rgba(245,240,232,0.4);font-size:22px;cursor:pointer">✕</button>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:rgba(255,255,255,0.04);border-radius:10px">
+                <div style="width:32px;height:32px;background:var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:#1c1917">@userInitial</div>
+                <div>
+                    <div style="font-size:13px;font-weight:700;color:#f5f0e8">@userName</div>
+                    <div style="font-size:11px;color:rgba(245,240,232,0.4)">@(lang=="ne"?"सदस्य":"Member")</div>
+                </div>
+            </div>
+        </div>
+        <div style="padding:12px 8px;flex:1">
+            <div style="font-size:10px;font-weight:700;color:rgba(245,240,232,0.3);text-transform:uppercase;letter-spacing:0.1em;padding:8px 8px 4px">@(lang=="ne"?"मुख्य":"Main")</div>
+            @foreach (var item in new[]{
+                ("/Dashboard","📊","dashboard",lang=="ne"?"ड्यासबोर्ड":"Dashboard"),
+                ("/Workout","🏋️","workouts",lang=="ne"?"व्यायाम योजना":"Workout Plans"),
+                ("/Workout/Builder","✏️","builder",lang=="ne"?"योजना बनाउनुहोस्":"Build a Plan"),
+                ("/Exercise","📚","exercises",lang=="ne"?"व्यायाम पुस्तकालय":"Exercise Library"),
+                ("/Running","🏃","running",lang=="ne"?"दौड":"Running"),
+                ("/Bmi","⚖️","bmi",lang=="ne"?"BMI जाँच":"BMI Check"),
+                ("/Health","🏥","health",lang=="ne"?"स्वास्थ्य जानकारी":"Health Info")
+            })
+            {
+            <a href="@item.Item1" onclick="closeDrawer()" style="display:flex;align-items:center;gap:10px;padding:10px 10px;border-radius:10px;text-decoration:none;margin-bottom:2px;@(activeNav==item.Item3?"background:rgba(245,197,66,0.12);color:var(--accent);":"color:rgba(245,240,232,0.7);")">
+                <span style="font-size:18px">@item.Item2</span>
+                <span style="font-size:14px;font-weight:600">@item.Item4</span>
+            </a>
+            }
+            <div style="font-size:10px;font-weight:700;color:rgba(245,240,232,0.3);text-transform:uppercase;letter-spacing:0.1em;padding:12px 8px 4px">@(lang=="ne"?"प्रगति":"Progress")</div>
+            @foreach (var item in new[]{
+                ("/Progress","📈","progress",lang=="ne"?"मेरो प्रगति":"My Progress"),
+                ("/Workout/Hybrid","🦸","hybrid",lang=="ne"?"हाइब्रिड योजना":"Hybrid Plan")
+            })
+            {
+            <a href="@item.Item1" onclick="closeDrawer()" style="display:flex;align-items:center;gap:10px;padding:10px 10px;border-radius:10px;text-decoration:none;margin-bottom:2px;@(activeNav==item.Item3?"background:rgba(245,197,66,0.12);color:var(--accent);":"color:rgba(245,240,232,0.7);")">
+                <span style="font-size:18px">@item.Item2</span>
+                <span style="font-size:14px;font-weight:600">@item.Item4</span>
+            </a>
+            }
+        </div>
+        <div style="padding:12px 8px;border-top:1px solid rgba(255,255,255,0.07)">
+            <a href="/Settings" onclick="closeDrawer()" style="display:flex;align-items:center;gap:10px;padding:10px;border-radius:10px;text-decoration:none;color:rgba(245,240,232,0.6);margin-bottom:4px">
+                <span style="font-size:18px">⚙️</span><span style="font-size:14px;font-weight:600">@(lang=="ne"?"सेटिङ":"Settings")</span>
+            </a>
+            <button onclick="openTheme();closeDrawer()" style="display:flex;align-items:center;gap:10px;padding:10px;border-radius:10px;background:none;border:none;color:rgba(245,240,232,0.6);cursor:pointer;width:100%">
+                <span style="font-size:18px">🎨</span><span style="font-size:14px;font-weight:600">@(lang=="ne"?"थिम":"Theme")</span>
+            </button>
+            <a href="/Account/Logout" style="display:flex;align-items:center;gap:10px;padding:10px;border-radius:10px;text-decoration:none;color:rgba(248,113,113,0.7)">
+                <span style="font-size:18px">🚪</span><span style="font-size:14px;font-weight:600">@(lang=="ne"?"बाहिर निस्कनु":"Logout")</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Desktop App Wrapper -->
+    <div class="app-wrapper">
+        <nav class="sidebar">
+            <div class="sidebar-logo">
+                <div class="logo-wrap">
+                    <div class="logo-icon-box">💪</div>
+                    <div>
+                        <div class="logo-name">ShaktiFit</div>
+                        <div class="logo-nepali">स्वास्थ्य फिट</div>
+                    </div>
+                </div>
+            </div>
+            <div class="sidebar-nav">
+                <div class="nav-group-label">@(lang == "ne" ? "मुख्य" : "Main")</div>
+                <a href="/Dashboard" class="nav-link-item @(activeNav=="dashboard"?"active":"")"><span class="nli-icon">📊</span> @(lang=="ne"?"ड्यासबोर्ड":"Dashboard")</a>
+                <a href="/Workout" class="nav-link-item @(activeNav=="workouts"?"active":"")"><span class="nli-icon">🏋️</span> @(lang=="ne"?"व्यायाम योजना":"Workout Plans")</a>
+                <a href="/Workout/Builder" class="nav-link-item @(activeNav=="builder"?"active":"")"><span class="nli-icon">✏️</span> @(lang=="ne"?"योजना बनाउनुहोस्":"Build a Plan")</a>
+                <a href="/Exercise" class="nav-link-item @(activeNav=="exercises"?"active":"")"><span class="nli-icon">📚</span> @(lang=="ne"?"व्यायाम पुस्तकालय":"Exercise Library")</a>
+                <a href="/Running" class="nav-link-item @(activeNav=="running"?"active":"")"><span class="nli-icon">🏃</span> @(lang=="ne"?"दौड":"Running")</a>
+                <a href="/Bmi" class="nav-link-item @(activeNav=="bmi"?"active":"")"><span class="nli-icon">⚖️</span> @(lang=="ne"?"BMI जाँच":"BMI Check")</a>
+                <a href="/Health" class="nav-link-item @(activeNav=="health"?"active":"")"><span class="nli-icon">🏥</span> @(lang=="ne"?"स्वास्थ्य जानकारी":"Health Info")</a>
+                <div class="nav-group-label" style="margin-top:12px">@(lang=="ne"?"प्रगति":"Progress")</div>
+                <a href="/Progress" class="nav-link-item @(activeNav=="progress"?"active":"")"><span class="nli-icon">📈</span> @(lang=="ne"?"प्रगति":"My Progress")</a>
+                <a href="/Workout/Hybrid" class="nav-link-item @(activeNav=="hybrid"?"active":"")"><span class="nli-icon">🦸</span> @(lang=="ne"?"हाइब्रिड योजना":"Hybrid Plan")</a>
+                <div class="nav-group-label" style="margin-top:12px">@(lang=="ne"?"खाता":"Account")</div>
+                <a href="/Settings" class="nav-link-item @(activeNav=="settings"?"active":"")"><span class="nli-icon">⚙️</span> @(lang=="ne"?"सेटिङ":"Settings")</a>
+                <button onclick="openTheme()" class="nav-link-item" style="background:none;border:none;cursor:pointer;width:100%;text-align:left;font-family:inherit;font-size:inherit"><span class="nli-icon">🎨</span> @(lang=="ne"?"थिम":"Theme")</button>
+                <a href="/Account/Logout" class="nav-link-item"><span class="nli-icon">🚪</span> @(lang=="ne"?"बाहिर निस्कनु":"Logout")</a>
+            </div>
+            <div class="sidebar-bottom">
+                <div class="user-pill">
+                    <div class="user-avatar-sm">@userInitial</div>
+                    <div>
+                        <div class="user-pill-name">@userName</div>
+                        <div class="user-pill-sub">@(lang=="ne"?"सदस्य":"Member")</div>
+                    </div>
+                </div>
+            </div>
+        </nav>
+        <div class="main-content">
+            @RenderBody()
+        </div>
+    </div>
+}
+else
+{
+    <!-- Guest Top Nav -->
+    <nav class="guest-nav">
+        <a href="/" class="guest-nav-logo">
+            <div class="guest-nav-logo-icon">💪</div>
+            <span class="guest-nav-logo-text">ShaktiFit</span>
+        </a>
+        <div class="guest-nav-links">
+            <a href="/" class="guest-nav-link">@(lang=="ne"?"गृहपृष्ठ":"Home")</a>
+            <a href="/Health" class="guest-nav-link">@(lang=="ne"?"स्वास्थ्य":"Health")</a>
+            <a href="/Exercise" class="guest-nav-link">@(lang=="ne"?"व्यायाम":"Exercises")</a>
+            <a href="/Bmi" class="guest-nav-link">BMI</a>
+        </div>
+        <div class="guest-nav-actions">
+            <a href="/Home/SetLang?lang=@(lang=="en"?"ne":"en")&returnUrl=@Context.Request.Path" style="font-size:12px;font-weight:700;color:rgba(245,240,232,0.5);padding:6px 12px;border:1px solid rgba(255,255,255,0.1);border-radius:6px">
+                @(lang=="en"?"🇳🇵 नेपाली":"🇬🇧 English")
+            </a>
+            <button onclick="openTheme()" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#f5f0e8;font-size:15px;width:34px;height:34px;cursor:pointer">🎨</button>
+            <a href="/Account/Login" class="guest-btn-login">@(lang=="ne"?"लगइन":"Login")</a>
+            <a href="/Account/Register" class="guest-btn-start">@(lang=="ne"?"दर्ता":"Register")</a>
+        </div>
+        <button class="guest-nav-hamburger" onclick="openGuestMenu()">☰</button>
+    </nav>
+    <!-- Guest Mobile Menu -->
+    <div class="drawer-overlay" id="guestOverlay" onclick="closeGuestMenu()"></div>
+    <div class="sidebar-drawer" id="guestDrawer">
+        <div style="padding:20px 16px;border-bottom:1px solid rgba(255,255,255,0.07);display:flex;align-items:center;justify-content:space-between">
+            <div style="display:flex;align-items:center;gap:8px">
+                <div style="width:28px;height:28px;background:var(--accent);border-radius:7px;display:flex;align-items:center;justify-content:center">💪</div>
+                <span style="font-weight:800;color:#f5f0e8">ShaktiFit</span>
+            </div>
+            <button onclick="closeGuestMenu()" style="background:none;border:none;color:rgba(245,240,232,0.5);font-size:22px;cursor:pointer">✕</button>
+        </div>
+        <div style="padding:12px 8px">
+            @foreach (var item in new[]{ ("/","🏠",lang=="ne"?"गृहपृष्ठ":"Home"), ("/Health","🏥",lang=="ne"?"स्वास्थ्य":"Health"), ("/Exercise","📚",lang=="ne"?"व्यायाम":"Exercises"), ("/Bmi","⚖️","BMI") })
+            {
+            <a href="@item.Item1" onclick="closeGuestMenu()" style="display:flex;align-items:center;gap:10px;padding:12px 10px;border-radius:10px;text-decoration:none;color:rgba(245,240,232,0.75);font-size:14px;font-weight:600;margin-bottom:2px">
+                <span style="font-size:20px">@item.Item2</span> @item.Item3
+            </a>
+            }
+        </div>
+        <div style="padding:16px;border-top:1px solid rgba(255,255,255,0.07);display:flex;flex-direction:column;gap:10px;margin-top:auto">
+            <a href="/Account/Login" style="display:block;text-align:center;padding:12px;border:1px solid rgba(255,255,255,0.15);border-radius:10px;color:#f5f0e8;font-weight:600;text-decoration:none">@(lang=="ne"?"लगइन":"Login")</a>
+            <a href="/Account/Register" style="display:block;text-align:center;padding:12px;background:var(--accent);border-radius:10px;color:#1c1917;font-weight:700;text-decoration:none">@(lang=="ne"?"दर्ता":"Register")</a>
+        </div>
+    </div>
+    <div style="padding-top:60px">@RenderBody()</div>
+}
+
+<!-- ── THEME PANEL ── -->
+<div class="drawer-overlay" id="themeOverlay" onclick="closeTheme()"></div>
+<div class="theme-panel" id="themePanel">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px">
+        <div style="font-size:16px;font-weight:800;color:#f5f0e8">🎨 @(lang=="ne"?"थिम":"Theme")</div>
+        <button onclick="closeTheme()" style="background:none;border:none;color:rgba(245,240,232,0.5);font-size:22px;cursor:pointer">✕</button>
+    </div>
+    <!-- Accent color -->
+    <div style="font-size:11px;font-weight:700;color:rgba(245,240,232,0.4);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:12px">Accent Color</div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:28px">
+        @foreach (var c in new[]{
+            ("yellow","#f5c542","☀️ Yellow"),("blue","#3b82f6","🔵 Blue"),
+            ("green","#22c55e","🟢 Green"),("purple","#a855f7","🟣 Purple"),
+            ("red","#ef4444","🔴 Red"),("orange","#f97316","🟠 Orange")
+        })
+        {
+        <button onclick="setAccent('@c.Item1')" data-accent="@c.Item1"
+            style="padding:10px 6px;border-radius:10px;border:2px solid rgba(255,255,255,0.08);background:@(c.Item2)18;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;transition:all 0.15s"
+            class="accent-btn">
+            <div style="width:28px;height:28px;background:@c.Item2;border-radius:7px"></div>
+            <div style="font-size:10px;font-weight:700;color:rgba(245,240,232,0.6)">@c.Item3.Split(' ')[1]</div>
+        </button>
+        }
+    </div>
+    <!-- Dark/Light mode -->
+    <div style="font-size:11px;font-weight:700;color:rgba(245,240,232,0.4);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:12px">App Mode</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:24px">
+        <button onclick="setMode('dark')" id="modeDark" style="padding:12px;border-radius:10px;border:2px solid rgba(245,197,66,0.4);background:#0d0b09;color:#f5f0e8;font-size:13px;font-weight:700;cursor:pointer">🌙 Dark</button>
+        <button onclick="setMode('light')" id="modeLight" style="padding:12px;border-radius:10px;border:2px solid rgba(255,255,255,0.1);background:#f0ece4;color:#1c1917;font-size:13px;font-weight:700;cursor:pointer">☀️ Light</button>
+    </div>
+    <div style="font-size:12px;color:rgba(245,240,232,0.3);line-height:1.6;padding:12px;background:rgba(255,255,255,0.03);border-radius:10px;border:1px solid rgba(255,255,255,0.06)">
+        💡 Theme settings are saved automatically and persist across sessions.
+    </div>
+</div>
+
+<script src="~/js/fitforge.js" asp-append-version="true"></script>
+<script>
+// ── DRAWER ──
+function openDrawer() {
+  document.getElementById('sidebarDrawer')?.classList.add('open');
+  document.getElementById('drawerOverlay')?.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeDrawer() {
+  document.getElementById('sidebarDrawer')?.classList.remove('open');
+  document.getElementById('drawerOverlay')?.classList.remove('open');
+  document.body.style.overflow = '';
+}
+function openGuestMenu() {
+  document.getElementById('guestDrawer')?.classList.add('open');
+  document.getElementById('guestOverlay')?.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeGuestMenu() {
+  document.getElementById('guestDrawer')?.classList.remove('open');
+  document.getElementById('guestOverlay')?.classList.remove('open');
+  document.body.style.overflow = '';
+}
+// ── THEME PANEL ──
+function openTheme() {
+  document.getElementById('themePanel').classList.add('open');
+  document.getElementById('themeOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeTheme() {
+  document.getElementById('themePanel').classList.remove('open');
+  document.getElementById('themeOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+// ── ACCENT ──
+function setAccent(name) {
+  document.documentElement.setAttribute('data-accent', name);
+  localStorage.setItem('sf-accent', name);
+  document.querySelectorAll('.accent-btn').forEach(b => {
+    b.style.borderColor = b.dataset.accent === name ? 'rgba(245,240,232,0.6)' : 'rgba(255,255,255,0.08)';
+  });
+}
+// ── MODE ──
+function setMode(mode) {
+  document.documentElement.setAttribute('data-theme', mode);
+  localStorage.setItem('sf-mode', mode);
+  document.getElementById('modeDark').style.borderColor = mode==='dark' ? 'rgba(245,197,66,0.5)' : 'rgba(255,255,255,0.1)';
+  document.getElementById('modeLight').style.borderColor = mode==='light' ? 'rgba(28,25,23,0.5)' : 'rgba(255,255,255,0.1)';
+}
+// ── RESTORE SAVED THEME ──
+(function() {
+  const accent = localStorage.getItem('sf-accent') || 'yellow';
+  const mode   = localStorage.getItem('sf-mode') || 'dark';
+  document.documentElement.setAttribute('data-accent', accent);
+  document.documentElement.setAttribute('data-theme',  mode);
+})();
+</script>
+@await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

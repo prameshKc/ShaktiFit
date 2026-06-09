@@ -1,0 +1,291 @@
+@model List<FitForgeAI.Models.Exercise>
+@{
+    ViewBag.Title = "Workout Builder – ShaktiFit";
+    ViewBag.ActiveNav = "workouts";
+    var lang = Context.Session.GetString("Lang") ?? "en";
+    bool ne = lang == "ne";
+    var allEx = Model ?? new List<FitForgeAI.Models.Exercise>();
+    var categories = allEx.Select(e => e.Category).Distinct().OrderBy(c => c).ToList();
+
+    string CatIcon(string cat) => cat.ToLower() switch {
+        "chest" => "🫸", "back" => "🔙", "legs" => "🦵", "shoulders" => "🤸",
+        "arms" => "💪", "core" => "🧘", "cardio" => "🏃", "mobility" => "🙆", _ => "🏋️"
+    };
+}
+
+<style>
+.builder-wrap { display:grid; grid-template-columns:1fr 360px; gap:20px; height:calc(100vh - 120px); }
+.builder-left { overflow-y:auto; }
+.builder-right { background:#131110; border:1px solid rgba(255,255,255,0.08); border-radius:16px; overflow-y:auto; display:flex; flex-direction:column; }
+.plan-templates { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:24px; }
+.plan-template {
+  padding:14px 16px; background:#131110; border:1px solid rgba(255,255,255,0.08);
+  border-radius:12px; cursor:pointer; transition:all 0.15s; text-align:center;
+}
+.plan-template:hover, .plan-template.sel { border-color:#f5c542; background:rgba(245,197,66,0.06); }
+.plan-template.sel .pt-icon { transform:scale(1.1); }
+.pt-icon { font-size:24px; margin-bottom:6px; }
+.pt-name { font-size:12px; font-weight:700; color:#f5f0e8; }
+.pt-days { font-size:10px; color:rgba(245,240,232,0.4); margin-top:2px; }
+.ex-pick-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:10px; }
+.ex-pick {
+  padding:14px; background:#0d0b09; border:1.5px solid rgba(255,255,255,0.06);
+  border-radius:12px; cursor:pointer; transition:all 0.15s; position:relative;
+}
+.ex-pick:hover { border-color:rgba(245,197,66,0.3); }
+.ex-pick.picked { border-color:#f5c542; background:rgba(245,197,66,0.06); }
+.ex-pick.picked::after { content:'✓'; position:absolute; top:8px; right:10px; color:#f5c542; font-weight:900; font-size:14px; }
+.ex-pick-icon { font-size:20px; margin-bottom:8px; }
+.ex-pick-name { font-size:13px; font-weight:700; color:#f5f0e8; margin-bottom:3px; }
+.ex-pick-meta { font-size:10px; color:rgba(245,240,232,0.35); }
+.day-slot {
+  background:#0d0b09; border:1px solid rgba(255,255,255,0.06);
+  border-radius:10px; padding:12px 14px; margin-bottom:8px;
+}
+.day-slot-name { font-size:11px; font-weight:700; color:#f5c542; text-transform:uppercase; letter-spacing:0.08em; margin-bottom:8px; }
+.day-ex-list { display:flex; flex-direction:column; gap:6px; min-height:36px; }
+.day-ex-item {
+  display:flex; justify-content:space-between; align-items:center;
+  padding:6px 10px; background:#131110; border:1px solid rgba(255,255,255,0.06);
+  border-radius:7px; font-size:12px; color:#f5f0e8;
+}
+.day-ex-item button { background:none; border:none; color:rgba(248,113,113,0.6); cursor:pointer; font-size:14px; padding:0 4px; }
+.day-ex-item button:hover { color:#f87171; }
+.plan-name-input {
+  width:100%; background:#0d0b09; border:1px solid rgba(255,255,255,0.1);
+  border-radius:10px; color:#f5f0e8; padding:12px 14px; font-size:15px;
+  font-weight:700; font-family:inherit; outline:none; margin-bottom:14px;
+}
+.plan-name-input:focus { border-color:#f5c542; }
+.section-label { font-size:11px; font-weight:700; color:rgba(245,240,232,0.35); text-transform:uppercase; letter-spacing:0.1em; margin-bottom:12px; }
+@@media (max-width:900px) { .builder-wrap { grid-template-columns:1fr; height:auto; } .plan-templates { grid-template-columns:repeat(2,1fr); } }
+</style>
+
+<div class="page-container" style="padding:24px 28px">
+
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px">
+        <div>
+            <a href="/Workout" style="font-size:12px;color:rgba(245,240,232,0.4);text-decoration:none">← @(ne?"फिर्ता":"Back to Workouts")</a>
+            <h1 style="font-size:24px;font-weight:900;color:#f5f0e8;letter-spacing:-0.02em;margin-top:4px">✏️ @(ne?"कस्टम वर्कआउट योजना":"Custom Workout Builder")</h1>
+        </div>
+        <button onclick="savePlan()" style="padding:11px 24px;background:#f5c542;color:#1c1917;font-weight:700;font-size:14px;border-radius:10px;border:none;cursor:pointer">
+            💾 @(ne?"योजना सुरक्षित गर्नुहोस्":"Save Plan")
+        </button>
+    </div>
+
+    <div class="builder-wrap">
+
+        <!-- LEFT: Setup -->
+        <div class="builder-left">
+
+            <!-- Step 1: Template -->
+            <div style="background:#131110;border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:24px;margin-bottom:16px">
+                <div class="section-label">Step 1 — @(ne?"टेम्प्लेट छान्नुहोस्":"Choose a Template")</div>
+                <div class="plan-templates">
+                    @foreach (var t in new[]{
+                        ("ppl","🔁","PPL","Push/Pull/Legs · 6 days"),
+                        ("ul","⬆️⬇️","Upper/Lower","4 days/week"),
+                        ("fb","⚡","Full Body","3 days/week"),
+                        ("bro","💪","Bro Split","Chest/Back/Legs/Shoulder/Arms"),
+                        ("run","🏃","Run + Lift","Hybrid 5 days"),
+                        ("custom","🎨","Custom","Build from scratch")
+                    })
+                    {
+                    <div class="plan-template" data-tpl="@t.Item1" onclick="selectTemplate('@t.Item1')">
+                        <div class="pt-icon">@t.Item2</div>
+                        <div class="pt-name">@t.Item3</div>
+                        <div class="pt-days">@t.Item4</div>
+                    </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Step 2: Pick exercises by category -->
+            <div style="background:#131110;border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:24px;margin-bottom:16px">
+                <div class="section-label">Step 2 — @(ne?"व्यायामहरू छान्नुहोस्":"Pick Exercises")</div>
+                <!-- Category tabs -->
+                <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px">
+                    <button class="ex-filter-btn active" data-cat="all" onclick="filterPicker(this)" style="padding:5px 14px;border-radius:999px;font-size:11px;font-weight:700;cursor:pointer;background:rgba(245,197,66,0.15);border:1px solid rgba(245,197,66,0.3);color:#f5c542">All</button>
+                    @foreach (var cat in categories)
+                    {
+                    <button class="ex-filter-btn" data-cat="@cat.ToLower()" onclick="filterPicker(this)" style="padding:5px 14px;border-radius:999px;font-size:11px;font-weight:600;cursor:pointer;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);color:rgba(245,240,232,0.5)">
+                        @CatIcon(cat) @cat
+                    </button>
+                    }
+                </div>
+                <div class="ex-pick-grid" id="exPickGrid">
+                    @foreach (var ex in allEx)
+                    {
+                    <div class="ex-pick" data-id="@ex.Id" data-name="@ex.Name" data-cat="@ex.Category.ToLower()" onclick="toggleExercise('@ex.Id','@ex.Name.Replace("'","\\'")')">
+                        <div class="ex-pick-icon">@CatIcon(ex.Category)</div>
+                        <div class="ex-pick-name">@(ne && !string.IsNullOrEmpty(ex.NameNepali) ? ex.NameNepali : ex.Name)</div>
+                        <div class="ex-pick-meta">@ex.Category · @ex.Difficulty</div>
+                    </div>
+                    }
+                </div>
+            </div>
+
+        </div>
+
+        <!-- RIGHT: Plan Panel -->
+        <div class="builder-right">
+            <div style="padding:20px;border-bottom:1px solid rgba(255,255,255,0.06)">
+                <div class="section-label" style="margin-bottom:8px">@(ne?"तपाईंको योजना":"Your Plan")</div>
+                <input type="text" class="plan-name-input" id="planName" placeholder="@(ne?"योजनाको नाम...":"Plan name...")" value="My Custom Plan" />
+                <div style="font-size:12px;color:rgba(245,240,232,0.4)" id="planSummary">0 exercises · 0 days</div>
+            </div>
+
+            <!-- Day slots -->
+            <div style="padding:16px;flex:1;overflow-y:auto" id="daySlotsWrap">
+                <div id="daySlots"></div>
+                <div id="unassigned" style="margin-top:12px">
+                    <div class="day-slot-name" style="color:rgba(245,240,232,0.3)">PICKED (drag to days or save)</div>
+                    <div class="day-ex-list" id="unassignedList"></div>
+                </div>
+            </div>
+
+            <div style="padding:16px;border-top:1px solid rgba(255,255,255,0.06)">
+                <button onclick="savePlan()" style="width:100%;padding:12px;background:#f5c542;color:#1c1917;font-weight:700;font-size:14px;border-radius:10px;border:none;cursor:pointer">
+                    💾 @(ne?"योजना सुरक्षित गर्नुहोस्":"Save My Plan")
+                </button>
+                <button onclick="clearPlan()" style="width:100%;padding:10px;background:transparent;color:rgba(245,240,232,0.4);font-size:12px;border:none;cursor:pointer;margin-top:6px">
+                    🗑 @(ne?"सफा गर्नुहोस्":"Clear All")
+                </button>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- Save success toast -->
+<div id="toast" style="display:none;position:fixed;bottom:28px;right:28px;background:#f5c542;color:#1c1917;padding:14px 24px;border-radius:12px;font-weight:700;font-size:14px;z-index:9999;box-shadow:0 8px 28px rgba(245,197,66,0.35)">
+    ✅ @(ne?"योजना सुरक्षित भयो!":"Plan saved!")
+</div>
+
+@section Scripts {
+<script>
+const TEMPLATES = {
+  ppl:    { days:['Monday (Push)','Tuesday (Pull)','Wednesday (Legs)','Thursday (Push)','Friday (Pull)','Saturday (Legs)'] },
+  ul:     { days:['Monday (Upper)','Tuesday (Lower)','Thursday (Upper)','Friday (Lower)'] },
+  fb:     { days:['Monday (Full Body)','Wednesday (Full Body)','Friday (Full Body)'] },
+  bro:    { days:['Monday (Chest)','Tuesday (Back)','Wednesday (Legs)','Thursday (Shoulders)','Friday (Arms)'] },
+  run:    { days:['Monday (Lift)','Tuesday (Run)','Wednesday (Lift)','Friday (Lift)','Saturday (Long Run)'] },
+  custom: { days:['Day 1','Day 2','Day 3'] }
+};
+
+let currentDays = [];
+let picked = {}; // id -> name
+let dayAssign = {}; // dayIndex -> [ids]
+
+function selectTemplate(key) {
+  document.querySelectorAll('.plan-template').forEach(t => t.classList.remove('sel'));
+  document.querySelector(`.plan-template[data-tpl="${key}"]`)?.classList.add('sel');
+  document.getElementById('planName').value = {
+    ppl:'PPL Plan',ul:'Upper/Lower Plan',fb:'Full Body Plan',
+    bro:'Bro Split',run:'Run + Lift Plan',custom:'My Custom Plan'
+  }[key] || 'My Plan';
+  currentDays = [...TEMPLATES[key].days];
+  dayAssign = {};
+  currentDays.forEach((_,i) => dayAssign[i] = []);
+  renderDays();
+  updateSummary();
+}
+
+function renderDays() {
+  const wrap = document.getElementById('daySlots');
+  wrap.innerHTML = currentDays.map((day,i) => `
+    <div class="day-slot">
+      <div class="day-slot-name">${day}</div>
+      <div class="day-ex-list" id="dayList${i}">
+        ${(dayAssign[i]||[]).map(id => exItem(id,i)).join('')}
+        ${(dayAssign[i]||[]).length === 0 ? '<div style="color:rgba(245,240,232,0.2);font-size:11px;padding:4px 0">Click exercises to add here</div>' : ''}
+      </div>
+    </div>
+  `).join('');
+}
+
+function exItem(id, dayIdx) {
+  return `<div class="day-ex-item"><span>${picked[id]||id}</span><button onclick="removeFromDay(${dayIdx},'${id}')">✕</button></div>`;
+}
+
+function toggleExercise(id, name) {
+  const el = document.querySelector(`.ex-pick[data-id="${id}"]`);
+  if (picked[id]) {
+    delete picked[id];
+    el?.classList.remove('picked');
+    // remove from all days
+    currentDays.forEach((_,i) => { dayAssign[i] = (dayAssign[i]||[]).filter(x => x !== id); });
+  } else {
+    picked[id] = name;
+    el?.classList.add('picked');
+    // auto-assign to first day with fewest exercises
+    if (currentDays.length > 0) {
+      const minDay = currentDays.reduce((best,_,i) =>
+        (dayAssign[i]||[]).length < (dayAssign[best]||[]).length ? i : best, 0);
+      if (!dayAssign[minDay]) dayAssign[minDay] = [];
+      dayAssign[minDay].push(id);
+    }
+  }
+  renderDays();
+  updateSummary();
+}
+
+function removeFromDay(dayIdx, id) {
+  dayAssign[dayIdx] = (dayAssign[dayIdx]||[]).filter(x => x !== id);
+  delete picked[id];
+  document.querySelector(`.ex-pick[data-id="${id}"]`)?.classList.remove('picked');
+  renderDays();
+  updateSummary();
+}
+
+function updateSummary() {
+  const totalEx = Object.keys(picked).length;
+  const activeDays = currentDays.filter((_,i) => (dayAssign[i]||[]).length > 0).length;
+  document.getElementById('planSummary').textContent = `${totalEx} exercises · ${activeDays} active days`;
+}
+
+function filterPicker(btn) {
+  document.querySelectorAll('.ex-filter-btn').forEach(b => {
+    b.style.background='rgba(255,255,255,0.04)';
+    b.style.borderColor='rgba(255,255,255,0.08)';
+    b.style.color='rgba(245,240,232,0.5)';
+  });
+  btn.style.background='rgba(245,197,66,0.15)';
+  btn.style.borderColor='rgba(245,197,66,0.3)';
+  btn.style.color='#f5c542';
+  const cat = btn.dataset.cat;
+  document.querySelectorAll('.ex-pick').forEach(card => {
+    card.style.display = (cat === 'all' || card.dataset.cat === cat) ? '' : 'none';
+  });
+}
+
+function clearPlan() {
+  picked = {};
+  currentDays.forEach((_,i) => dayAssign[i] = []);
+  document.querySelectorAll('.ex-pick').forEach(c => c.classList.remove('picked'));
+  renderDays();
+  updateSummary();
+}
+
+function savePlan() {
+  const plan = {
+    name: document.getElementById('planName').value || 'My Plan',
+    days: currentDays.map((day,i) => ({
+      day, exercises: (dayAssign[i]||[]).map(id => ({ id, name: picked[id] }))
+    })),
+    savedAt: new Date().toISOString()
+  };
+  // Save to localStorage
+  const plans = JSON.parse(localStorage.getItem('shaktiFitPlans') || '[]');
+  plans.unshift(plan);
+  localStorage.setItem('shaktiFitPlans', JSON.stringify(plans.slice(0,10)));
+  // Show toast
+  const t = document.getElementById('toast');
+  t.style.display = 'block';
+  setTimeout(() => t.style.display = 'none', 3000);
+}
+
+// Init with PPL template
+selectTemplate('ppl');
+</script>
+}

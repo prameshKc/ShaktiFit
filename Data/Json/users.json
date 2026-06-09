@@ -1,0 +1,87 @@
+[
+  {
+    "id": "18dffb62-938a-464e-b9b2-fb6453151f7e",
+    "name": "Pramesh KC",
+    "email": "prameshcasey@gmail.com",
+    "passwordHash": "cPh6pyrDIeQ21q8x3rJgFx6k1o27iFsPmYEhT/KJYnw=",
+    "age": 33,
+    "gender": "Male",
+    "heightCm": 172,
+    "weightKg": 64,
+    "fitnessLevel": "Intermediate",
+    "goals": [
+      "Lean Muscle Gain",
+      "Muscle Building",
+      "Strength Training",
+      "Running Improvement"
+    ],
+    "workoutDaysPerWeek": 4,
+    "hasGymAccess": true,
+    "prefersHomeWorkout": false,
+    "language": "en",
+    "theme": "dark",
+    "createdAt": "2026-06-08T00:59:34.2396889Z",
+    "lastLoginAt": "2026-06-08T06:45:19.1173167Z",
+    "workoutStreak": 1,
+    "totalWorkoutsCompleted": 1,
+    "achievements": [
+      "ach001"
+    ],
+    "favoriteWorkouts": []
+  },
+  {
+    "id": "a03a431a-5fc1-4bbc-9b88-c405e27fd23e",
+    "name": "Durga Thapa",
+    "email": "durga@gmail.com",
+    "passwordHash": "zDdznRLajZwuS4St3G/JWYozwp6MrbycNyUHvES4EC8=",
+    "age": 31,
+    "gender": "Female",
+    "heightCm": 160,
+    "weightKg": 59,
+    "fitnessLevel": "Beginner",
+    "goals": [
+      "Lean Muscle Gain",
+      "Strength Training",
+      "Fat Loss"
+    ],
+    "workoutDaysPerWeek": 3,
+    "hasGymAccess": true,
+    "prefersHomeWorkout": true,
+    "language": "en",
+    "theme": "dark",
+    "createdAt": "2026-06-08T06:25:52.8862151Z",
+    "lastLoginAt": "2026-06-08T06:25:52.8862153Z",
+    "workoutStreak": 0,
+    "totalWorkoutsCompleted": 0,
+    "achievements": [],
+    "favoriteWorkouts": []
+  },
+  {
+    "id": "40c2faed-557f-4e91-af2c-bdbf10214039",
+    "name": "Durga ",
+    "email": "sharetruth55@gmail.com",
+    "passwordHash": "JrZxvnKBrk1OGzMp51vPANpgt7U7\u002B4v5BFdekLfMPbc=",
+    "age": 32,
+    "gender": "Female",
+    "heightCm": 161,
+    "weightKg": 58.5,
+    "fitnessLevel": "Beginner",
+    "goals": [
+      "Running Improvement",
+      "General Fitness",
+      "Endurance",
+      "Health Maintenance"
+    ],
+    "workoutDaysPerWeek": 2,
+    "hasGymAccess": true,
+    "prefersHomeWorkout": true,
+    "language": "en",
+    "theme": "dark",
+    "createdAt": "2026-06-08T09:44:18.3978295Z",
+    "lastLoginAt": "2026-06-08T09:44:18.3978296Z",
+    "workoutStreak": 0,
+    "totalWorkoutsCompleted": 0,
+    "achievements": [],
+    "favoriteWorkouts": []
+  }
+]

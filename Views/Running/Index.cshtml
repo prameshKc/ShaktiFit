@@ -1,0 +1,168 @@
+@{
+    ViewBag.Title = "Running – ShaktiFit";
+    ViewBag.ActiveNav = "running";
+    var lang = Context.Session.GetString("Lang") ?? "en";
+    bool ne = lang == "ne";
+    var logs = (IEnumerable<FitForgeAI.Models.RunningLog>)(ViewBag.Logs ?? new List<FitForgeAI.Models.RunningLog>());
+    double weeklyKm = ViewBag.WeeklyMileage is double d ? d : 0.0;
+    double bestPace = ViewBag.PersonalBest is double bp ? bp : 0.0;
+    double longestRun = logs.Any() ? logs.Max(l => l.DistanceKm) : 0.0;
+}
+
+<div class="page-container">
+
+    <div style="margin-bottom:24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+        <div>
+            <h1 style="font-size:26px;font-weight:900;margin-bottom:4px">🏃 @(ne?"दौड मड्युल":"Running Module")</h1>
+            <p style="color:var(--text-secondary)">@(ne?"दौड लग गर्नुहोस् र आफ्नो प्रगति ट्र्याक गर्नुहोस्।":"Log your runs and track running progress.")</p>
+        </div>
+        <button class="btn btn-primary" onclick="document.getElementById('logRunForm').scrollIntoView({behavior:'smooth'})">➕ @(ne?"दौड लग गर्नुहोस्":"Log a Run")</button>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-grid" style="margin-bottom:24px">
+        <div class="stat-card">
+            <div class="stat-icon">📍</div>
+            <div class="stat-label">@(ne?"साप्ताहिक किमी":"Weekly km")</div>
+            <div class="stat-value text-gradient">@weeklyKm.ToString("0.0")</div>
+            <div class="stat-sub">km @(ne?"यस हप्ता":"this week")</div>
+        </div>
+        <div class="stat-card sc-green">
+            <div class="stat-icon">⚡</div>
+            <div class="stat-label">@(ne?"सबैभन्दा राम्रो गति":"Best Pace")</div>
+            <div class="stat-value">@(bestPace > 0 ? bestPace.ToString("0.0") : "—")</div>
+            <div class="stat-sub">min/km</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">🏆</div>
+            <div class="stat-label">@(ne?"सबैभन्दा लामो दौड":"Longest Run")</div>
+            <div class="stat-value text-gradient">@(longestRun > 0 ? longestRun.ToString("0.0") : "—")</div>
+            <div class="stat-sub">km</div>
+        </div>
+        <div class="stat-card sc-green">
+            <div class="stat-icon">📅</div>
+            <div class="stat-label">@(ne?"कुल दौड":"Total Runs")</div>
+            <div class="stat-value">@logs.Count()</div>
+            <div class="stat-sub">@(ne?"सबै समय":"all time")</div>
+        </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px">
+
+        <!-- Log Run Form -->
+        <div class="card" id="logRunForm">
+            <div class="card-header"><div class="card-title">➕ @(ne?"नयाँ दौड लग गर्नुहोस्":"Log New Run")</div></div>
+            <div class="card-body">
+                <form method="post" action="/Running/LogRun">
+                    <div class="form-group">
+                        <label class="form-label">@(ne?"मिति":"Date")</label>
+                        <input type="date" name="Date" class="form-control" value="@DateTime.Today.ToString("yyyy-MM-dd")" required />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">@(ne?"दूरी (km)":"Distance (km)")</label>
+                        <input type="number" name="distance" class="form-control" placeholder="5.0" min="0.1" max="200" step="0.1" required />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">@(ne?"अवधि (मिनेट)":"Duration (minutes)")</label>
+                        <input type="number" name="duration" class="form-control" placeholder="30" min="1" max="600" required />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">@(ne?"दौड प्रकार":"Run Type")</label>
+                        <select name="runType" class="form-control">
+                            <option value="Easy">Easy Run</option>
+                            <option value="Tempo">Tempo Run</option>
+                            <option value="Intervals">Intervals</option>
+                            <option value="Long Run">Long Run</option>
+                            <option value="Race">Race</option>
+                            <option value="Recovery">Recovery</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">@(ne?"नोटहरू":"Notes") (@(ne?"वैकल्पिक":"optional"))</label>
+                        <textarea name="notes" class="form-control" rows="2" placeholder="@(ne?"यस दौडको बारेमा...":"How did this run feel?")"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block">🏃 @(ne?"दौड सुरक्षित गर्नुहोस्":"Save Run")</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Pace Calculator -->
+        <div class="card">
+            <div class="card-header"><div class="card-title">⏱️ @(ne?"गति क्याल्कुलेटर":"Pace Calculator")</div></div>
+            <div class="card-body">
+                <div class="form-group">
+                    <label class="form-label">@(ne?"दूरी (km)":"Distance (km)")</label>
+                    <input type="number" id="paceDistKm" class="form-control" placeholder="10" min="0.1" step="0.1" />
+                </div>
+                <div class="form-group">
+                    <label class="form-label">@(ne?"समय (मिनेट)":"Time (minutes)")</label>
+                    <input type="number" id="paceTimeMin" class="form-control" placeholder="50" min="1" />
+                </div>
+                <button class="btn btn-outline btn-block" onclick="calcPace()">⚡ @(ne?"गति गणना":"Calculate Pace")</button>
+                <div id="paceResult" style="display:none;margin-top:16px;background:var(--indigo-bg);border-radius:12px;padding:16px;text-align:center">
+                    <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:var(--indigo);margin-bottom:6px">@(ne?"तपाईंको गति":"Your Pace")</div>
+                    <div id="paceVal" style="font-size:36px;font-weight:900;color:var(--indigo)"></div>
+                    <div style="font-size:12px;color:var(--text-muted);margin-top:4px">min/km</div>
+                    <div id="paceFinish" style="font-size:13px;color:var(--text-secondary);margin-top:8px"></div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Run History -->
+    <div class="card" style="margin-top:24px">
+        <div class="card-header"><div class="card-title">📋 @(ne?"दौड इतिहास":"Run History")</div></div>
+        <div class="card-body">
+            @if (logs.Any())
+            {
+            @foreach (var log in logs.OrderByDescending(l => l.Date).Take(20))
+            {
+            <div class="run-item">
+                <div class="run-dot">🏃</div>
+                <div class="run-main">
+                    <div class="run-dist">@log.DistanceKm km</div>
+                    <div class="run-meta">@log.RunType · @log.Date.ToString("MMM dd, yyyy") · @log.DurationMinutes @(ne?"मिनेट":"min")</div>
+                    @if (!string.IsNullOrEmpty(log.Notes)) { <div style="font-size:12px;color:var(--text-muted);margin-top:2px">@log.Notes</div> }
+                </div>
+                <div style="text-align:right">
+                    <div class="run-pace-val">@log.PaceMinPerKm.ToString("0.0")</div>
+                    <div class="run-pace-lbl">min/km</div>
+                </div>
+            </div>
+            }
+            }
+            else
+            {
+            <div style="text-align:center;padding:48px;color:var(--text-muted)">
+                <div style="font-size:48px;margin-bottom:12px">🏃</div>
+                <div>@(ne?"कुनै दौड लग छैन। माथि पहिलो दौड लग गर्नुहोस्।":"No runs logged yet. Log your first run above.")</div>
+            </div>
+            }
+        </div>
+    </div>
+
+</div>
+
+@section Scripts {
+<script>
+function calcPace() {
+    const dist = parseFloat(document.getElementById('paceDistKm').value);
+    const time = parseFloat(document.getElementById('paceTimeMin').value);
+    if (!dist || !time) return;
+    const pace = time / dist;
+    const mins = Math.floor(pace);
+    const secs = Math.round((pace - mins) * 60);
+    document.getElementById('paceVal').textContent = `${mins}:${secs.toString().padStart(2,'0')}`;
+    const finishes = {'5K': 5, '10K': 10, 'Half': 21.0975, 'Marathon': 42.195};
+    let html = '';
+    for (const [name, d] of Object.entries(finishes)) {
+        const t = pace * d;
+        const h = Math.floor(t / 60), m = Math.floor(t % 60), s = Math.round((t - Math.floor(t)) * 60);
+        html += `<span style="margin:0 8px">${name}: ${h > 0 ? h+'h ' : ''}${m}m ${s}s</span>`;
+    }
+    document.getElementById('paceFinish').innerHTML = html;
+    document.getElementById('paceResult').style.display = 'block';
+}
+</script>
+}

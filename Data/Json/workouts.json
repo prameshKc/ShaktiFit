@@ -1,0 +1,118 @@
+[
+  {
+    "id": "wk001",
+    "name": "Full Body Strength - Monday",
+    "nameNepali": "पूर्ण शरीर शक्ति - सोमबार",
+    "type": "Strength",
+    "fitnessLevel": "Beginner",
+    "goals": ["Muscle Building", "General Fitness"],
+    "exercises": [
+      { "exerciseId": "ex009", "exerciseName": "Push-Up", "sets": 3, "reps": "10-15", "restSeconds": 60 },
+      { "exerciseId": "ex007", "exerciseName": "Plank", "sets": 3, "reps": "30 sec", "restSeconds": 45 },
+      { "exerciseId": "ex002", "exerciseName": "Squat", "sets": 3, "reps": "12", "restSeconds": 75 },
+      { "exerciseId": "ex004", "exerciseName": "Pull-Up", "sets": 3, "reps": "5-8", "restSeconds": 90 }
+    ],
+    "durationMinutes": 40,
+    "description": "A balanced full body workout perfect for beginners to build foundational strength.",
+    "dayOfWeek": "Monday",
+    "requiresGym": false,
+    "imageUrl": "/images/workouts/strength.jpg",
+    "estimatedCalories": 280
+  },
+  {
+    "id": "wk002",
+    "name": "Upper Body Power",
+    "nameNepali": "माथिल्लो शरीर शक्ति",
+    "type": "Strength",
+    "fitnessLevel": "Intermediate",
+    "goals": ["Muscle Building", "Lean Muscle Gain"],
+    "exercises": [
+      { "exerciseId": "ex001", "exerciseName": "Bench Press", "sets": 4, "reps": "6-8", "restSeconds": 90 },
+      { "exerciseId": "ex005", "exerciseName": "Overhead Press", "sets": 4, "reps": "6-8", "restSeconds": 90 },
+      { "exerciseId": "ex004", "exerciseName": "Pull-Up", "sets": 4, "reps": "8-10", "restSeconds": 90 },
+      { "exerciseId": "ex006", "exerciseName": "Dumbbell Curl", "sets": 3, "reps": "12", "restSeconds": 60 },
+      { "exerciseId": "ex011", "exerciseName": "Lat Pulldown", "sets": 3, "reps": "12", "restSeconds": 60 }
+    ],
+    "durationMinutes": 55,
+    "description": "Focused upper body session targeting chest, back, shoulders and arms for maximum hypertrophy.",
+    "dayOfWeek": "Monday",
+    "requiresGym": true,
+    "imageUrl": "/images/workouts/upper-body.jpg",
+    "estimatedCalories": 350
+  },
+  {
+    "id": "wk003",
+    "name": "Leg Day",
+    "nameNepali": "खुट्टाको दिन",
+    "type": "Strength",
+    "fitnessLevel": "Intermediate",
+    "goals": ["Muscle Building", "Athletic Performance"],
+    "exercises": [
+      { "exerciseId": "ex002", "exerciseName": "Squat", "sets": 4, "reps": "5-6", "restSeconds": 120 },
+      { "exerciseId": "ex008", "exerciseName": "Romanian Deadlift", "sets": 3, "reps": "10", "restSeconds": 90 },
+      { "exerciseId": "ex007", "exerciseName": "Plank", "sets": 3, "reps": "45 sec", "restSeconds": 45 }
+    ],
+    "durationMinutes": 50,
+    "description": "Heavy lower body session for building powerful legs and glutes.",
+    "dayOfWeek": "Wednesday",
+    "requiresGym": true,
+    "imageUrl": "/images/workouts/legs.jpg",
+    "estimatedCalories": 400
+  },
+  {
+    "id": "wk004",
+    "name": "5K Training Run",
+    "nameNepali": "5K प्रशिक्षण दौड",
+    "type": "Running",
+    "fitnessLevel": "Beginner",
+    "goals": ["Running Improvement", "Sub 20 Minute 5K", "General Fitness"],
+    "exercises": [
+      { "exerciseId": "ex012", "exerciseName": "Hip Flexor Stretch", "sets": 1, "reps": "5 min warmup", "restSeconds": 0 },
+      { "exerciseId": "ex010", "exerciseName": "Running Intervals", "sets": 4, "reps": "400m", "restSeconds": 120 }
+    ],
+    "durationMinutes": 35,
+    "description": "Interval run session designed to improve your 5K time through speed work.",
+    "dayOfWeek": "Tuesday",
+    "requiresGym": false,
+    "imageUrl": "/images/workouts/running.jpg",
+    "estimatedCalories": 350
+  },
+  {
+    "id": "wk005",
+    "name": "Power & Strength",
+    "nameNepali": "शक्ति र बल",
+    "type": "Strength",
+    "fitnessLevel": "Advanced",
+    "goals": ["Strength Training", "Athletic Performance", "Hybrid Athlete"],
+    "exercises": [
+      { "exerciseId": "ex003", "exerciseName": "Deadlift", "sets": 4, "reps": "3-5", "restSeconds": 180 },
+      { "exerciseId": "ex002", "exerciseName": "Squat", "sets": 4, "reps": "5", "restSeconds": 180 },
+      { "exerciseId": "ex001", "exerciseName": "Bench Press", "sets": 4, "reps": "5", "restSeconds": 180 },
+      { "exerciseId": "ex005", "exerciseName": "Overhead Press", "sets": 4, "reps": "5", "restSeconds": 180 }
+    ],
+    "durationMinutes": 75,
+    "description": "Heavy strength-focused session built around the big four compound movements.",
+    "dayOfWeek": "Friday",
+    "requiresGym": true,
+    "imageUrl": "/images/workouts/power.jpg",
+    "estimatedCalories": 500
+  },
+  {
+    "id": "wk006",
+    "name": "Recovery & Mobility",
+    "nameNepali": "पुनःप्राप्ति र गतिशीलता",
+    "type": "Recovery",
+    "fitnessLevel": "Beginner",
+    "goals": ["General Fitness", "Hybrid Athlete", "Endurance Athlete"],
+    "exercises": [
+      { "exerciseId": "ex012", "exerciseName": "Hip Flexor Stretch", "sets": 3, "reps": "60 sec", "restSeconds": 30 },
+      { "exerciseId": "ex007", "exerciseName": "Plank", "sets": 2, "reps": "30 sec", "restSeconds": 30 }
+    ],
+    "durationMinutes": 30,
+    "description": "Active recovery session focused on mobility, flexibility, and rejuvenation.",
+    "dayOfWeek": "Sunday",
+    "requiresGym": false,
+    "imageUrl": "/images/workouts/recovery.jpg",
+    "estimatedCalories": 120
+  }
+]
