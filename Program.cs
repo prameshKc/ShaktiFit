@@ -7,6 +7,7 @@ var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
 builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
 
 builder.Services.AddControllersWithViews();
+builder.Services.AddHttpClient(); // for EmailService (Brevo API)
 builder.Services.AddSession(o => { o.IdleTimeout = TimeSpan.FromHours(8); o.Cookie.HttpOnly = true; });
 builder.Services.AddMemoryCache();
 builder.Services.AddSingleton<IJsonStorageService, JsonStorageService>();
