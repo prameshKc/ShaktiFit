@@ -231,6 +231,73 @@
             </div>
         </div>
 
+        <!-- ── Activity Widget ── -->
+        @{
+            var actStats = ViewBag.ActivityStats as FitForgeAI.Services.ActivityStats;
+            var recentActs = ViewBag.RecentActivities as List<FitForgeAI.Models.Activity> ?? new();
+            var actSuggestions = ViewBag.ActivitySuggestions as List<string> ?? new();
+            string AIcon(string t) => t.ToLower() switch { "run"=>"🏃","ride"or"cycling"=>"🚴","walk"=>"🚶","swim"=>"🏊","gym"=>"🏋️","hiit"=>"⚡","yoga"=>"🧘","hike"=>"🥾",_=>"💪" };
+            string AColor(string t) => t.ToLower() switch { "run"=>"#f87171","ride"or"cycling"=>"#60a5fa","walk"=>"#4ade80","swim"=>"#38bdf8","gym"=>"#a78bfa","hiit"=>"#fb923c","yoga"=>"#f472b6","hike"=>"#86efac",_=>"#f5c542" };
+        }
+        <div class="card span3" style="background:#131110;border:1px solid rgba(255,255,255,0.08)">
+            <div class="card-header" style="display:flex;align-items:center;justify-content:space-between">
+                <div class="card-title">🏅 @(ne?"यो हप्ताको गतिविधि":"This Week's Activity")</div>
+                <a href="/Activity/Log" style="font-size:12px;font-weight:700;color:var(--accent,#f5c542);padding:6px 14px;border:1px solid rgba(245,197,66,0.3);border-radius:8px">+ @(ne?"थप्नुहोस्":"Log")</a>
+            </div>
+            <div class="card-body">
+                <!-- Mini stats row -->
+                <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px">
+                    @foreach (var s in new[]{
+                        ("🏃", actStats?.TotalSessions.ToString() ?? "0", ne?"सत्र":"Sessions"),
+                        ("⏱️", (actStats?.TotalMinutes ?? 0) + "m", ne?"मिनेट":"Minutes"),
+                        ("📍", (actStats?.TotalKm ?? 0).ToString("0.0") + "km", ne?"दूरी":"Distance"),
+                        ("🔥", (actStats?.TotalCalories ?? 0).ToString(), ne?"क्यालोरी":"Calories")
+                    })
+                    {
+                    <div style="background:rgba(255,255,255,0.03);border-radius:10px;padding:10px;text-align:center">
+                        <div style="font-size:16px;margin-bottom:3px">@s.Item1</div>
+                        <div style="font-size:16px;font-weight:900;color:#f5f0e8;letter-spacing:-0.02em">@s.Item2</div>
+                        <div style="font-size:10px;color:rgba(245,240,232,0.3);font-weight:600">@s.Item3</div>
+                    </div>
+                    }
+                </div>
+
+                <!-- Recent activities -->
+                @if (recentActs.Any())
+                {
+                @foreach (var a in recentActs)
+                {
+                var ic = AIcon(a.Type); var cl = AColor(a.Type);
+                <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.05)">
+                    <div style="width:34px;height:34px;background:@(cl)18;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0">@ic</div>
+                    <div style="flex:1;min-width:0">
+                        <div style="font-size:13px;font-weight:700;color:#f5f0e8">@(!string.IsNullOrEmpty(a.Title)?a.Title:$"{a.Type} Session")</div>
+                        <div style="font-size:11px;color:rgba(245,240,232,0.35)">@a.Date.ToString("MMM dd") · @a.DurationMinutes min@(a.DistanceKm.HasValue ? $" · {a.DistanceKm:0.0}km" : "")</div>
+                    </div>
+                    <div style="font-size:12px;font-weight:700;color:rgba(245,240,232,0.35)">🔥 @a.CaloriesBurned cal</div>
+                </div>
+                }
+                <a href="/Activity" style="display:block;text-align:center;padding:10px;color:rgba(245,240,232,0.4);font-size:12px;font-weight:700;margin-top:8px">@(ne?"सबै हेर्नुहोस्":"View all activities →")</a>
+                }
+                else
+                {
+                <div style="text-align:center;padding:20px;color:rgba(245,240,232,0.3)">
+                    <div style="font-size:32px;margin-bottom:8px">🏅</div>
+                    <div style="font-size:13px;font-weight:600;margin-bottom:12px">@(ne?"अझै कुनै गतिविधि छैन":"No activities this week")</div>
+                    <a href="/Activity/Log" style="padding:9px 20px;background:var(--accent,#f5c542);color:#1c1917;font-weight:800;border-radius:10px;font-size:13px">+ @(ne?"पहिलो गतिविधि लग गर्नुहोस्":"Log Your First Activity")</a>
+                </div>
+                }
+
+                <!-- Top suggestion -->
+                @if (actSuggestions.Any())
+                {
+                <div style="background:rgba(245,197,66,0.07);border:1px solid rgba(245,197,66,0.15);border-radius:10px;padding:10px 14px;margin-top:12px;font-size:12px;color:rgba(245,240,232,0.65)">
+                    🤖 @actSuggestions.First()
+                </div>
+                }
+            </div>
+        </div>
+
         <!-- Quote -->
         <div class="card span3" style="background:linear-gradient(135deg,var(--indigo-bg),var(--green-bg))">
             <div class="card-body" style="display:flex;align-items:center;gap:18px;padding:24px">

@@ -10,6 +10,7 @@ public class DashboardController : Controller
     private readonly WorkoutService _workouts;
     private readonly ProgressService _progress;
     private readonly TranslationService _translations;
+    private readonly ActivityService _activities;
 
     private static readonly string[] Quotes = {
         "Discipline beats motivation.", "Progress over perfection.", "Stronger every day.",
@@ -19,9 +20,9 @@ public class DashboardController : Controller
         "Your body can stand almost anything. It's your mind you have to convince."
     };
 
-    public DashboardController(UserService users, WorkoutService workouts, ProgressService progress, TranslationService translations)
+    public DashboardController(UserService users, WorkoutService workouts, ProgressService progress, TranslationService translations, ActivityService activities)
     {
-        _users = users; _workouts = workouts; _progress = progress; _translations = translations;
+        _users = users; _workouts = workouts; _progress = progress; _translations = translations; _activities = activities;
     }
 
     public async Task<IActionResult> Index()
@@ -47,6 +48,9 @@ public class DashboardController : Controller
             Translations = _translations.GetAll(lang),
             Lang = lang
         };
+        ViewBag.ActivityStats       = await _activities.GetWeeklyStatsAsync(userId);
+        ViewBag.RecentActivities    = (await _activities.GetForUserAsync(userId)).Take(3).ToList();
+        ViewBag.ActivitySuggestions = await _activities.GetSuggestionsAsync(userId);
         return View(vm);
     }
 

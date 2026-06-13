@@ -83,5 +83,31 @@
     "totalWorkoutsCompleted": 0,
     "achievements": [],
     "favoriteWorkouts": []
+  },
+  {
+    "id": "8ca5ce24-b616-45e5-a220-7a1ca7ba3e18",
+    "name": "Pratima kc ",
+    "email": "kcpratima2@gmail.com",
+    "passwordHash": "P0PtzOOi3Incjkg1ba3qb5oBz2LUUWVuhxgLY9k/Ybw=",
+    "age": 36,
+    "gender": "Male",
+    "heightCm": 0,
+    "weightKg": 0,
+    "fitnessLevel": "Beginner",
+    "goals": [
+      "Weight Loss",
+      "Running Improvement"
+    ],
+    "workoutDaysPerWeek": 0,
+    "hasGymAccess": false,
+    "prefersHomeWorkout": false,
+    "language": "en",
+    "theme": null,
+    "createdAt": "2026-06-09T13:03:09.6572497Z",
+    "lastLoginAt": "2026-06-09T13:03:09.6572498Z",
+    "workoutStreak": 0,
+    "totalWorkoutsCompleted": 0,
+    "achievements": [],
+    "favoriteWorkouts": []
   }
 ]

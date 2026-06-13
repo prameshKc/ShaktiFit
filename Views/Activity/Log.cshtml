@@ -1,0 +1,196 @@
+@{
+    ViewBag.Title = "Log Activity – ShaktiFit";
+    var lang = Context.Session.GetString("Lang") ?? "en";
+    bool ne = lang == "ne";
+}
+
+<style>
+.log-page { background:#0d0b09; min-height:100vh; padding:24px 20px 60px; }
+.log-inner { max-width:600px; margin:0 auto; }
+.log-title { font-size:24px; font-weight:900; color:#f5f0e8; letter-spacing:-0.02em; margin-bottom:4px; }
+.log-sub { font-size:13px; color:rgba(245,240,232,0.4); margin-bottom:28px; }
+.log-card { background:#131110; border:1px solid rgba(255,255,255,0.08); border-radius:18px; padding:24px; }
+
+/* Activity type selector */
+.type-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:24px; }
+.type-btn {
+  display:flex; flex-direction:column; align-items:center; gap:6px;
+  padding:14px 6px; border-radius:14px; border:1.5px solid rgba(255,255,255,0.08);
+  background:rgba(255,255,255,0.03); cursor:pointer; transition:all 0.15s;
+}
+.type-btn:hover { border-color:rgba(245,197,66,0.3); background:rgba(245,197,66,0.06); }
+.type-btn.selected { border-color:var(--accent,#f5c542); background:rgba(245,197,66,0.12); }
+.type-btn.selected .type-icon { background:var(--accent,#f5c542); }
+.type-icon { width:40px; height:40px; border-radius:10px; background:rgba(255,255,255,0.06); display:flex; align-items:center; justify-content:center; font-size:20px; transition:all 0.15s; }
+.type-label { font-size:11px; font-weight:700; color:rgba(245,240,232,0.55); }
+.type-btn.selected .type-label { color:var(--accent,#f5c542); }
+
+/* Form fields */
+.field-row { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:16px; }
+.field-full { margin-bottom:16px; }
+.f-lbl { font-size:12px; font-weight:700; color:rgba(245,240,232,0.45); margin-bottom:6px; letter-spacing:0.03em; }
+.f-inp {
+  width:100%; background:#1c1917; border:1.5px solid rgba(255,255,255,0.1); border-radius:12px;
+  color:#f5f0e8; padding:12px 14px; font-size:15px; font-family:inherit; outline:none;
+  transition:border-color .15s; -webkit-appearance:none;
+}
+.f-inp:focus { border-color:var(--accent,#f5c542); }
+.f-inp::placeholder { color:rgba(245,240,232,0.2); }
+select.f-inp option { background:#1c1917; }
+
+/* Intensity pills */
+.intensity-row { display:flex; gap:8px; margin-bottom:20px; }
+.int-btn {
+  flex:1; padding:10px; border-radius:10px; border:1.5px solid rgba(255,255,255,0.08);
+  background:rgba(255,255,255,0.03); cursor:pointer; font-size:12px; font-weight:700;
+  color:rgba(245,240,232,0.45); transition:all 0.15s; font-family:inherit; text-align:center;
+}
+.int-btn:hover { border-color:rgba(255,255,255,0.2); color:rgba(245,240,232,0.75); }
+.int-btn.sel-easy   { border-color:#22c55e; background:rgba(34,197,94,0.12); color:#22c55e; }
+.int-btn.sel-moderate { border-color:#f59e0b; background:rgba(245,158,11,0.12); color:#f59e0b; }
+.int-btn.sel-hard   { border-color:#ef4444; background:rgba(239,68,68,0.12); color:#ef4444; }
+
+/* Submit */
+.log-submit { width:100%; padding:15px; background:var(--accent,#f5c542); color:#1c1917; font-weight:800; font-size:16px; border:none; border-radius:14px; cursor:pointer; font-family:inherit; margin-top:8px; }
+.log-submit:hover { filter:brightness(1.08); }
+
+/* Calorie preview */
+.cal-preview { background:rgba(245,197,66,0.08); border:1px solid rgba(245,197,66,0.15); border-radius:10px; padding:12px 16px; margin-bottom:16px; display:flex; align-items:center; gap:10px; }
+
+@@media (max-width:500px) {
+  .type-grid { grid-template-columns:repeat(4,1fr); gap:8px; }
+  .type-icon { width:34px; height:34px; font-size:17px; }
+  .field-row { grid-template-columns:1fr; }
+}
+</style>
+
+<div class="log-page">
+<div class="log-inner">
+
+  <a href="/Activity" style="display:inline-flex;align-items:center;gap:6px;color:rgba(245,240,232,0.4);font-size:13px;font-weight:600;margin-bottom:20px">← @(ne?"फिर्ता":"Back")</a>
+
+  <div class="log-title">📝 @(ne?"गतिविधि लग गर्नुहोस्":"Log Activity")</div>
+  <div class="log-sub">@(ne?"तपाईंको आजको गतिविधि रेकर्ड गर्नुहोस्":"Record your workout or activity to track progress")</div>
+
+  <div class="log-card">
+    <form method="post" action="/Activity/Log" id="logForm">
+
+      <!-- Activity Type -->
+      <div style="font-size:12px;font-weight:700;color:rgba(245,240,232,0.45);margin-bottom:10px;letter-spacing:0.03em">@(ne?"गतिविधि प्रकार":"ACTIVITY TYPE")</div>
+      <div class="type-grid" id="typeGrid">
+        @foreach (var t in new[]{
+          ("Run","🏃","run"),("Ride","🚴","ride"),("Walk","🚶","walk"),("Swim","🏊","swim"),
+          ("Gym","🏋️","gym"),("HIIT","⚡","hiit"),("Yoga","🧘","yoga"),("Hike","🥾","hike")
+        })
+        {
+        <button type="button" class="type-btn" data-type="@t.Item3" onclick="selectType('@t.Item3', this)">
+          <div class="type-icon">@t.Item1</div>
+          <div class="type-label">@t.Item2</div>
+        </button>
+        }
+      </div>
+      <input type="hidden" name="type" id="typeInput" value="run" required />
+
+      <hr style="border:none;border-top:1px solid rgba(255,255,255,0.06);margin:4px 0 20px" />
+
+      <!-- Title (optional) -->
+      <div class="field-full">
+        <div class="f-lbl">@(ne?"शीर्षक (ऐच्छिक)":"TITLE (optional)")</div>
+        <input type="text" name="title" class="f-inp" placeholder="@(ne?"जस्तै: बिहानको दौड":"e.g. Morning Run")" />
+      </div>
+
+      <!-- Date + Duration -->
+      <div class="field-row">
+        <div>
+          <div class="f-lbl">@(ne?"मिति":"DATE")</div>
+          <input type="date" name="date" class="f-inp" value="@DateTime.Now.ToString("yyyy-MM-dd")" required />
+        </div>
+        <div>
+          <div class="f-lbl">@(ne?"अवधि (मिनेट)":"DURATION (min)")</div>
+          <input type="number" name="durationMinutes" id="durInput" class="f-inp" placeholder="30" min="1" max="600" required oninput="updateCalPreview()" />
+        </div>
+      </div>
+
+      <!-- Distance + HR (optional) -->
+      <div class="field-row">
+        <div>
+          <div class="f-lbl">@(ne?"दूरी km (ऐच्छिक)":"DISTANCE km (optional)")</div>
+          <input type="number" name="distanceKm" class="f-inp" placeholder="5.0" step="0.1" min="0" />
+        </div>
+        <div>
+          <div class="f-lbl">@(ne?"हृदय गति (ऐच्छिक)":"HEART RATE (optional)")</div>
+          <input type="number" name="heartRateAvg" class="f-inp" placeholder="145" min="40" max="220" />
+        </div>
+      </div>
+
+      <!-- Intensity -->
+      <div style="font-size:12px;font-weight:700;color:rgba(245,240,232,0.45);margin-bottom:8px;letter-spacing:0.03em">@(ne?"तीव्रता":"INTENSITY")</div>
+      <div class="intensity-row">
+        <button type="button" class="int-btn" id="iEasy"     onclick="selectIntensity('Easy')"    >😌 @(ne?"सजिलो":"Easy")</button>
+        <button type="button" class="int-btn sel-moderate" id="iModerate" onclick="selectIntensity('Moderate')">💪 @(ne?"मध्यम":"Moderate")</button>
+        <button type="button" class="int-btn" id="iHard"     onclick="selectIntensity('Hard')"    >🔥 @(ne?"कठिन":"Hard")</button>
+      </div>
+      <input type="hidden" name="intensity" id="intensityInput" value="Moderate" />
+
+      <!-- Calorie preview -->
+      <div class="cal-preview" id="calPreview" style="display:none">
+        <span style="font-size:20px">🔥</span>
+        <div>
+          <div style="font-size:13px;font-weight:700;color:#f5c542" id="calText">~0 calories</div>
+          <div style="font-size:11px;color:rgba(245,240,232,0.35)">@(ne?"अनुमानित — आफ्नो संख्या थप्न सक्नुहुन्छ":"Estimated — you can override below")</div>
+        </div>
+      </div>
+
+      <!-- Calories override -->
+      <div class="field-full">
+        <div class="f-lbl">@(ne?"क्यालोरी (ऐच्छिक, ओभरराइड)":"CALORIES (optional override)")</div>
+        <input type="number" name="caloriesBurned" class="f-inp" placeholder="@(ne?"खाली छोड्नुहोस् स्वत: गणनाको लागि":"Leave blank to auto-calculate")" min="0" />
+      </div>
+
+      <!-- Notes -->
+      <div class="field-full">
+        <div class="f-lbl">@(ne?"नोट (ऐच्छिक)":"NOTES (optional)")</div>
+        <textarea name="notes" class="f-inp" rows="3" placeholder="@(ne?"आजको सत्रको बारेमा कस्तो लाग्यो?":"How did today's session feel?")" style="resize:vertical"></textarea>
+      </div>
+
+      <button type="submit" class="log-submit">✅ @(ne?"गतिविधि बचत गर्नुहोस्":"Save Activity")</button>
+    </form>
+  </div>
+
+</div>
+</div>
+
+@section Scripts {
+<script>
+// Select type
+function selectType(type, btn) {
+  document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  document.getElementById('typeInput').value = type;
+  updateCalPreview();
+}
+// Select intensity
+function selectIntensity(level) {
+  document.getElementById('iEasy').className     = 'int-btn' + (level==='Easy'     ? ' sel-easy' : '');
+  document.getElementById('iModerate').className = 'int-btn' + (level==='Moderate' ? ' sel-moderate' : '');
+  document.getElementById('iHard').className     = 'int-btn' + (level==='Hard'     ? ' sel-hard' : '');
+  document.getElementById('intensityInput').value = level;
+  updateCalPreview();
+}
+// Calorie preview
+const mets = { run:9, ride:6.5, walk:3.5, swim:8, gym:4.5, hiit:10.5, yoga:2.5, hike:6, default:5 };
+const intMult = { Easy:0.8, Moderate:1.0, Hard:1.2 };
+function updateCalPreview() {
+  const type = document.getElementById('typeInput').value;
+  const dur  = parseInt(document.getElementById('durInput').value) || 0;
+  const intv = document.getElementById('intensityInput').value;
+  if (!dur) { document.getElementById('calPreview').style.display='none'; return; }
+  const met  = (mets[type] || mets.default) * (intMult[intv] || 1);
+  const cal  = Math.round(met * 70 * (dur / 60));
+  document.getElementById('calText').textContent = `~${cal} calories`;
+  document.getElementById('calPreview').style.display = 'flex';
+}
+// Pre-select Run
+document.querySelector('[data-type="run"]')?.classList.add('selected');
+</script>
+}

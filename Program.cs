@@ -14,6 +14,7 @@ builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<ExerciseService>();
 builder.Services.AddScoped<WorkoutService>();
 builder.Services.AddScoped<ProgressService>();
+builder.Services.AddScoped<ActivityService>();
 
 var app = builder.Build();
 
