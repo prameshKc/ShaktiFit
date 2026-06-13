@@ -24,24 +24,16 @@ public class ExerciseController : Controller
 
     public async Task<IActionResult> Index(string? category, string? search)
     {
-        // Load local JSON exercises
-        var localTask = string.IsNullOrWhiteSpace(search)
-            ? _exercises.GetByCategoryAsync(category ?? "All")
-            : _exercises.SearchAsync(search);
-
-        // Load API exercises (cached, so fast after first call)
+        // Load API exercises (cached after first call)
         var apiTask = _workoutApi.GetExercisesAsync();
+        await apiTask;
 
-        await Task.WhenAll(localTask, apiTask);
-
-        var local = await localTask;
-
-        // Convert API results to Exercise model and merge (API ids are GUIDs, no collision with local)
+        // Use API exercises only
         var apiExercises = (await apiTask)
             .Select(WorkoutApiService.ToExercise)
             .ToList();
 
-        // If filtering/searching, also filter API results
+        // Filter if needed
         if (!string.IsNullOrWhiteSpace(search))
         {
             var q = search.ToLower();
@@ -55,27 +47,14 @@ public class ExerciseController : Controller
             apiExercises = apiExercises.Where(e => e.Category == category).ToList();
         }
 
-        // Merge: local exercises first, then API (deduplicate by name)
-        var localNames = local.Select(e => e.Name.ToLower()).ToHashSet();
-        var merged = local.Concat(
-            apiExercises.Where(e => !localNames.Contains(e.Name.ToLower()))
-        ).ToList();
+        var merged = apiExercises;
 
-        // Build categories from merged set
-        var allApi = (await apiTask).Select(WorkoutApiService.ToExercise).ToList();
-        var allLocal = await _exercises.GetAllAsync();
-        var allMerged = allLocal.Concat(
-            allApi.Where(e => !allLocal.Select(x => x.Name.ToLower()).Contains(e.Name.ToLower()))
-        ).ToList();
+        var categories = (await apiTask)
+            .Select(WorkoutApiService.ToExercise)
+            .Select(e => e.Category).Distinct().OrderBy(c => c).ToList();
 
-        var categories = allMerged.Select(e => e.Category).Distinct().OrderBy(c => c).ToList();
-
-        // Build name → api-id map so the view can show thumbnails for local exercises too
-        var apiAll = await apiTask;
+        // All API ids are GUIDs — no need for a name→id map
         var apiIdByName = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        foreach (var ae in apiAll)
-            if (!apiIdByName.ContainsKey(ae.Name))
-                apiIdByName[ae.Name] = ae.Id;
 
         ViewBag.Categories = categories;
         ViewBag.SelectedCategory = category ?? "All";
