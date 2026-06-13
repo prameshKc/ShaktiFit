@@ -86,7 +86,6 @@ public class WorkoutApiService
     // ── Fetch single exercise by API id ──────────────────────────────────────
     public async Task<WorkoutApiExercise?> GetExerciseByIdAsync(string id)
     {
-        // Try the cache first to avoid an extra round-trip
         var all = await GetExercisesAsync();
         var fromCache = all.FirstOrDefault(e => e.Id == id);
         if (fromCache != null) return fromCache;
@@ -96,10 +95,27 @@ public class WorkoutApiService
             var json = await _http.GetStringAsync($"/exercises/{id}");
             return JsonSerializer.Deserialize<WorkoutApiExercise>(json, JsonOpts);
         }
-        catch
+        catch { return null; }
+    }
+
+    // ── Fetch SVG image for an exercise (cached 24 h) ────────────────────────
+    public async Task<string?> GetExerciseImageAsync(string id)
+    {
+        var cacheKey = $"exercise_img_{id}";
+        if (_cache.TryGetValue(cacheKey, out string? cached))
+            return cached;
+
+        try
         {
-            return null;
+            var req = new HttpRequestMessage(HttpMethod.Get, $"/exercises/{id}/image");
+            req.Headers.Add("Accept", "image/svg+xml");
+            var resp = await _http.SendAsync(req);
+            if (!resp.IsSuccessStatusCode) return null;
+            var svg = await resp.Content.ReadAsStringAsync();
+            _cache.Set(cacheKey, svg, CacheDuration);
+            return svg;
         }
+        catch { return null; }
     }
 
     // ── Map API exercise → app Exercise model ────────────────────────────────

@@ -249,9 +249,24 @@
        data-name="@ex.Name.ToLower() @(ex.NameNepali?.ToLower())"
        data-diff="@ex.Difficulty.ToLower()">
       <div class="ex-card-top" style="background:@color"></div>
+      @{
+        // Check if this exercise has a WorkoutAPI id (guid format = from API)
+        bool hasApiImg = ex.Id.Length == 36 && ex.Id.Contains('-');
+      }
+      @if (hasApiImg)
+      {
+      <!-- SVG illustration thumbnail -->
+      <div style="height:110px;background:linear-gradient(135deg,#f8faf8,#f0fdf4);display:flex;align-items:center;justify-content:center;overflow:hidden;border-radius:16px 16px 0 0;border-bottom:1px solid rgba(0,0,0,0.05)">
+        <img src="/Exercise/Image/@ex.Id" alt="@ex.Name"
+             style="max-height:100px;max-width:100%;object-fit:contain;padding:6px;filter:drop-shadow(0 2px 6px rgba(0,0,0,0.1))"
+             onerror="this.parentElement.innerHTML='<div style=\'font-size:36px;padding:20px\'>@icon</div>'" />
+      </div>
+      }
       <div class="ex-card-body">
         <div class="ex-card-icon-row">
+          @if (!hasApiImg) {
           <div class="ex-card-icon" style="background:@bg">@icon</div>
+          }
           @if (ex.IsCompound) {
           <span class="ex-compound-badge">⚡ @(ne?"यौगिक":"Compound")</span>
           }

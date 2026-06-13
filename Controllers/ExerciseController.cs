@@ -89,9 +89,18 @@ public class ExerciseController : Controller
             if (apiEx != null)
             {
                 exercise = WorkoutApiService.ToExercise(apiEx);
-                // Pass the raw API exercise for extra detail display
                 ViewBag.ApiExercise = apiEx;
             }
+        }
+
+        // If it's a local exercise, check if WorkoutAPI has an image for it by name match
+        if (exercise != null && ViewBag.ApiExercise == null)
+        {
+            var all = await _workoutApi.GetExercisesAsync();
+            var match = all.FirstOrDefault(e =>
+                string.Equals(e.Name, exercise.Name, StringComparison.OrdinalIgnoreCase));
+            if (match != null)
+                ViewBag.ApiExercise = match;
         }
 
         if (exercise == null) return NotFound();
@@ -99,5 +108,14 @@ public class ExerciseController : Controller
         ViewBag.T = _translations.GetAll(Lang);
         ViewBag.Lang = Lang;
         return View(exercise);
+    }
+
+    // ── Proxy SVG image from WorkoutAPI (keeps API key server-side) ──────────
+    [ResponseCache(Duration = 86400)] // cache 24 h in browser
+    public async Task<IActionResult> Image(string id)
+    {
+        var svg = await _workoutApi.GetExerciseImageAsync(id);
+        if (svg == null) return NotFound();
+        return Content(svg, "image/svg+xml");
     }
 }
