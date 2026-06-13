@@ -57,6 +57,13 @@ public class WorkoutService
         return logs.Count(l => l.CompletedAt >= weekStart);
     }
 
+    // ── User custom routines (saved from Split Builder) ──────────────────────
+    public Task<List<Workout>> GetUserRoutinesAsync(string userId) =>
+        _storage.ReadAsync<Workout>($"user_routines_{userId}.json");
+
+    public Task SaveUserRoutinesAsync(string userId, List<Workout> routines) =>
+        _storage.WriteAsync($"user_routines_{userId}.json", routines);
+
     public async Task<List<Workout>> GetHybridPlanAsync()
     {
         var all = await GetAllAsync();

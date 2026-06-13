@@ -53,3 +53,19 @@ public class SetLog
     public int Reps { get; set; }
     public double WeightKg { get; set; }
 }
+
+
+// Used by Split Routine Builder save
+public class DayPlan
+{
+    public string Day { get; set; } = "";
+    public string Label { get; set; } = "";
+    public List<DayExercise> Exercises { get; set; } = new();
+}
+public class DayExercise
+{
+    public string Id { get; set; } = "";
+    public string Name { get; set; } = "";
+    public string Category { get; set; } = "";
+    public bool IsCompound { get; set; }
+}

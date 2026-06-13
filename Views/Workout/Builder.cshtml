@@ -1,291 +1,558 @@
-@model List<FitForgeAI.Models.Exercise>
 @{
-    ViewBag.Title = "Workout Builder – ShaktiFit";
-    ViewBag.ActiveNav = "workouts";
+    ViewBag.Title = "Split Routine Builder – ShaktiFit";
+    ViewBag.ActiveNav = "workout";
     var lang = Context.Session.GetString("Lang") ?? "en";
     bool ne = lang == "ne";
-    var allEx = Model ?? new List<FitForgeAI.Models.Exercise>();
-    var categories = allEx.Select(e => e.Category).Distinct().OrderBy(c => c).ToList();
-
-    string CatIcon(string cat) => cat.ToLower() switch {
-        "chest" => "🫸", "back" => "🔙", "legs" => "🦵", "shoulders" => "🤸",
-        "arms" => "💪", "core" => "🧘", "cardio" => "🏃", "mobility" => "🙆", _ => "🏋️"
-    };
 }
 
 <style>
-.builder-wrap { display:grid; grid-template-columns:1fr 360px; gap:20px; height:calc(100vh - 120px); }
-.builder-left { overflow-y:auto; }
-.builder-right { background:#131110; border:1px solid rgba(255,255,255,0.08); border-radius:16px; overflow-y:auto; display:flex; flex-direction:column; }
-.plan-templates { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:24px; }
-.plan-template {
-  padding:14px 16px; background:#131110; border:1px solid rgba(255,255,255,0.08);
-  border-radius:12px; cursor:pointer; transition:all 0.15s; text-align:center;
+.sb-page { background:#f8faf8; min-height:100vh; }
+.sb-wrap { max-width:1100px; margin:0 auto; padding:24px 20px 100px; }
+
+/* Hero */
+.sb-hero { background:linear-gradient(135deg,#0f1f0f 0%,#1a3a1a 55%,#16a34a 100%); border-radius:20px; padding:28px 32px; margin-bottom:24px; position:relative; overflow:hidden; }
+.sb-hero::before { content:''; position:absolute; top:-40px; right:-40px; width:180px; height:180px; background:rgba(34,197,94,0.1); border-radius:50%; }
+.sb-hero-tag { font-size:11px; font-weight:800; color:#86efac; text-transform:uppercase; letter-spacing:.12em; margin-bottom:8px; }
+.sb-hero-title { font-size:26px; font-weight:900; color:#f0fdf4; letter-spacing:-.02em; margin-bottom:6px; }
+.sb-hero-sub { font-size:13px; color:rgba(240,253,244,.65); }
+
+/* Steps bar */
+.sb-steps { display:flex; gap:0; margin-bottom:28px; background:#fff; border:1.5px solid rgba(0,0,0,.07); border-radius:14px; overflow:hidden; }
+.sb-step { flex:1; padding:14px 16px; text-align:center; font-size:12px; font-weight:700; color:#94a3b8; border-right:1px solid rgba(0,0,0,.06); transition:all .2s; position:relative; }
+.sb-step:last-child { border-right:none; }
+.sb-step.active { background:linear-gradient(135deg,#f0fdf4,#dcfce7); color:#16a34a; }
+.sb-step.done { background:#f0fdf4; color:#22c55e; }
+.sb-step-num { font-size:18px; font-weight:900; display:block; line-height:1; margin-bottom:3px; }
+
+/* Cards */
+.sb-card { background:#fff; border:1.5px solid rgba(0,0,0,.07); border-radius:18px; overflow:hidden; box-shadow:0 1px 4px rgba(0,0,0,.04); margin-bottom:20px; }
+.sb-card-head { padding:16px 20px; border-bottom:1px solid rgba(0,0,0,.06); font-size:14px; font-weight:800; color:#0f172a; display:flex; align-items:center; gap:8px; }
+.sb-card-body { padding:20px; }
+
+/* ── STEP 1: Split type ── */
+.split-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:12px; }
+.split-opt { padding:20px 16px; border:2px solid rgba(0,0,0,.08); border-radius:14px; cursor:pointer; text-align:center; transition:all .2s; background:#fff; }
+.split-opt:hover { border-color:rgba(34,197,94,.4); background:#f0fdf4; }
+.split-opt.sel { border-color:#22c55e; background:linear-gradient(135deg,#f0fdf4,#dcfce7); box-shadow:0 0 0 3px rgba(34,197,94,.12); }
+.split-opt-icon { font-size:32px; margin-bottom:8px; }
+.split-opt-name { font-size:14px; font-weight:800; color:#0f172a; margin-bottom:4px; }
+.split-opt-days { font-size:11px; color:#64748b; font-weight:600; }
+.split-opt-desc { font-size:11px; color:#94a3b8; margin-top:6px; line-height:1.5; }
+
+/* ── STEP 2: Config ── */
+.config-row { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+.config-group label { display:block; font-size:12px; font-weight:700; color:#374151; text-transform:uppercase; letter-spacing:.08em; margin-bottom:10px; }
+.level-btns { display:flex; gap:8px; flex-wrap:wrap; }
+.level-btn { padding:9px 18px; border:1.5px solid rgba(0,0,0,.1); border-radius:999px; font-size:13px; font-weight:700; cursor:pointer; background:#fff; color:#374151; transition:all .15s; }
+.level-btn.sel { border-color:transparent; color:#fff; }
+.days-btns { display:flex; gap:8px; flex-wrap:wrap; }
+.days-btn { width:42px; height:42px; border:1.5px solid rgba(0,0,0,.1); border-radius:10px; font-size:14px; font-weight:800; cursor:pointer; background:#fff; color:#374151; transition:all .15s; display:flex; align-items:center; justify-content:center; }
+.days-btn.sel { background:linear-gradient(135deg,#22c55e,#16a34a); border-color:transparent; color:#fff; box-shadow:0 2px 8px rgba(34,197,94,.3); }
+.days-btn:disabled { opacity:.35; cursor:not-allowed; }
+
+/* ── STEP 3: Day tabs + exercise picker ── */
+.day-tabs { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:20px; }
+.day-tab { padding:8px 18px; border:1.5px solid rgba(0,0,0,.1); border-radius:999px; font-size:13px; font-weight:700; cursor:pointer; background:#fff; color:#374151; transition:all .15s; position:relative; }
+.day-tab.active { background:linear-gradient(135deg,#22c55e,#16a34a); border-color:transparent; color:#fff; }
+.day-tab .ex-count { position:absolute; top:-6px; right:-6px; background:#ef4444; color:#fff; font-size:10px; font-weight:800; width:18px; height:18px; border-radius:50%; display:none; align-items:center; justify-content:center; }
+.day-tab .ex-count.show { display:flex; }
+
+.picker-layout { display:grid; grid-template-columns:1fr 300px; gap:16px; align-items:start; }
+.picker-search { position:relative; margin-bottom:14px; }
+.picker-search input { width:100%; padding:10px 14px 10px 38px; border:1.5px solid rgba(0,0,0,.1); border-radius:10px; font-size:13px; background:#f8faf8; color:#0f172a; outline:none; }
+.picker-search input:focus { border-color:rgba(34,197,94,.4); background:#fff; }
+.picker-search-icon { position:absolute; left:12px; top:50%; transform:translateY(-50%); color:#94a3b8; }
+.cat-filters { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:14px; }
+.cat-f { padding:5px 12px; border:1.5px solid rgba(0,0,0,.08); border-radius:999px; font-size:11px; font-weight:700; cursor:pointer; background:#fff; color:#374151; transition:all .15s; }
+.cat-f.active { background:linear-gradient(135deg,#22c55e,#16a34a); border-color:transparent; color:#fff; }
+.ex-pick-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:10px; max-height:420px; overflow-y:auto; padding-right:4px; }
+.ex-pick-card { padding:12px; border:1.5px solid rgba(0,0,0,.08); border-radius:12px; cursor:pointer; transition:all .15s; background:#fff; position:relative; }
+.ex-pick-card:hover { border-color:rgba(34,197,94,.35); background:#f8faf8; }
+.ex-pick-card.picked { border-color:#22c55e; background:#f0fdf4; }
+.ex-pick-card.picked::after { content:'✓'; position:absolute; top:6px; right:10px; color:#22c55e; font-weight:900; font-size:13px; }
+.ex-pick-name { font-size:12px; font-weight:700; color:#0f172a; margin-bottom:4px; line-height:1.3; }
+.ex-pick-meta { font-size:10px; color:#94a3b8; }
+.ex-pick-badge { display:inline-block; padding:2px 7px; border-radius:999px; font-size:9px; font-weight:700; margin-top:4px; }
+
+/* Day plan (right panel) */
+.day-plan { background:#fff; border:1.5px solid rgba(0,0,0,.07); border-radius:14px; overflow:hidden; position:sticky; top:20px; }
+.day-plan-head { padding:14px 16px; background:linear-gradient(135deg,#f0fdf4,#dcfce7); border-bottom:1px solid rgba(34,197,94,.15); font-size:13px; font-weight:800; color:#16a34a; }
+.day-plan-list { padding:10px; min-height:120px; max-height:360px; overflow-y:auto; }
+.day-ex-item { display:flex; align-items:center; justify-content:space-between; padding:9px 11px; background:#f8faf8; border:1px solid rgba(0,0,0,.05); border-radius:9px; margin-bottom:6px; }
+.day-ex-item-name { font-size:12px; font-weight:700; color:#0f172a; }
+.day-ex-item-meta { font-size:10px; color:#94a3b8; margin-top:1px; }
+.day-ex-remove { background:none; border:none; cursor:pointer; color:#ef4444; font-size:14px; padding:2px 6px; border-radius:6px; transition:background .15s; }
+.day-ex-remove:hover { background:#fef2f2; }
+.day-plan-empty { padding:24px; text-align:center; color:#94a3b8; font-size:12px; }
+
+/* Nav buttons */
+.sb-nav { display:flex; justify-content:space-between; align-items:center; margin-top:24px; }
+.sb-btn-back { padding:12px 24px; background:#fff; border:1.5px solid rgba(0,0,0,.1); border-radius:12px; font-size:14px; font-weight:700; color:#374151; cursor:pointer; transition:all .15s; }
+.sb-btn-back:hover { border-color:rgba(34,197,94,.3); color:#16a34a; }
+.sb-btn-next { padding:12px 28px; background:linear-gradient(135deg,#22c55e,#16a34a); border:none; border-radius:12px; font-size:14px; font-weight:700; color:#fff; cursor:pointer; box-shadow:0 4px 16px rgba(34,197,94,.3); transition:opacity .15s; }
+.sb-btn-next:hover { opacity:.9; }
+
+/* Summary */
+.summary-day { background:#f8faf8; border:1.5px solid rgba(0,0,0,.07); border-radius:14px; padding:16px; margin-bottom:12px; }
+.summary-day-title { font-size:13px; font-weight:800; color:#16a34a; margin-bottom:10px; display:flex; align-items:center; gap:8px; }
+.summary-ex-row { display:flex; align-items:center; gap:10px; padding:8px 0; border-bottom:1px solid rgba(0,0,0,.05); }
+.summary-ex-row:last-child { border-bottom:none; }
+.summary-ex-name { font-size:13px; font-weight:700; color:#0f172a; flex:1; }
+.summary-ex-meta { font-size:11px; color:#64748b; }
+
+@@media(max-width:768px) {
+  .config-row { grid-template-columns:1fr; }
+  .picker-layout { grid-template-columns:1fr; }
+  .sb-hero { padding:22px 18px; border-radius:16px; }
+  .sb-hero-title { font-size:20px; }
 }
-.plan-template:hover, .plan-template.sel { border-color:#f5c542; background:rgba(245,197,66,0.06); }
-.plan-template.sel .pt-icon { transform:scale(1.1); }
-.pt-icon { font-size:24px; margin-bottom:6px; }
-.pt-name { font-size:12px; font-weight:700; color:#f5f0e8; }
-.pt-days { font-size:10px; color:rgba(245,240,232,0.4); margin-top:2px; }
-.ex-pick-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:10px; }
-.ex-pick {
-  padding:14px; background:#0d0b09; border:1.5px solid rgba(255,255,255,0.06);
-  border-radius:12px; cursor:pointer; transition:all 0.15s; position:relative;
-}
-.ex-pick:hover { border-color:rgba(245,197,66,0.3); }
-.ex-pick.picked { border-color:#f5c542; background:rgba(245,197,66,0.06); }
-.ex-pick.picked::after { content:'✓'; position:absolute; top:8px; right:10px; color:#f5c542; font-weight:900; font-size:14px; }
-.ex-pick-icon { font-size:20px; margin-bottom:8px; }
-.ex-pick-name { font-size:13px; font-weight:700; color:#f5f0e8; margin-bottom:3px; }
-.ex-pick-meta { font-size:10px; color:rgba(245,240,232,0.35); }
-.day-slot {
-  background:#0d0b09; border:1px solid rgba(255,255,255,0.06);
-  border-radius:10px; padding:12px 14px; margin-bottom:8px;
-}
-.day-slot-name { font-size:11px; font-weight:700; color:#f5c542; text-transform:uppercase; letter-spacing:0.08em; margin-bottom:8px; }
-.day-ex-list { display:flex; flex-direction:column; gap:6px; min-height:36px; }
-.day-ex-item {
-  display:flex; justify-content:space-between; align-items:center;
-  padding:6px 10px; background:#131110; border:1px solid rgba(255,255,255,0.06);
-  border-radius:7px; font-size:12px; color:#f5f0e8;
-}
-.day-ex-item button { background:none; border:none; color:rgba(248,113,113,0.6); cursor:pointer; font-size:14px; padding:0 4px; }
-.day-ex-item button:hover { color:#f87171; }
-.plan-name-input {
-  width:100%; background:#0d0b09; border:1px solid rgba(255,255,255,0.1);
-  border-radius:10px; color:#f5f0e8; padding:12px 14px; font-size:15px;
-  font-weight:700; font-family:inherit; outline:none; margin-bottom:14px;
-}
-.plan-name-input:focus { border-color:#f5c542; }
-.section-label { font-size:11px; font-weight:700; color:rgba(245,240,232,0.35); text-transform:uppercase; letter-spacing:0.1em; margin-bottom:12px; }
-@@media (max-width:900px) { .builder-wrap { grid-template-columns:1fr; height:auto; } .plan-templates { grid-template-columns:repeat(2,1fr); } }
 </style>
 
-<div class="page-container" style="padding:24px 28px">
+<div class="sb-page">
+<div class="sb-wrap">
 
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px">
-        <div>
-            <a href="/Workout" style="font-size:12px;color:rgba(245,240,232,0.4);text-decoration:none">← @(ne?"फिर्ता":"Back to Workouts")</a>
-            <h1 style="font-size:24px;font-weight:900;color:#f5f0e8;letter-spacing:-0.02em;margin-top:4px">✏️ @(ne?"कस्टम वर्कआउट योजना":"Custom Workout Builder")</h1>
+  <!-- Hero -->
+  <div class="sb-hero">
+    <div class="sb-hero-tag">✏️ @(ne?"योजना निर्माता":"Routine Builder")</div>
+    <div class="sb-hero-title">@(ne?"आफ्नै Split Routine बनाउनुहोस्":"Build Your Own Split Routine")</div>
+    <div class="sb-hero-sub">@(ne?"PPL, Bro Split, Upper/Lower — 94+ वर्कआउट API व्यायामहरूबाट छान्नुहोस्":"PPL, Bro Split, Upper/Lower — pick from 94+ WorkoutAPI exercises")</div>
+  </div>
+
+  <!-- Steps -->
+  <div class="sb-steps">
+    <div class="sb-step active" id="step-ind-1"><span class="sb-step-num">1</span>Choose Split</div>
+    <div class="sb-step" id="step-ind-2"><span class="sb-step-num">2</span>Level & Days</div>
+    <div class="sb-step" id="step-ind-3"><span class="sb-step-num">3</span>Pick Exercises</div>
+    <div class="sb-step" id="step-ind-4"><span class="sb-step-num">4</span>Review & Save</div>
+  </div>
+
+  <!-- ── STEP 1: Choose split ── -->
+  <div id="step1">
+    <div class="sb-card">
+      <div class="sb-card-head">💪 @(ne?"Split प्रकार छान्नुहोस्":"Choose Your Split Type")</div>
+      <div class="sb-card-body">
+        <div class="split-grid">
+          <div class="split-opt" data-split="ppl" onclick="selectSplit(this)">
+            <div class="split-opt-icon">🔄</div>
+            <div class="split-opt-name">PPL</div>
+            <div class="split-opt-days">Push · Pull · Legs · 3–6 days/week</div>
+            <div class="split-opt-desc">Best for intermediate lifters wanting volume per muscle group</div>
+          </div>
+          <div class="split-opt" data-split="upperlower" onclick="selectSplit(this)">
+            <div class="split-opt-icon">⬆️⬇️</div>
+            <div class="split-opt-name">Upper / Lower</div>
+            <div class="split-opt-days">4 days/week · Intermediate</div>
+            <div class="split-opt-desc">Balanced frequency hitting each muscle group twice a week</div>
+          </div>
+          <div class="split-opt" data-split="fullbody" onclick="selectSplit(this)">
+            <div class="split-opt-icon">⚡</div>
+            <div class="split-opt-name">Full Body</div>
+            <div class="split-opt-days">3 days/week · Beginner</div>
+            <div class="split-opt-desc">Perfect for beginners — compound movements every session</div>
+          </div>
+          <div class="split-opt" data-split="bro" onclick="selectSplit(this)">
+            <div class="split-opt-icon">💪</div>
+            <div class="split-opt-name">Bro Split</div>
+            <div class="split-opt-days">5 days/week · Intermediate</div>
+            <div class="split-opt-desc">One muscle group per day — chest, back, legs, shoulders, arms</div>
+          </div>
+          <div class="split-opt" data-split="hiit" onclick="selectSplit(this)">
+            <div class="split-opt-icon">🏃</div>
+            <div class="split-opt-name">HIIT + Strength</div>
+            <div class="split-opt-days">4 days/week · All levels</div>
+            <div class="split-opt-desc">Mix of cardio and resistance training for fat loss + muscle</div>
+          </div>
+          <div class="split-opt" data-split="custom" onclick="selectSplit(this)">
+            <div class="split-opt-icon">🎨</div>
+            <div class="split-opt-name">Custom</div>
+            <div class="split-opt-days">You decide · Any level</div>
+            <div class="split-opt-desc">Start from scratch — pick exercises for any days you want</div>
+          </div>
         </div>
-        <button onclick="savePlan()" style="padding:11px 24px;background:#f5c542;color:#1c1917;font-weight:700;font-size:14px;border-radius:10px;border:none;cursor:pointer">
-            💾 @(ne?"योजना सुरक्षित गर्नुहोस्":"Save Plan")
-        </button>
+      </div>
     </div>
-
-    <div class="builder-wrap">
-
-        <!-- LEFT: Setup -->
-        <div class="builder-left">
-
-            <!-- Step 1: Template -->
-            <div style="background:#131110;border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:24px;margin-bottom:16px">
-                <div class="section-label">Step 1 — @(ne?"टेम्प्लेट छान्नुहोस्":"Choose a Template")</div>
-                <div class="plan-templates">
-                    @foreach (var t in new[]{
-                        ("ppl","🔁","PPL","Push/Pull/Legs · 6 days"),
-                        ("ul","⬆️⬇️","Upper/Lower","4 days/week"),
-                        ("fb","⚡","Full Body","3 days/week"),
-                        ("bro","💪","Bro Split","Chest/Back/Legs/Shoulder/Arms"),
-                        ("run","🏃","Run + Lift","Hybrid 5 days"),
-                        ("custom","🎨","Custom","Build from scratch")
-                    })
-                    {
-                    <div class="plan-template" data-tpl="@t.Item1" onclick="selectTemplate('@t.Item1')">
-                        <div class="pt-icon">@t.Item2</div>
-                        <div class="pt-name">@t.Item3</div>
-                        <div class="pt-days">@t.Item4</div>
-                    </div>
-                    }
-                </div>
-            </div>
-
-            <!-- Step 2: Pick exercises by category -->
-            <div style="background:#131110;border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:24px;margin-bottom:16px">
-                <div class="section-label">Step 2 — @(ne?"व्यायामहरू छान्नुहोस्":"Pick Exercises")</div>
-                <!-- Category tabs -->
-                <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px">
-                    <button class="ex-filter-btn active" data-cat="all" onclick="filterPicker(this)" style="padding:5px 14px;border-radius:999px;font-size:11px;font-weight:700;cursor:pointer;background:rgba(245,197,66,0.15);border:1px solid rgba(245,197,66,0.3);color:#f5c542">All</button>
-                    @foreach (var cat in categories)
-                    {
-                    <button class="ex-filter-btn" data-cat="@cat.ToLower()" onclick="filterPicker(this)" style="padding:5px 14px;border-radius:999px;font-size:11px;font-weight:600;cursor:pointer;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);color:rgba(245,240,232,0.5)">
-                        @CatIcon(cat) @cat
-                    </button>
-                    }
-                </div>
-                <div class="ex-pick-grid" id="exPickGrid">
-                    @foreach (var ex in allEx)
-                    {
-                    <div class="ex-pick" data-id="@ex.Id" data-name="@ex.Name" data-cat="@ex.Category.ToLower()" onclick="toggleExercise('@ex.Id','@ex.Name.Replace("'","\\'")')">
-                        <div class="ex-pick-icon">@CatIcon(ex.Category)</div>
-                        <div class="ex-pick-name">@(ne && !string.IsNullOrEmpty(ex.NameNepali) ? ex.NameNepali : ex.Name)</div>
-                        <div class="ex-pick-meta">@ex.Category · @ex.Difficulty</div>
-                    </div>
-                    }
-                </div>
-            </div>
-
-        </div>
-
-        <!-- RIGHT: Plan Panel -->
-        <div class="builder-right">
-            <div style="padding:20px;border-bottom:1px solid rgba(255,255,255,0.06)">
-                <div class="section-label" style="margin-bottom:8px">@(ne?"तपाईंको योजना":"Your Plan")</div>
-                <input type="text" class="plan-name-input" id="planName" placeholder="@(ne?"योजनाको नाम...":"Plan name...")" value="My Custom Plan" />
-                <div style="font-size:12px;color:rgba(245,240,232,0.4)" id="planSummary">0 exercises · 0 days</div>
-            </div>
-
-            <!-- Day slots -->
-            <div style="padding:16px;flex:1;overflow-y:auto" id="daySlotsWrap">
-                <div id="daySlots"></div>
-                <div id="unassigned" style="margin-top:12px">
-                    <div class="day-slot-name" style="color:rgba(245,240,232,0.3)">PICKED (drag to days or save)</div>
-                    <div class="day-ex-list" id="unassignedList"></div>
-                </div>
-            </div>
-
-            <div style="padding:16px;border-top:1px solid rgba(255,255,255,0.06)">
-                <button onclick="savePlan()" style="width:100%;padding:12px;background:#f5c542;color:#1c1917;font-weight:700;font-size:14px;border-radius:10px;border:none;cursor:pointer">
-                    💾 @(ne?"योजना सुरक्षित गर्नुहोस्":"Save My Plan")
-                </button>
-                <button onclick="clearPlan()" style="width:100%;padding:10px;background:transparent;color:rgba(245,240,232,0.4);font-size:12px;border:none;cursor:pointer;margin-top:6px">
-                    🗑 @(ne?"सफा गर्नुहोस्":"Clear All")
-                </button>
-            </div>
-        </div>
-
+    <div class="sb-nav">
+      <a href="/Workout" class="sb-btn-back">← @(ne?"फिर्ता":"Back")</a>
+      <button class="sb-btn-next" onclick="goStep(2)">@(ne?"अर्को →":"Next →")</button>
     </div>
+  </div>
+
+  <!-- ── STEP 2: Level & days ── -->
+  <div id="step2" style="display:none">
+    <div class="sb-card">
+      <div class="sb-card-head">🎯 @(ne?"आफ्नो स्तर र दिनहरू सेट गर्नुहोस्":"Set Your Level & Training Days")</div>
+      <div class="sb-card-body">
+        <div class="config-row">
+          <div class="config-group">
+            <label>@(ne?"फिटनेस स्तर":"Fitness Level")</label>
+            <div class="level-btns">
+              <button class="level-btn sel" data-level="Beginner" onclick="selectLevel(this)" style="background:#f0fdf4;color:#16a34a;border-color:rgba(34,197,94,.3)">🟢 @(ne?"सुरुवाती":"Beginner")</button>
+              <button class="level-btn" data-level="Intermediate" onclick="selectLevel(this)">🟡 @(ne?"मध्यम":"Intermediate")</button>
+              <button class="level-btn" data-level="Advanced" onclick="selectLevel(this)">🔴 @(ne?"उन्नत":"Advanced")</button>
+            </div>
+          </div>
+          <div class="config-group">
+            <label>@(ne?"हप्तामा दिनहरू":"Days Per Week")</label>
+            <div class="days-btns" id="daysBtns">
+              @for (int d = 2; d <= 6; d++) {
+              <button class="days-btn @(d==3?"sel":"")" data-days="@d" onclick="selectDays(this)">@d</button>
+              }
+            </div>
+            <div style="font-size:11px;color:#64748b;margin-top:8px" id="daysHint">3 training days + 4 rest days</div>
+          </div>
+        </div>
+
+        <!-- Split info panel -->
+        <div id="splitInfoBox" style="margin-top:20px;padding:16px;background:linear-gradient(135deg,#f0fdf4,#f8faf8);border:1.5px solid rgba(34,197,94,.2);border-radius:12px;">
+          <div style="font-size:12px;font-weight:800;color:#16a34a;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px">📅 @(ne?"योजना पूर्वावलोकन":"Schedule Preview")</div>
+          <div id="splitPreview" style="font-size:13px;color:#374151;line-height:1.8"></div>
+        </div>
+      </div>
+    </div>
+    <div class="sb-nav">
+      <button class="sb-btn-back" onclick="goStep(1)">← @(ne?"पछि":"Back")</button>
+      <button class="sb-btn-next" onclick="goStep(3)">@(ne?"व्यायाम छान्नुहोस् →":"Pick Exercises →")</button>
+    </div>
+  </div>
+
+  <!-- ── STEP 3: Exercise picker ── -->
+  <div id="step3" style="display:none">
+    <div class="sb-card">
+      <div class="sb-card-head">🏋️ @(ne?"व्यायाम छान्नुहोस्":"Pick Exercises for Each Day")</div>
+      <div class="sb-card-body" style="padding-bottom:10px">
+        <div class="day-tabs" id="dayTabs"></div>
+        <div class="picker-layout">
+          <div>
+            <div class="picker-search">
+              <span class="picker-search-icon">🔍</span>
+              <input type="text" id="pickerSearch" placeholder="@(ne?"व्यायाम खोज्नुहोस्...":"Search exercises...")" oninput="renderPicker()" />
+            </div>
+            <div class="cat-filters" id="catFilters"></div>
+            <div class="ex-pick-grid" id="exPickGrid"></div>
+          </div>
+          <div>
+            <div class="day-plan" id="dayPlanPanel">
+              <div class="day-plan-head" id="dayPlanTitle">Monday</div>
+              <div class="day-plan-list" id="dayPlanList">
+                <div class="day-plan-empty">Click exercises to add →</div>
+              </div>
+              <div style="padding:10px 12px;border-top:1px solid rgba(0,0,0,.06)">
+                <div style="font-size:11px;color:#94a3b8;font-weight:600" id="dayPlanCount">0 exercises selected</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="sb-nav">
+      <button class="sb-btn-back" onclick="goStep(2)">← @(ne?"पछि":"Back")</button>
+      <button class="sb-btn-next" onclick="goStep(4)">@(ne?"पूर्वावलोकन →":"Preview →")</button>
+    </div>
+  </div>
+
+  <!-- ── STEP 4: Review & Save ── -->
+  <div id="step4" style="display:none">
+    <div class="sb-card">
+      <div class="sb-card-head">✅ @(ne?"तपाईंको Routine पूर्वावलोकन":"Your Routine Preview")</div>
+      <div class="sb-card-body">
+        <div style="display:flex;align-items:center;gap:14px;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid rgba(0,0,0,.06)">
+          <input type="text" id="planName" placeholder="@(ne?"योजनाको नाम...":"Routine name...")"
+            style="flex:1;padding:12px 16px;border:1.5px solid rgba(0,0,0,.1);border-radius:10px;font-size:15px;font-weight:700;color:#0f172a;background:#f8faf8;outline:none" />
+          <div style="font-size:12px;color:#64748b;white-space:nowrap" id="summaryMeta"></div>
+        </div>
+        <div id="summaryContent"></div>
+      </div>
+    </div>
+    <div class="sb-nav">
+      <button class="sb-btn-back" onclick="goStep(3)">← @(ne?"पछि":"Back")</button>
+      <button class="sb-btn-next" onclick="saveRoutine()" style="background:linear-gradient(135deg,#22c55e,#16a34a);padding:14px 36px;font-size:15px">
+        💾 @(ne?"Routine सुरक्षित गर्नुहोस्":"Save Routine")
+      </button>
+    </div>
+  </div>
+
 </div>
-
-<!-- Save success toast -->
-<div id="toast" style="display:none;position:fixed;bottom:28px;right:28px;background:#f5c542;color:#1c1917;padding:14px 24px;border-radius:12px;font-weight:700;font-size:14px;z-index:9999;box-shadow:0 8px 28px rgba(245,197,66,0.35)">
-    ✅ @(ne?"योजना सुरक्षित भयो!":"Plan saved!")
 </div>
 
 @section Scripts {
 <script>
-const TEMPLATES = {
-  ppl:    { days:['Monday (Push)','Tuesday (Pull)','Wednesday (Legs)','Thursday (Push)','Friday (Pull)','Saturday (Legs)'] },
-  ul:     { days:['Monday (Upper)','Tuesday (Lower)','Thursday (Upper)','Friday (Lower)'] },
-  fb:     { days:['Monday (Full Body)','Wednesday (Full Body)','Friday (Full Body)'] },
-  bro:    { days:['Monday (Chest)','Tuesday (Back)','Wednesday (Legs)','Thursday (Shoulders)','Friday (Arms)'] },
-  run:    { days:['Monday (Lift)','Tuesday (Run)','Wednesday (Lift)','Friday (Lift)','Saturday (Long Run)'] },
-  custom: { days:['Day 1','Day 2','Day 3'] }
+const ALL_EXERCISES = @Html.Raw(ViewBag.ExercisesJson ?? "[]");
+
+// ── State ──
+let selSplit   = '';
+let selLevel   = 'Beginner';
+let selDays    = 3;
+let activeDayIdx = 0;
+let activeCat  = 'All';
+
+// days[dayIdx] = [ {id, name, category, isCompound} ]
+let days = [];
+let dayLabels = [];
+
+// ── Split definitions ──
+const SPLITS = {
+  ppl:        { name:'PPL', daysOptions:[3,4,5,6], schedule: {
+    3: ['Push','Pull','Legs'],
+    4: ['Push','Pull','Legs','Rest'],
+    5: ['Push','Pull','Legs','Push','Pull'],
+    6: ['Push','Pull','Legs','Push','Pull','Legs']
+  }, muscles: {
+    'Push': ['Chest','Shoulders','Arms'],
+    'Pull': ['Back','Arms'],
+    'Legs': ['Legs','Core']
+  }},
+  upperlower: { name:'Upper/Lower', daysOptions:[4], schedule: {
+    4: ['Upper','Lower','Upper','Lower']
+  }, muscles: {
+    'Upper': ['Chest','Back','Shoulders','Arms'],
+    'Lower': ['Legs','Core']
+  }},
+  fullbody:   { name:'Full Body', daysOptions:[3], schedule: {
+    3: ['Full Body','Full Body','Full Body']
+  }, muscles: {
+    'Full Body': ['Chest','Back','Legs','Shoulders','Arms','Core']
+  }},
+  bro:        { name:'Bro Split', daysOptions:[5], schedule: {
+    5: ['Chest','Back','Legs','Shoulders','Arms']
+  }, muscles: {
+    'Chest':['Chest'], 'Back':['Back'], 'Legs':['Legs'],
+    'Shoulders':['Shoulders'], 'Arms':['Arms']
+  }},
+  hiit:       { name:'HIIT+Strength', daysOptions:[4], schedule: {
+    4: ['Upper','Cardio','Lower','Cardio']
+  }, muscles: {
+    'Upper': ['Chest','Back','Shoulders','Arms'],
+    'Lower': ['Legs','Core'],
+    'Cardio': ['Core','Legs']
+  }},
+  custom:     { name:'Custom', daysOptions:[2,3,4,5,6], schedule: {
+    2: ['Day 1','Day 2'],
+    3: ['Day 1','Day 2','Day 3'],
+    4: ['Day 1','Day 2','Day 3','Day 4'],
+    5: ['Day 1','Day 2','Day 3','Day 4','Day 5'],
+    6: ['Day 1','Day 2','Day 3','Day 4','Day 5','Day 6']
+  }, muscles: null }
 };
 
-let currentDays = [];
-let picked = {}; // id -> name
-let dayAssign = {}; // dayIndex -> [ids]
+const DAYS_OF_WEEK = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+const CAT_COLORS = {
+  Chest:'#ef4444', Back:'#3b82f6', Legs:'#22c55e', Shoulders:'#a78bfa',
+  Arms:'#f59e0b', Core:'#f97316', Cardio:'#06b6d4', Other:'#94a3b8'
+};
 
-function selectTemplate(key) {
-  document.querySelectorAll('.plan-template').forEach(t => t.classList.remove('sel'));
-  document.querySelector(`.plan-template[data-tpl="${key}"]`)?.classList.add('sel');
-  document.getElementById('planName').value = {
-    ppl:'PPL Plan',ul:'Upper/Lower Plan',fb:'Full Body Plan',
-    bro:'Bro Split',run:'Run + Lift Plan',custom:'My Custom Plan'
-  }[key] || 'My Plan';
-  currentDays = [...TEMPLATES[key].days];
-  dayAssign = {};
-  currentDays.forEach((_,i) => dayAssign[i] = []);
-  renderDays();
-  updateSummary();
-}
-
-function renderDays() {
-  const wrap = document.getElementById('daySlots');
-  wrap.innerHTML = currentDays.map((day,i) => `
-    <div class="day-slot">
-      <div class="day-slot-name">${day}</div>
-      <div class="day-ex-list" id="dayList${i}">
-        ${(dayAssign[i]||[]).map(id => exItem(id,i)).join('')}
-        ${(dayAssign[i]||[]).length === 0 ? '<div style="color:rgba(245,240,232,0.2);font-size:11px;padding:4px 0">Click exercises to add here</div>' : ''}
-      </div>
-    </div>
-  `).join('');
-}
-
-function exItem(id, dayIdx) {
-  return `<div class="day-ex-item"><span>${picked[id]||id}</span><button onclick="removeFromDay(${dayIdx},'${id}')">✕</button></div>`;
-}
-
-function toggleExercise(id, name) {
-  const el = document.querySelector(`.ex-pick[data-id="${id}"]`);
-  if (picked[id]) {
-    delete picked[id];
-    el?.classList.remove('picked');
-    // remove from all days
-    currentDays.forEach((_,i) => { dayAssign[i] = (dayAssign[i]||[]).filter(x => x !== id); });
-  } else {
-    picked[id] = name;
-    el?.classList.add('picked');
-    // auto-assign to first day with fewest exercises
-    if (currentDays.length > 0) {
-      const minDay = currentDays.reduce((best,_,i) =>
-        (dayAssign[i]||[]).length < (dayAssign[best]||[]).length ? i : best, 0);
-      if (!dayAssign[minDay]) dayAssign[minDay] = [];
-      dayAssign[minDay].push(id);
-    }
+// ── Step navigation ──
+function goStep(n) {
+  if (n === 2 && !selSplit) { alert('Please choose a split type first.'); return; }
+  if (n === 3) { buildDays(); }
+  if (n === 4 && days.every(d => d.length === 0)) {
+    if (!confirm('No exercises selected yet. Continue anyway?')) return;
   }
-  renderDays();
-  updateSummary();
-}
-
-function removeFromDay(dayIdx, id) {
-  dayAssign[dayIdx] = (dayAssign[dayIdx]||[]).filter(x => x !== id);
-  delete picked[id];
-  document.querySelector(`.ex-pick[data-id="${id}"]`)?.classList.remove('picked');
-  renderDays();
-  updateSummary();
-}
-
-function updateSummary() {
-  const totalEx = Object.keys(picked).length;
-  const activeDays = currentDays.filter((_,i) => (dayAssign[i]||[]).length > 0).length;
-  document.getElementById('planSummary').textContent = `${totalEx} exercises · ${activeDays} active days`;
-}
-
-function filterPicker(btn) {
-  document.querySelectorAll('.ex-filter-btn').forEach(b => {
-    b.style.background='rgba(255,255,255,0.04)';
-    b.style.borderColor='rgba(255,255,255,0.08)';
-    b.style.color='rgba(245,240,232,0.5)';
-  });
-  btn.style.background='rgba(245,197,66,0.15)';
-  btn.style.borderColor='rgba(245,197,66,0.3)';
-  btn.style.color='#f5c542';
-  const cat = btn.dataset.cat;
-  document.querySelectorAll('.ex-pick').forEach(card => {
-    card.style.display = (cat === 'all' || card.dataset.cat === cat) ? '' : 'none';
+  if (n === 4) { renderSummary(); }
+  [1,2,3,4].forEach(i => {
+    document.getElementById('step'+i).style.display = i === n ? '' : 'none';
+    const ind = document.getElementById('step-ind-'+i);
+    ind.className = 'sb-step' + (i === n ? ' active' : (i < n ? ' done' : ''));
   });
 }
 
-function clearPlan() {
-  picked = {};
-  currentDays.forEach((_,i) => dayAssign[i] = []);
-  document.querySelectorAll('.ex-pick').forEach(c => c.classList.remove('picked'));
-  renderDays();
-  updateSummary();
+// ── Step 1: Select split ──
+function selectSplit(el) {
+  document.querySelectorAll('.split-opt').forEach(e => e.classList.remove('sel'));
+  el.classList.add('sel');
+  selSplit = el.dataset.split;
+  updateDaysButtons();
+  updateSplitPreview();
 }
 
-function savePlan() {
-  const plan = {
-    name: document.getElementById('planName').value || 'My Plan',
-    days: currentDays.map((day,i) => ({
-      day, exercises: (dayAssign[i]||[]).map(id => ({ id, name: picked[id] }))
-    })),
-    savedAt: new Date().toISOString()
-  };
-  // Save to localStorage
-  const plans = JSON.parse(localStorage.getItem('shaktiFitPlans') || '[]');
-  plans.unshift(plan);
-  localStorage.setItem('shaktiFitPlans', JSON.stringify(plans.slice(0,10)));
-  // Show toast
-  const t = document.getElementById('toast');
-  t.style.display = 'block';
-  setTimeout(() => t.style.display = 'none', 3000);
+// ── Step 2: level / days ──
+function selectLevel(el) {
+  document.querySelectorAll('.level-btn').forEach(b => {
+    b.classList.remove('sel');
+    b.style.background = ''; b.style.color = ''; b.style.borderColor = '';
+  });
+  el.classList.add('sel');
+  el.style.background = '#f0fdf4'; el.style.color = '#16a34a'; el.style.borderColor = 'rgba(34,197,94,.3)';
+  selLevel = el.dataset.level;
+  renderPicker();
+}
+function selectDays(el) {
+  if (el.disabled) return;
+  document.querySelectorAll('.days-btn').forEach(b => b.classList.remove('sel'));
+  el.classList.add('sel');
+  selDays = parseInt(el.dataset.days);
+  document.getElementById('daysHint').textContent = selDays + ' training day' + (selDays>1?'s':'') + ' · ' + (7-selDays) + ' rest day' + (7-selDays>1?'s':'');
+  updateSplitPreview();
+}
+function updateDaysButtons() {
+  if (!selSplit) return;
+  const opts = SPLITS[selSplit].daysOptions;
+  document.querySelectorAll('.days-btn').forEach(b => {
+    const d = parseInt(b.dataset.days);
+    b.disabled = !opts.includes(d);
+    if (b.disabled && b.classList.contains('sel')) b.classList.remove('sel');
+  });
+  // auto-select first valid
+  const first = opts[0];
+  selDays = first;
+  document.querySelectorAll('.days-btn').forEach(b => {
+    b.classList.toggle('sel', parseInt(b.dataset.days) === first);
+  });
+  document.getElementById('daysHint').textContent = selDays + ' training day' + (selDays>1?'s':'') + ' · ' + (7-selDays) + ' rest day' + (7-selDays>1?'s':'');
+  updateSplitPreview();
+}
+function updateSplitPreview() {
+  if (!selSplit) return;
+  const split = SPLITS[selSplit];
+  const schedule = split.schedule[selDays] || split.schedule[split.daysOptions[0]];
+  const html = schedule.map((label, i) => {
+    const day = DAYS_OF_WEEK[i] || `Day ${i+1}`;
+    const cats = split.muscles ? (split.muscles[label] || []) : [];
+    return `<div>📅 <strong>${day}</strong> — <span style="color:#16a34a;font-weight:700">${label}</span>${cats.length ? ' <span style="color:#94a3b8;font-size:11px">('+cats.join(', ')+')</span>' : ''}</div>`;
+  }).join('');
+  document.getElementById('splitPreview').innerHTML = html || '<span style="color:#94a3b8">Select a split first</span>';
 }
 
-// Init with PPL template
-selectTemplate('ppl');
+// ── Step 3: Build days & picker ──
+function buildDays() {
+  const split = SPLITS[selSplit];
+  const schedule = split.schedule[selDays] || split.schedule[split.daysOptions[0]];
+  dayLabels = schedule.map((label, i) => ({ label, weekDay: DAYS_OF_WEEK[i] || `Day ${i+1}` }));
+  // init exercise arrays
+  days = dayLabels.map(() => []);
+
+  // Build day tabs
+  const tabsEl = document.getElementById('dayTabs');
+  tabsEl.innerHTML = dayLabels.map((d, i) =>
+    `<button class="day-tab ${i===0?'active':''}" onclick="switchDay(${i})" id="dtab-${i}">
+      ${d.weekDay}<br><small style="font-size:10px;opacity:.75">${d.label}</small>
+      <span class="ex-count" id="dcnt-${i}">0</span>
+    </button>`
+  ).join('');
+  activeDayIdx = 0;
+  buildCatFilters();
+  renderPicker();
+  renderDayPlan();
+}
+
+function switchDay(idx) {
+  activeDayIdx = idx;
+  document.querySelectorAll('.day-tab').forEach((t,i) => t.classList.toggle('active', i===idx));
+  renderPicker();
+  renderDayPlan();
+}
+
+function buildCatFilters() {
+  const cats = ['All','Chest','Back','Legs','Shoulders','Arms','Core','Cardio','Other'];
+  document.getElementById('catFilters').innerHTML = cats.map(c =>
+    `<button class="cat-f ${c==='All'?'active':''}" data-cat="${c}" onclick="setCat('${c}',this)">${c}</button>`
+  ).join('');
+}
+function setCat(cat, el) {
+  activeCat = cat;
+  document.querySelectorAll('.cat-f').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  renderPicker();
+}
+
+function renderPicker() {
+  const q = (document.getElementById('pickerSearch')?.value || '').toLowerCase();
+  const split = SPLITS[selSplit];
+  const dayLabel = dayLabels[activeDayIdx]?.label || '';
+  const allowedCats = split.muscles ? (split.muscles[dayLabel] || []) : null;
+
+  let exs = ALL_EXERCISES.filter(e => {
+    const matchCat  = activeCat === 'All' || e.category === activeCat;
+    const matchQ    = !q || e.name.toLowerCase().includes(q) || e.category.toLowerCase().includes(q);
+    const matchLevel = selLevel === 'Advanced' || (selLevel === 'Intermediate' ? true : !e.isCompound);
+    // For non-custom splits, prefer showing muscles for this day (but still show all with search)
+    const matchDay  = !allowedCats || q || activeCat !== 'All' || allowedCats.includes(e.category);
+    return matchCat && matchQ && matchLevel && matchDay;
+  }).slice(0, 60);
+
+  const pickedIds = new Set(days[activeDayIdx]?.map(e => e.id) || []);
+  const color = d => CAT_COLORS[d] || '#94a3b8';
+
+  document.getElementById('exPickGrid').innerHTML = exs.length
+    ? exs.map(e => `
+      <div class="ex-pick-card ${pickedIds.has(e.id)?'picked':''}" onclick="toggleEx('${e.id}','${e.name.replace(/'/g,"\\'")}','${e.category}',${e.isCompound})">
+        <div class="ex-pick-name">${e.name}</div>
+        <div class="ex-pick-meta">${e.muscles.slice(0,2).join(' · ') || e.category}</div>
+        <span class="ex-pick-badge" style="background:${color(e.category)}22;color:${color(e.category)}">${e.category}</span>
+      </div>`).join('')
+    : '<div style="padding:40px;text-align:center;color:#94a3b8;grid-column:1/-1">No exercises match</div>';
+}
+
+function toggleEx(id, name, category, isCompound) {
+  const arr = days[activeDayIdx];
+  const idx = arr.findIndex(e => e.id === id);
+  if (idx >= 0) arr.splice(idx, 1);
+  else arr.push({ id, name, category, isCompound });
+  // update counter badge
+  const cnt = document.getElementById('dcnt-'+activeDayIdx);
+  if (cnt) { cnt.textContent = arr.length; cnt.className = 'ex-count' + (arr.length ? ' show' : ''); }
+  renderPicker();
+  renderDayPlan();
+}
+
+function renderDayPlan() {
+  const arr = days[activeDayIdx] || [];
+  const dayLabel = dayLabels[activeDayIdx];
+  document.getElementById('dayPlanTitle').textContent = (dayLabel?.weekDay || 'Day') + ' — ' + (dayLabel?.label || '');
+  document.getElementById('dayPlanCount').textContent = arr.length + ' exercise' + (arr.length!==1?'s':'') + ' selected';
+  document.getElementById('dayPlanList').innerHTML = arr.length
+    ? arr.map(e => `
+      <div class="day-ex-item">
+        <div>
+          <div class="day-ex-item-name">${e.name}</div>
+          <div class="day-ex-item-meta">${e.category} · ${e.isCompound?'Compound':'Isolation'}</div>
+        </div>
+        <button class="day-ex-remove" onclick="toggleEx('${e.id}','','','')">✕</button>
+      </div>`).join('')
+    : '<div class="day-plan-empty">Click exercises on the left to add them here</div>';
+}
+
+// ── Step 4: Summary ──
+function renderSummary() {
+  const splitName = SPLITS[selSplit]?.name || selSplit;
+  document.getElementById('planName').value = `${splitName} – ${selLevel} (${selDays} days/week)`;
+  document.getElementById('summaryMeta').textContent = `${selDays} days/week · ${selLevel} · ${days.flat().length} total exercises`;
+  document.getElementById('summaryContent').innerHTML = dayLabels.map((d, i) => {
+    const exs = days[i];
+    const color = CAT_COLORS[d.label] || '#22c55e';
+    return `
+      <div class="summary-day">
+        <div class="summary-day-title">
+          <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${color}"></span>
+          ${d.weekDay} — <span>${d.label}</span>
+          <span style="font-size:11px;font-weight:600;color:#94a3b8">${exs.length} exercise${exs.length!==1?'s':''}</span>
+        </div>
+        ${exs.length ? exs.map(e => `
+          <div class="summary-ex-row">
+            <div class="summary-ex-name">${e.name}</div>
+            <div class="summary-ex-meta">${e.isCompound?'4×6-10':'3×10-15'} · ${e.isCompound?'90s':'60s'} rest</div>
+          </div>`).join('')
+        : '<div style="color:#94a3b8;font-size:12px;padding:8px 0">Rest day — no exercises</div>'}
+      </div>`;
+  }).join('');
+}
+
+function saveRoutine() {
+  const name = document.getElementById('planName').value.trim() || 'My Routine';
+  // Build plan as URL-encoded form data and POST to save endpoint
+  const form = document.createElement('form');
+  form.method = 'POST';
+  form.action = '/Workout/SaveRoutine';
+  const addField = (k,v) => { const i=document.createElement('input'); i.type='hidden'; i.name=k; i.value=v; form.appendChild(i); };
+  addField('planName', name);
+  addField('split', selSplit);
+  addField('level', selLevel);
+  addField('daysPerWeek', selDays);
+  addField('planJson', JSON.stringify(dayLabels.map((d,i) => ({ day: d.weekDay, label: d.label, exercises: days[i] }))));
+  document.body.appendChild(form);
+  form.submit();
+}
+
+// Init
+updateSplitPreview();
 </script>
 }

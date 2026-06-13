@@ -56,7 +56,7 @@
     <div class="dash-grid">
 
         <!-- Today's Workout -->
-        <div class="card card-indigo span2">
+        <div class="card span2" style="background:#ffffff;border:1.5px solid rgba(0,0,0,0.07)">
             <div class="card-header">
                 <div class="card-title">🏋️ @Tr("today_workout")</div>
                 @if (Model.TodaysWorkout != null)
@@ -69,18 +69,23 @@
                 {
                 <div style="margin-bottom:18px">
                     <div style="font-size:20px;font-weight:800;margin-bottom:6px">@(ne && !string.IsNullOrEmpty(Model.TodaysWorkout.NameNepali) ? Model.TodaysWorkout.NameNepali : Model.TodaysWorkout.Name)</div>
-                    <div style="color:var(--text-secondary);font-size:13px">⏱️ @Model.TodaysWorkout.DurationMinutes @(ne?"मिनेट":"min") &nbsp;·&nbsp; 🔥 ~@Model.TodaysWorkout.EstimatedCalories kcal &nbsp;·&nbsp; 💪 @Model.TodaysWorkout.Exercises.Count @(ne?"व्यायाम":"exercises")</div>
+                    <div style="color:#64748b;font-size:13px">⏱️ @Model.TodaysWorkout.DurationMinutes @(ne?"मिनेट":"min") &nbsp;·&nbsp; 🔥 ~@Model.TodaysWorkout.EstimatedCalories kcal &nbsp;·&nbsp; 💪 @Model.TodaysWorkout.Exercises.Count @(ne?"व्यायाम":"exercises")</div>
                 </div>
-                <table class="ex-table" style="margin-bottom:20px">
-                    <thead><tr><th>@(ne?"व्यायाम":"Exercise")</th><th>@Tr("sets")</th><th>@Tr("reps")</th><th>@Tr("rest")</th></tr></thead>
+                <table style="width:100%;border-collapse:collapse;font-size:13px;margin-bottom:20px">
+                    <thead><tr>
+                      <th style="padding:10px 12px;text-align:left;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:#94a3b8;background:#fafbff;border-bottom:1px solid rgba(0,0,0,0.06)">@(ne?"व्यायाम":"Exercise")</th>
+                      <th style="padding:10px 12px;text-align:left;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:#94a3b8;background:#fafbff;border-bottom:1px solid rgba(0,0,0,0.06)">@Tr("sets")</th>
+                      <th style="padding:10px 12px;text-align:left;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:#94a3b8;background:#fafbff;border-bottom:1px solid rgba(0,0,0,0.06)">@Tr("reps")</th>
+                      <th style="padding:10px 12px;text-align:left;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:#94a3b8;background:#fafbff;border-bottom:1px solid rgba(0,0,0,0.06)">@Tr("rest")</th>
+                    </tr></thead>
                     <tbody>
                         @foreach (var ex in Model.TodaysWorkout.Exercises)
                         {
-                        <tr>
-                            <td><strong>@ex.ExerciseName</strong></td>
-                            <td>@ex.Sets</td>
-                            <td style="color:var(--green);font-weight:600">@ex.Reps</td>
-                            <td>@ex.RestSeconds s</td>
+                        <tr style="border-bottom:1px solid rgba(0,0,0,0.04)">
+                            <td style="padding:12px 12px;font-weight:700;color:#0f172a"><strong>@ex.ExerciseName</strong></td>
+                            <td style="padding:12px 12px;color:#374151">@ex.Sets</td>
+                            <td style="padding:12px 12px;color:#22c55e;font-weight:700">@ex.Reps</td>
+                            <td style="padding:12px 12px;color:#64748b">@ex.RestSeconds s</td>
                         </tr>
                         }
                     </tbody>
@@ -99,7 +104,7 @@
                 <div style="text-align:center;padding:40px 0">
                     <div style="font-size:48px;margin-bottom:12px">🌟</div>
                     <div style="font-size:18px;font-weight:700;margin-bottom:8px">@(ne?"आराम दिन":"Recovery Day")</div>
-                    <div style="color:var(--text-secondary)">@(ne?"आराम गर्नुहोस् र भोलिको लागि तयार हुनुहोस्।":"Rest, recover, and come back stronger tomorrow.")</div>
+                    <div style="color:#64748b">@(ne?"आराम गर्नुहोस् र भोलिको लागि तयार हुनुहोस्।":"Rest, recover, and come back stronger tomorrow.")</div>
                     <a href="/Running" class="btn btn-outline" style="margin-top:16px">🏃 @(ne?"सजिलो दौड लग गर्नुहोस्":"Log an Easy Run")</a>
                 </div>
                 }
@@ -180,7 +185,7 @@
                 }
                 else
                 {
-                <div style="text-align:center;padding:30px;color:var(--text-muted)">
+                <div style="text-align:center;padding:30px;color:#94a3b8">
                     🏃 @(ne?"कुनै दौड लग छैन।":"No runs logged yet.") <a href="/Running">@(ne?"पहिलो दौड लग गर्नुहोस् →":"Log your first run →")</a>
                 </div>
                 }
@@ -195,16 +200,16 @@
                 {
                     var diff = (Model.LatestProgress.WeightKg ?? user.WeightKg) - user.WeightKg;
                     var sign = diff >= 0 ? "+" : "";
-                <div style="font-size:38px;font-weight:900;color:var(--indigo)">@Model.LatestProgress.WeightKg kg</div>
-                <div style="color:var(--text-muted);font-size:12px;margin-top:4px">@Model.LatestProgress.Date.ToString("MMM dd")</div>
-                <div style="margin-top:12px;background:var(--bg-secondary);border-radius:8px;padding:10px;font-size:13px">
+                <div style="font-size:38px;font-weight:900;color:#16a34a">@Model.LatestProgress.WeightKg kg</div>
+                <div style="color:#94a3b8;font-size:12px;margin-top:4px">@Model.LatestProgress.Date.ToString("MMM dd")</div>
+                <div style="margin-top:12px;background:#f8faf8;border-radius:8px;padding:10px;font-size:13px;color:#374151">
                     @(ne?"शुरुवातदेखि:":"Change from start:")
-                    <span style="font-weight:700;color:@(diff < 0 ? "var(--green)" : "var(--red)")">@sign@diff.ToString("0.1") kg</span>
+                    <span style="font-weight:700;color:@(diff < 0 ? "#22c55e" : "#ef4444")">@sign@diff.ToString("0.1") kg</span>
                 </div>
                 }
                 else
                 {
-                <div style="padding:24px;color:var(--text-muted)">
+                <div style="padding:24px;color:#94a3b8">
                     <div style="font-size:32px;margin-bottom:8px">⚖️</div>
                     <a href="/Progress">@(ne?"तौल लग गर्नुहोस् →":"Log weight →")</a>
                 </div>

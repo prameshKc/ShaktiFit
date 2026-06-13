@@ -7,74 +7,164 @@
     var workouts = Model ?? new List<FitForgeAI.Models.Workout>();
 }
 
-<div class="page-container">
+<style>
+.wp-page { background:#f8faf8; min-height:100vh; }
+.wp-wrap { max-width:1100px; margin:0 auto; padding:28px 20px 100px; }
 
-    <div style="margin-bottom:24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
-        <div>
-            <h1 style="font-size:26px;font-weight:900;margin-bottom:4px">🏋️ @(ne?"व्यायाम योजनाहरू":"Workout Plans")</h1>
-            <p style="color:var(--text-secondary)">@(ne?"तपाईंको लक्ष्यमा आधारित योजनाहरू।":"Plans tailored to your goals and fitness level.")</p>
-        </div>
-        <a href="/Workout/Hybrid" class="btn btn-primary">🦸 @(ne?"हाइब्रिड एथलीट":"Hybrid Athlete")</a>
+/* Hero */
+.wp-hero { background:linear-gradient(135deg,#0f1f0f 0%,#1a3a1a 55%,#16a34a 100%); border-radius:20px; padding:30px 34px 26px; margin-bottom:24px; position:relative; overflow:hidden; }
+.wp-hero::before { content:''; position:absolute; top:-40px; right:-40px; width:200px; height:200px; background:rgba(34,197,94,0.12); border-radius:50%; }
+.wp-hero-tag { font-size:11px; font-weight:800; color:#86efac; text-transform:uppercase; letter-spacing:0.12em; margin-bottom:10px; }
+.wp-hero-title { font-size:28px; font-weight:900; color:#f0fdf4; letter-spacing:-0.03em; margin-bottom:6px; }
+.wp-hero-sub { font-size:14px; color:rgba(240,253,244,0.65); }
+
+/* Filters */
+.wp-filters { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:22px; }
+.wp-filter { padding:8px 18px; border-radius:999px; border:1.5px solid rgba(0,0,0,0.1); background:#ffffff; color:#374151; font-size:13px; font-weight:700; cursor:pointer; transition:all .15s; }
+.wp-filter.active, .wp-filter:hover { background:linear-gradient(135deg,#22c55e,#16a34a); border-color:transparent; color:#fff; }
+
+/* Grid */
+.wp-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:18px; }
+.wp-card { background:#ffffff; border:1.5px solid rgba(0,0,0,0.07); border-radius:18px; overflow:hidden; transition:all .2s; box-shadow:0 1px 4px rgba(0,0,0,0.04); cursor:pointer; }
+.wp-card:hover { transform:translateY(-3px); box-shadow:0 8px 24px rgba(0,0,0,0.10); border-color:rgba(34,197,94,0.3); }
+.wp-card-top { height:5px; }
+.wp-card-body { padding:22px; }
+.wp-type-row { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+.wp-icon { font-size:38px; }
+.wp-badge { padding:4px 12px; border-radius:999px; font-size:10px; font-weight:800; letter-spacing:0.08em; text-transform:uppercase; }
+.wp-name { font-size:17px; font-weight:800; color:#0f172a; margin-bottom:6px; line-height:1.3; }
+.wp-desc { font-size:13px; color:#64748b; margin-bottom:16px; line-height:1.55; }
+.wp-meta { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:18px; }
+.wp-meta-chip { padding:5px 11px; background:#f1f5f9; border-radius:999px; font-size:12px; font-weight:600; color:#475569; }
+.wp-actions { display:flex; gap:8px; }
+.wp-btn-main { flex:1; padding:10px 0; background:linear-gradient(135deg,#22c55e,#16a34a); color:#fff; border:none; border-radius:10px; font-size:13px; font-weight:700; cursor:pointer; text-align:center; text-decoration:none; display:flex; align-items:center; justify-content:center; transition:opacity .15s; }
+.wp-btn-main:hover { opacity:.9; color:#fff; }
+.wp-btn-ghost { padding:10px 14px; background:#f8faf8; border:1.5px solid rgba(0,0,0,0.08); border-radius:10px; font-size:13px; font-weight:700; color:#374151; cursor:pointer; text-decoration:none; display:flex; align-items:center; gap:6px; transition:all .15s; }
+.wp-btn-ghost:hover { border-color:rgba(34,197,94,0.3); color:#16a34a; }
+
+/* Builder CTA */
+.builder-cta { background:linear-gradient(135deg,#f0fdf4,#dcfce7); border:1.5px solid rgba(34,197,94,0.25); border-radius:18px; padding:28px 32px; margin-bottom:24px; display:flex; align-items:center; justify-content:space-between; gap:20px; flex-wrap:wrap; }
+.builder-cta-text h3 { font-size:18px; font-weight:800; color:#0f172a; margin-bottom:4px; }
+.builder-cta-text p { font-size:13px; color:#475569; }
+.builder-cta-btns { display:flex; gap:10px; flex-wrap:wrap; }
+
+@@media(max-width:640px) {
+  .wp-wrap { padding:16px 14px 100px; }
+  .wp-hero { padding:22px 20px; border-radius:16px; }
+  .wp-hero-title { font-size:22px; }
+  .builder-cta { flex-direction:column; }
+}
+</style>
+
+<div class="wp-page">
+<div class="wp-wrap">
+
+  <!-- Hero -->
+  <div class="wp-hero">
+    <div class="wp-hero-tag">🏋️ @(ne?"व्यायाम योजना":"Workout Plans")</div>
+    <div class="wp-hero-title">@(ne?"तपाईंको लक्ष्यमा आधारित योजनाहरू":"Plans Tailored to Your Goals")</div>
+    <div class="wp-hero-sub">@(ne?"हरेक योजना तपाईंको फिटनेस स्तर अनुसार बनाइएको छ।":"Each plan is designed for your fitness level and goals.")</div>
+  </div>
+
+  <!-- Build Your Own CTA -->
+  <div class="builder-cta">
+    <div class="builder-cta-text">
+      <h3>🛠️ @(ne?"आफ्नै योजना बनाउनुहोस्":"Build Your Own Routine")</h3>
+      <p>@(ne?"PPL, Bro Split, Upper/Lower — तपाईंको split छान्नुहोस् र व्यायाम थप्नुहोस्":"Choose PPL, Bro Split, Upper/Lower and pick exercises from WorkoutAPI")</p>
     </div>
-
-    <!-- Filters -->
-    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px">
-        <button class="filter-chip active" data-type="all" onclick="filterWorkout(this)">@(ne?"सबै":"All")</button>
-        @foreach (var wt in new[]{"Strength","Cardio","Running","Hybrid","Mobility"}) {
-        <button class="filter-chip" data-type="@wt.ToLower()" onclick="filterWorkout(this)">@wt</button>
-        }
+    <div class="builder-cta-btns">
+      <a href="/Workout/Builder" style="padding:12px 24px;background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;font-weight:700;font-size:14px;border-radius:12px;text-decoration:none;box-shadow:0 4px 16px rgba(34,197,94,0.35)">
+        ✏️ @(ne?"Split Builder":"Split Builder →")
+      </a>
+      <a href="/Workout/Hybrid" style="padding:12px 24px;background:#fff;border:1.5px solid rgba(0,0,0,0.1);color:#374151;font-weight:700;font-size:14px;border-radius:12px;text-decoration:none">
+        🦸 @(ne?"हाइब्रिड":"Hybrid Athlete")
+      </a>
     </div>
+  </div>
 
-    <div class="workout-grid" id="workoutGrid">
-        @foreach (var w in workouts)
-        {
-        <div class="card workout-card" data-type="@w.Type.ToLower()">
-            <div class="card-body" style="padding:22px">
-                <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px">
-                    <div style="font-size:36px">@(w.Type == "Strength" ? "🏋️" : w.Type == "Running" || w.Type == "Cardio" ? "🏃" : w.Type == "Hybrid" ? "🦸" : "🧘")</div>
-                    <span class="wt-badge wtb-@w.Type.ToLower()">@w.Type</span>
-                </div>
-                <h3 style="font-size:17px;font-weight:800;margin-bottom:6px">@(ne && !string.IsNullOrEmpty(w.NameNepali) ? w.NameNepali : w.Name)</h3>
-                <p style="font-size:13px;color:var(--text-secondary);margin-bottom:14px;line-height:1.5">@w.Description</p>
-                <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px">
-                    <span class="badge badge-gray">⏱️ @w.DurationMinutes @(ne?"मिनेट":"min")</span>
-                    <span class="badge badge-gray">🔥 ~@w.EstimatedCalories kcal</span>
-                    <span class="badge badge-gray">💪 @w.Exercises.Count @(ne?"व्यायाम":"exercises")</span>
-                    <span class="diff-badge diff-@w.FitnessLevel.ToLower()">@w.FitnessLevel</span>
-                </div>
-                <div style="display:flex;gap:8px">
-                    <a href="/Workout/Details/@w.Id" class="btn btn-primary btn-sm" style="flex:1;justify-content:center">@(ne?"विवरण हेर्नुहोस्":"View Details")</a>
-                    <form method="post" action="/Dashboard/CompleteWorkout" style="display:contents">
-                        <input type="hidden" name="workoutId" value="@w.Id" />
-                        <input type="hidden" name="duration" value="@w.DurationMinutes" />
-                        <button type="submit" class="btn btn-ghost btn-sm">✅ @(ne?"सम्पन्न":"Done")</button>
-                    </form>
-                </div>
-            </div>
-        </div>
-        }
-    </div>
+  <!-- Filters -->
+  <div class="wp-filters">
+    <button class="wp-filter active" data-type="all" onclick="filterWorkout(this)">@(ne?"सबै":"All") (@workouts.Count)</button>
+    @foreach (var wt in new[]{"Strength","Cardio","Running","Hybrid","Mobility"}) {
+    var cnt = workouts.Count(w => w.Type.Equals(wt, StringComparison.OrdinalIgnoreCase));
+    if (cnt > 0) {
+    <button class="wp-filter" data-type="@wt.ToLower()" onclick="filterWorkout(this)">@wt (@cnt)</button>
+    }}
+  </div>
 
-    @if (!workouts.Any())
+  <!-- Cards -->
+  <div class="wp-grid" id="workoutGrid">
+    @foreach (var w in workouts)
     {
-    <div style="text-align:center;padding:80px;color:var(--text-muted)">
-        <div style="font-size:48px;margin-bottom:16px">🏋️</div>
-        <h3 style="margin-bottom:8px">@(ne?"कुनै योजना भेटिएन।":"No workout plans found.")</h3>
-        <a href="/Settings" class="btn btn-outline">@(ne?"लक्ष्य अपडेट गर्नुहोस्":"Update Your Goals")</a>
+    var typeColor = w.Type switch {
+      "Strength" => "#ef4444", "Cardio" => "#f97316", "Running" => "#3b82f6",
+      "Hybrid" => "#8b5cf6", "Mobility" => "#06b6d4", _ => "#22c55e"
+    };
+    var typeBg = w.Type switch {
+      "Strength" => "#fef2f2", "Cardio" => "#fff7ed", "Running" => "#eff6ff",
+      "Hybrid" => "#faf5ff", "Mobility" => "#ecfeff", _ => "#f0fdf4"
+    };
+    var typeIcon = w.Type switch {
+      "Strength" => "🏋️", "Cardio" => "🔥", "Running" => "🏃",
+      "Hybrid" => "🦸", "Mobility" => "🧘", _ => "💪"
+    };
+    var diffColor = w.FitnessLevel switch {
+      "Beginner" => "#16a34a", "Advanced" => "#dc2626", _ => "#92400e"
+    };
+    var diffBg = w.FitnessLevel switch {
+      "Beginner" => "#f0fdf4", "Advanced" => "#fef2f2", _ => "#fefce8"
+    };
+    <div class="wp-card" data-type="@w.Type.ToLower()">
+      <div class="wp-card-top" style="background:@typeColor"></div>
+      <div class="wp-card-body">
+        <div class="wp-type-row">
+          <div class="wp-icon">@typeIcon</div>
+          <span class="wp-badge" style="background:@typeBg;color:@typeColor">@w.Type</span>
+        </div>
+        <div class="wp-name">@(ne && !string.IsNullOrEmpty(w.NameNepali) ? w.NameNepali : w.Name)</div>
+        <div class="wp-desc">@w.Description</div>
+        <div class="wp-meta">
+          <span class="wp-meta-chip">⏱️ @w.DurationMinutes @(ne?"मिनेट":"min")</span>
+          <span class="wp-meta-chip">🔥 ~@w.EstimatedCalories kcal</span>
+          <span class="wp-meta-chip">💪 @w.Exercises.Count @(ne?"व्यायाम":"exercises")</span>
+          <span class="wp-meta-chip" style="background:@diffBg;color:@diffColor">@w.FitnessLevel</span>
+        </div>
+        <div class="wp-actions">
+          <a href="/Workout/Details/@w.Id" class="wp-btn-main">@(ne?"विवरण हेर्नुहोस्":"View Details →")</a>
+          <form method="post" action="/Dashboard/CompleteWorkout" style="display:contents">
+            <input type="hidden" name="workoutId" value="@w.Id" />
+            <input type="hidden" name="duration" value="@w.DurationMinutes" />
+            <button type="submit" class="wp-btn-ghost">✅ @(ne?"सम्पन्न":"Done")</button>
+          </form>
+        </div>
+      </div>
     </div>
     }
+  </div>
 
+  @if (!workouts.Any())
+  {
+  <div style="text-align:center;padding:80px 20px;color:#94a3b8">
+    <div style="font-size:52px;margin-bottom:14px">🏋️</div>
+    <div style="font-size:16px;font-weight:700;color:#64748b;margin-bottom:6px">@(ne?"कुनै योजना भेटिएन।":"No workout plans found.")</div>
+    <a href="/Workout/Builder" style="display:inline-flex;align-items:center;gap:8px;margin-top:16px;padding:12px 24px;background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;font-weight:700;border-radius:12px;text-decoration:none">
+      ✏️ @(ne?"Split Builder खोल्नुहोस्":"Open Split Builder")
+    </a>
+  </div>
+  }
+
+</div>
 </div>
 
 @section Scripts {
 <script>
 function filterWorkout(btn) {
-    document.querySelectorAll('.filter-chip').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    const type = btn.dataset.type;
-    document.querySelectorAll('.workout-card').forEach(card => {
-        card.style.display = (type === 'all' || card.dataset.type === type) ? '' : 'none';
-    });
+  document.querySelectorAll('.wp-filter').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const type = btn.dataset.type;
+  document.querySelectorAll('.wp-card').forEach(card => {
+    card.style.display = (type === 'all' || card.dataset.type === type) ? '' : 'none';
+  });
 }
 </script>
 }
