@@ -47,11 +47,12 @@ public class EmailService
             msg.Subject = subject;
             msg.Body = new TextPart(TextFormat.Html) { Text = htmlBody };
 
+            using var cts  = new CancellationTokenSource(TimeSpan.FromSeconds(15));
             using var smtp = new SmtpClient();
-            await smtp.ConnectAsync(_cfg.SmtpHost, _cfg.SmtpPort, SecureSocketOptions.StartTls);
-            await smtp.AuthenticateAsync(_cfg.SenderEmail, _cfg.Password);
-            await smtp.SendAsync(msg);
-            await smtp.DisconnectAsync(true);
+            await smtp.ConnectAsync(_cfg.SmtpHost, _cfg.SmtpPort, SecureSocketOptions.StartTls, cts.Token);
+            await smtp.AuthenticateAsync(_cfg.SenderEmail, _cfg.Password, cts.Token);
+            await smtp.SendAsync(msg, cts.Token);
+            await smtp.DisconnectAsync(true, cts.Token);
             _log.LogInformation("Email sent to {Email}: {Subject}", toEmail, subject);
             return true;
         }
