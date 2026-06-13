@@ -33,6 +33,18 @@ public class UserService
 
     public Task<List<User>> GetAllAsync() => _storage.ReadAsync<User>(File);
 
+    public async Task<User?> GetByEmailAsync(string email) =>
+        (await GetAllAsync()).FirstOrDefault(u =>
+            string.Equals(u.Email, email, StringComparison.OrdinalIgnoreCase));
+
+    public async Task CreateGoogleUserAsync(User user)
+    {
+        user.PasswordHash = ""; // no password for Google users
+        var users = await GetAllAsync();
+        users.Add(user);
+        await _storage.WriteAsync(File, users);
+    }
+
     public async Task<User?> GetByIdAsync(string id) =>
         await _storage.FindByIdAsync<User>(File, u => u.Id == id);
 

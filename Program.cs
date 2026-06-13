@@ -8,6 +8,22 @@ builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
 
 builder.Services.AddControllersWithViews();
 builder.Services.AddHttpClient(); // for EmailService (Brevo API)
+
+// Google OAuth
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultScheme  = "Cookies";
+    options.DefaultChallengeScheme = "Google";
+})
+.AddCookie("Cookies")
+.AddGoogle("Google", options =>
+{
+    options.ClientId     = builder.Configuration["Google:ClientId"]     ?? "";
+    options.ClientSecret = builder.Configuration["Google:ClientSecret"] ?? "";
+    options.CallbackPath = "/Account/GoogleCallback";
+    options.Scope.Add("email");
+    options.Scope.Add("profile");
+});
 builder.Services.AddSession(o => { o.IdleTimeout = TimeSpan.FromHours(8); o.Cookie.HttpOnly = true; });
 builder.Services.AddMemoryCache();
 builder.Services.AddSingleton<IJsonStorageService, JsonStorageService>();
@@ -47,6 +63,7 @@ app.UseStaticFiles();
 
 app.UseRouting();
 app.UseSession();
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllerRoute(
