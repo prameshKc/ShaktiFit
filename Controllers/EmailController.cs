@@ -122,21 +122,22 @@ public class EmailController : Controller
             return Content(result.ToString(), "text/html");
         }
 
-        result.AppendLine("Attempting to send test email...");
+        result.AppendLine("Attempting SMTP connection...");
         try
         {
-            var ok = await _email.SendAsync(user.Email, user.Name,
-                "✅ ShaktiFit Email Test",
-                "<h2>It works! 🎉</h2><p>Your ShaktiFit email is correctly configured.</p>");
-
-            result.AppendLine(ok ? "✅ Email sent successfully! Check your inbox." : "❌ Send returned false (check logs).");
+            // Call the throwing version directly so we see the real error
+            await _email.SendTestAsync(user.Email, user.Name);
+            result.AppendLine("✅ Email sent successfully! Check your inbox.");
         }
         catch (Exception ex)
         {
-            result.AppendLine($"❌ Exception: {ex.GetType().Name}");
-            result.AppendLine($"Message: {ex.Message}");
-            if (ex.InnerException != null)
-                result.AppendLine($"Inner: {ex.InnerException.Message}");
+            result.AppendLine($"❌ {ex.GetType().Name}: {ex.Message}");
+            var inner = ex.InnerException;
+            while (inner != null)
+            {
+                result.AppendLine($"   → {inner.GetType().Name}: {inner.Message}");
+                inner = inner.InnerException;
+            }
         }
 
         result.AppendLine("</pre>");

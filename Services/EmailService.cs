@@ -31,6 +31,27 @@ public class EmailService
     public bool IsConfigured => !string.IsNullOrWhiteSpace(_cfg.SenderEmail)
                              && !string.IsNullOrWhiteSpace(_cfg.Password);
 
+    // ── Test send (throws on error, used by /Email/Test) ───────────────────
+    public async Task SendTestAsync(string toEmail, string toName)
+    {
+        var msg = new MimeMessage();
+        msg.From.Add(new MailboxAddress(_cfg.SenderName, _cfg.SenderEmail));
+        msg.To.Add(new MailboxAddress(toName, toEmail));
+        msg.Subject = "✅ ShaktiFit Email Test";
+        msg.Body = new TextPart(TextFormat.Html)
+            { Text = "<h2 style='color:#16a34a'>It works! 🎉</h2><p>Your ShaktiFit email is correctly configured.</p>" };
+
+        using var cts  = new CancellationTokenSource(TimeSpan.FromSeconds(15));
+        using var smtp = new SmtpClient();
+        _log.LogInformation("Connecting to {Host}:{Port}", _cfg.SmtpHost, _cfg.SmtpPort);
+        await smtp.ConnectAsync(_cfg.SmtpHost, _cfg.SmtpPort, SecureSocketOptions.StartTls, cts.Token);
+        _log.LogInformation("Authenticating as {Email}", _cfg.SenderEmail);
+        await smtp.AuthenticateAsync(_cfg.SenderEmail, _cfg.Password, cts.Token);
+        _log.LogInformation("Sending to {To}", toEmail);
+        await smtp.SendAsync(msg, cts.Token);
+        await smtp.DisconnectAsync(true, cts.Token);
+    }
+
     // ── Send any HTML email ─────────────────────────────────────────────────
     public async Task<bool> SendAsync(string toEmail, string toName, string subject, string htmlBody)
     {
