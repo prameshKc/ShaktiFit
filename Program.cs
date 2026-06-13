@@ -8,6 +8,7 @@ builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
 
 builder.Services.AddControllersWithViews();
 builder.Services.AddSession(o => { o.IdleTimeout = TimeSpan.FromHours(8); o.Cookie.HttpOnly = true; });
+builder.Services.AddMemoryCache();
 builder.Services.AddSingleton<IJsonStorageService, JsonStorageService>();
 builder.Services.AddSingleton<TranslationService>();
 builder.Services.AddScoped<UserService>();
@@ -15,6 +16,16 @@ builder.Services.AddScoped<ExerciseService>();
 builder.Services.AddScoped<WorkoutService>();
 builder.Services.AddScoped<ProgressService>();
 builder.Services.AddScoped<ActivityService>();
+
+// WorkoutAPI integration
+var workoutApiBase = builder.Configuration["WorkoutApi:BaseUrl"] ?? "https://api.workoutapi.com";
+var workoutApiKey  = builder.Configuration["WorkoutApi:ApiKey"] ?? "";
+builder.Services.AddHttpClient<WorkoutApiService>(client =>
+{
+    client.BaseAddress = new Uri(workoutApiBase);
+    client.DefaultRequestHeaders.Add("x-api-key", workoutApiKey);
+    client.Timeout = TimeSpan.FromSeconds(15);
+});
 
 var app = builder.Build();
 

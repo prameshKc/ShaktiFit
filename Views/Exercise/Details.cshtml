@@ -1,133 +1,384 @@
 @model FitForgeAI.Models.Exercise
+@using FitForgeAI.Services
 @{
-    var ex = Model;
-    ViewBag.Title = $"{ex.Name} – ShaktiFit";
-    ViewBag.ActiveNav = "exercise";
+    var ex    = Model;
+    var apiEx = ViewBag.ApiExercise as WorkoutApiExercise;
+    ViewBag.Title      = $"{ex.Name} – ShaktiFit";
+    ViewBag.ActiveNav  = "exercises";
     var lang = Context.Session.GetString("Lang") ?? "en";
-    bool ne = lang == "ne";
+    bool ne  = lang == "ne";
     string ExName() => ne && !string.IsNullOrEmpty(ex.NameNepali) ? ex.NameNepali : ex.Name;
     string ExDesc() => ne && !string.IsNullOrEmpty(ex.DescriptionNepali) ? ex.DescriptionNepali : ex.Description;
 }
 
-<div class="page-container">
+<style>
+/* ── Detail page ── */
+.exd-page { background:#f8faf8; min-height:100vh; }
+.exd-wrap { max-width:1100px; margin:0 auto; padding:28px 24px 80px; }
 
-    <div style="margin-bottom:20px">
-        <a href="/Exercise" class="btn btn-ghost btn-sm">← @(ne?"फिर्ता":"Back to Library")</a>
+/* ── Hero band ── */
+.exd-hero {
+  background:linear-gradient(135deg,#0f1f0f 0%,#1a3a1a 55%,#16a34a 100%);
+  border-radius:20px; padding:32px 36px 28px; margin-bottom:28px;
+  position:relative; overflow:hidden;
+}
+.exd-hero::before {
+  content:''; position:absolute; top:-50px; right:-50px;
+  width:220px; height:220px; background:rgba(34,197,94,0.10); border-radius:50%;
+}
+.exd-hero-back {
+  display:inline-flex; align-items:center; gap:6px;
+  color:rgba(240,253,244,0.6); font-size:13px; font-weight:600;
+  text-decoration:none; margin-bottom:18px;
+  transition:color .15s;
+}
+.exd-hero-back:hover { color:#86efac; }
+.exd-hero-top { display:flex; align-items:flex-start; gap:20px; flex-wrap:wrap; }
+.exd-hero-icon {
+  width:72px; height:72px; border-radius:18px;
+  background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.12);
+  display:flex; align-items:center; justify-content:center;
+  font-size:36px; flex-shrink:0;
+}
+.exd-hero-meta { flex:1; min-width:0; }
+.exd-hero-badges { display:flex; gap:7px; flex-wrap:wrap; margin-bottom:10px; }
+.exd-badge {
+  display:inline-flex; align-items:center; gap:5px; padding:4px 12px;
+  border-radius:999px; font-size:11px; font-weight:700; letter-spacing:0.04em;
+}
+.exd-badge-green  { background:rgba(34,197,94,0.18); border:1px solid rgba(34,197,94,0.35); color:#86efac; }
+.exd-badge-white  { background:rgba(255,255,255,0.10); border:1px solid rgba(255,255,255,0.18); color:rgba(240,253,244,0.8); }
+.exd-badge-amber  { background:rgba(245,197,66,0.18); border:1px solid rgba(245,197,66,0.35); color:#fde68a; }
+.exd-hero-name { font-size:30px; font-weight:900; color:#f0fdf4; letter-spacing:-0.03em; line-height:1.15; margin-bottom:6px; }
+.exd-hero-code { font-size:12px; font-weight:700; color:rgba(240,253,244,0.35); letter-spacing:0.12em; text-transform:uppercase; }
+
+/* ── Muscle chips row ── */
+.exd-muscles { display:flex; flex-wrap:wrap; gap:8px; margin-top:20px; }
+.exd-muscle-chip {
+  display:inline-flex; align-items:center; gap:6px;
+  padding:6px 14px; border-radius:999px;
+  font-size:12px; font-weight:700;
+  background:rgba(255,255,255,0.08);
+  border:1px solid rgba(255,255,255,0.15);
+  color:#f0fdf4;
+}
+.exd-muscle-dot { width:9px; height:9px; border-radius:50%; flex-shrink:0; }
+.exd-muscle-chip.secondary { opacity:.65; }
+
+/* ── Body grid ── */
+.exd-grid { display:grid; grid-template-columns:1fr 340px; gap:22px; align-items:start; }
+
+/* ── Cards ── */
+.exd-card { background:#ffffff; border:1.5px solid rgba(0,0,0,0.07); border-radius:18px; overflow:hidden; margin-bottom:18px; box-shadow:0 1px 4px rgba(0,0,0,0.05); }
+.exd-card-header { padding:16px 22px; border-bottom:1px solid rgba(0,0,0,0.06); display:flex; align-items:center; gap:9px; }
+.exd-card-title { font-size:14px; font-weight:800; color:#0f172a; }
+.exd-card-body { padding:20px 22px; }
+
+/* ── Description ── */
+.exd-desc { font-size:15px; line-height:1.75; color:#374151; }
+
+/* ── Steps ── */
+.exd-steps { display:flex; flex-direction:column; gap:14px; }
+.exd-step { display:flex; gap:14px; align-items:flex-start; }
+.exd-step-num {
+  width:30px; height:30px; border-radius:50%; flex-shrink:0;
+  background:linear-gradient(135deg,#22c55e,#16a34a);
+  color:#fff; display:flex; align-items:center; justify-content:center;
+  font-size:12px; font-weight:800; box-shadow:0 2px 8px rgba(34,197,94,0.35);
+}
+.exd-step-text { font-size:14px; line-height:1.65; color:#374151; padding-top:5px; }
+
+/* ── Stats sidebar ── */
+.exd-stat-row { display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid rgba(0,0,0,0.06); font-size:14px; }
+.exd-stat-row:last-child { border-bottom:none; }
+.exd-stat-label { color:#64748b; font-weight:500; }
+.exd-stat-value { font-weight:800; color:#0f172a; }
+
+/* ── Type/Category pills ── */
+.exd-pill-row { display:flex; flex-wrap:wrap; gap:7px; }
+.exd-pill { padding:5px 13px; border-radius:999px; font-size:12px; font-weight:700; border:1.5px solid; }
+.exd-pill-indigo { background:#eef2ff; border-color:#c7d2fe; color:#4338ca; }
+.exd-pill-green  { background:#f0fdf4; border-color:#bbf7d0; color:#15803d; }
+.exd-pill-gray   { background:#f1f5f9; border-color:#e2e8f0; color:#475569; }
+
+/* ── Source badge ── */
+.exd-source { display:inline-flex; align-items:center; gap:6px; padding:4px 12px; background:#f0fdf4; border:1px solid rgba(34,197,94,0.2); border-radius:999px; font-size:11px; font-weight:700; color:#16a34a; }
+
+/* ── Responsive ── */
+@@media (max-width:768px) {
+  .exd-wrap { padding:18px 14px 80px; }
+  .exd-hero { padding:22px 20px 20px; border-radius:16px; }
+  .exd-hero-name { font-size:22px; }
+  .exd-grid { grid-template-columns:1fr; }
+  .exd-hero-icon { width:56px; height:56px; font-size:28px; border-radius:14px; }
+}
+</style>
+
+<div class="exd-page">
+<div class="exd-wrap">
+
+  <!-- ── Hero ── -->
+  <div class="exd-hero">
+    <a href="/Exercise" class="exd-hero-back">← @(ne ? "पुस्तकालयमा फर्कनुहोस्" : "Back to Library")</a>
+
+    <div class="exd-hero-top">
+      <div class="exd-hero-icon">💪</div>
+      <div class="exd-hero-meta">
+        <div class="exd-hero-badges">
+          @if (apiEx != null)
+          {
+            <span class="exd-source">✦ WorkoutAPI</span>
+          }
+          @if (ex.IsCompound)
+          { <span class="exd-badge exd-badge-amber">⚡ @(ne?"यौगिक":"Compound")</span> }
+          <span class="exd-badge exd-badge-green">@ex.Category</span>
+          @if (!string.IsNullOrEmpty(ex.Difficulty))
+          { <span class="exd-badge exd-badge-white">@ex.Difficulty</span> }
+          @if (apiEx != null)
+          {
+            foreach (var t in apiEx.Types)
+            { <span class="exd-badge exd-badge-white">@t.Name</span> }
+          }
+        </div>
+        <div class="exd-hero-name">@ExName()</div>
+        @if (apiEx != null)
+        { <div class="exd-hero-code">@apiEx.Code</div> }
+      </div>
     </div>
 
-    <div style="display:grid;grid-template-columns:2fr 1fr;gap:24px">
+    <!-- Muscle chips -->
+    @if (ex.TargetMuscles.Any() || (apiEx != null && (apiEx.PrimaryMuscles.Any() || apiEx.SecondaryMuscles.Any())))
+    {
+    <div class="exd-muscles">
+      @if (apiEx != null)
+      {
+        foreach (var m in apiEx.PrimaryMuscles)
+        {
+        <span class="exd-muscle-chip">
+          <span class="exd-muscle-dot" style="background:@m.Color"></span>
+          @m.Name
+        </span>
+        }
+        foreach (var m in apiEx.SecondaryMuscles)
+        {
+        <span class="exd-muscle-chip secondary">
+          <span class="exd-muscle-dot" style="background:@m.Color;opacity:.5"></span>
+          @m.Name <span style="font-size:10px;opacity:.6">(secondary)</span>
+        </span>
+        }
+      }
+      else
+      {
+        foreach (var m in ex.TargetMuscles)
+        { <span class="exd-muscle-chip"><span class="exd-muscle-dot" style="background:#22c55e"></span>@m</span> }
+      }
+    </div>
+    }
+  </div>
 
-        <!-- Main -->
-        <div>
-            <div class="card" style="margin-bottom:20px">
-                <div class="card-body" style="padding:28px">
-                    <div style="display:flex;align-items:flex-start;gap:16px;margin-bottom:20px;flex-wrap:wrap">
-                        <div style="font-size:60px">💪</div>
-                        <div style="flex:1">
-                            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">
-                                <span class="diff-badge diff-@ex.Difficulty.ToLower()">@ex.Difficulty</span>
-                                <span class="badge badge-gray">@ex.Category</span>
-                                @if (ex.IsCompound) { <span class="badge" style="background:var(--amber-bg);color:var(--amber)">⚡ @(ne?"यौगिक":"Compound")</span> }
-                            </div>
-                            <h1 style="font-size:28px;font-weight:900;margin-bottom:4px">@ExName()</h1>
-                            @if (!string.IsNullOrEmpty(ex.NameNepali))
-                            { <div style="color:var(--text-muted);font-size:14px">@(ne ? ex.Name : ex.NameNepali)</div> }
-                        </div>
-                    </div>
-                    <p style="color:var(--text-secondary);line-height:1.7">@ExDesc()</p>
-                </div>
-            </div>
+  <!-- ── Body ── -->
+  <div class="exd-grid">
 
-            <!-- Instructions -->
-            @if (ex.Instructions.Any())
+    <!-- Left column -->
+    <div>
+
+      <!-- Description -->
+      <div class="exd-card">
+        <div class="exd-card-header">
+          <span style="font-size:18px">📖</span>
+          <div class="exd-card-title">@(ne?"विवरण":"Description")</div>
+        </div>
+        <div class="exd-card-body">
+          <p class="exd-desc">@ExDesc()</p>
+        </div>
+      </div>
+
+      <!-- Instructions (step-by-step) -->
+      @if (ex.Instructions.Any())
+      {
+      <div class="exd-card">
+        <div class="exd-card-header">
+          <span style="font-size:18px">📋</span>
+          <div class="exd-card-title">@(ne?"चरण-दर-चरण निर्देशन":"Step-by-Step Instructions")</div>
+        </div>
+        <div class="exd-card-body">
+          <div class="exd-steps">
+            @{ int step = 1; }
+            @foreach (var ins in ex.Instructions)
             {
-            <div class="card" style="margin-bottom:20px">
-                <div class="card-header"><div class="card-title">📋 @(ne?"निर्देशनहरू":"Instructions")</div></div>
-                <div class="card-body">
-                    @{ int step = 1; }
-                    @foreach (var ins in ex.Instructions)
-                    {
-                    <div style="display:flex;gap:14px;padding:12px 0;border-bottom:1px solid var(--border)">
-                        <div style="width:28px;height:28px;background:var(--indigo);color:white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0">@(step++)</div>
-                        <div style="font-size:14px;line-height:1.6;color:var(--text-secondary)">@ins</div>
-                    </div>
-                    }
-                </div>
+            <div class="exd-step">
+              <div class="exd-step-num">@(step++)</div>
+              <div class="exd-step-text">@ins</div>
             </div>
             }
-
-            <!-- Mistakes & Tips -->
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
-                @if (ex.CommonMistakes.Any())
-                {
-                <div class="card">
-                    <div class="card-header"><div class="card-title">⚠️ @(ne?"सामान्य गल्तीहरू":"Common Mistakes")</div></div>
-                    <div class="card-body">
-                        @foreach (var m in ex.CommonMistakes)
-                        {
-                        <div style="display:flex;gap:8px;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px">
-                            <span style="color:var(--red);flex-shrink:0">✗</span>
-                            <span style="color:var(--text-secondary)">@m</span>
-                        </div>
-                        }
-                    </div>
-                </div>
-                }
-                @if (ex.Tips.Any())
-                {
-                <div class="card">
-                    <div class="card-header"><div class="card-title">💡 @(ne?"सुझावहरू":"Pro Tips")</div></div>
-                    <div class="card-body">
-                        @foreach (var tip in ex.Tips)
-                        {
-                        <div style="display:flex;gap:8px;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px">
-                            <span style="color:var(--green);flex-shrink:0">✓</span>
-                            <span style="color:var(--text-secondary)">@tip</span>
-                        </div>
-                        }
-                    </div>
-                </div>
-                }
-            </div>
+          </div>
         </div>
+      </div>
+      }
 
-        <!-- Sidebar -->
-        <div style="display:flex;flex-direction:column;gap:16px">
-
-            <div class="card">
-                <div class="card-header"><div class="card-title">📊 @(ne?"व्यायाम विवरण":"Exercise Details")</div></div>
-                <div class="card-body" style="display:flex;flex-direction:column;gap:12px">
-                    @{ var equipStr = ex.Equipment.Any() ? string.Join(", ", ex.Equipment) : (ne?"कुनै छैन":"None"); }
-                    @foreach (var item in new (string,string)[]{
-                        (ne?"सेटहरू":"Sets", $"{ex.DefaultSets}"),
-                        (ne?"रेपहरू":"Reps", ex.DefaultReps),
-                        (ne?"आराम":"Rest", $"{ex.RestSeconds}s"),
-                        (ne?"उपकरण":"Equipment", equipStr)})
-                    {
-                    <div style="display:flex;justify-content:space-between;font-size:14px;padding:8px 0;border-bottom:1px solid var(--border)">
-                        <span style="color:var(--text-muted)">@item.Item1</span>
-                        <span style="font-weight:700">@item.Item2</span>
-                    </div>
-                    }
-                </div>
-            </div>
-
-            <div class="card">
-                <div class="card-header"><div class="card-title">💪 @(ne?"लक्षित मांसपेशी":"Target Muscles")</div></div>
-                <div class="card-body">
-                    <div style="display:flex;flex-wrap:wrap;gap:6px">
-                        @foreach (var m in ex.TargetMuscles)
-                        { <span class="badge badge-indigo">@m</span> }
-                    </div>
-                </div>
-            </div>
-
-            <a href="/Exercise" class="btn btn-ghost" style="justify-content:center">← @(ne?"पुस्तकालय फिर्ता":"Back to Library")</a>
-            @if (Context.Session.GetString("UserId") != null)
+      <!-- Common Mistakes & Tips (local data only) -->
+      @if (ex.CommonMistakes.Any() || ex.Tips.Any())
+      {
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+        @if (ex.CommonMistakes.Any())
+        {
+        <div class="exd-card">
+          <div class="exd-card-header"><span style="font-size:16px">⚠️</span><div class="exd-card-title">@(ne?"सामान्य गल्तीहरू":"Common Mistakes")</div></div>
+          <div class="exd-card-body" style="padding:14px 18px">
+            @foreach (var m in ex.CommonMistakes)
             {
-            <a href="/Workout" class="btn btn-primary" style="justify-content:center">🏋️ @(ne?"व्यायाम योजना हेर्नुहोस्":"View Workout Plans")</a>
+            <div style="display:flex;gap:8px;padding:7px 0;border-bottom:1px solid rgba(0,0,0,0.05);font-size:13px;color:#475569">
+              <span style="color:#ef4444;flex-shrink:0;margin-top:1px">✗</span> @m
+            </div>
             }
+          </div>
         </div>
+        }
+        @if (ex.Tips.Any())
+        {
+        <div class="exd-card">
+          <div class="exd-card-header"><span style="font-size:16px">💡</span><div class="exd-card-title">@(ne?"सुझावहरू":"Pro Tips")</div></div>
+          <div class="exd-card-body" style="padding:14px 18px">
+            @foreach (var tip in ex.Tips)
+            {
+            <div style="display:flex;gap:8px;padding:7px 0;border-bottom:1px solid rgba(0,0,0,0.05);font-size:13px;color:#475569">
+              <span style="color:#22c55e;flex-shrink:0;margin-top:1px">✓</span> @tip
+            </div>
+            }
+          </div>
+        </div>
+        }
+      </div>
+      }
 
     </div>
+
+    <!-- Right sidebar -->
+    <div>
+
+      <!-- Exercise Stats -->
+      <div class="exd-card" style="margin-bottom:18px">
+        <div class="exd-card-header">
+          <span style="font-size:18px">📊</span>
+          <div class="exd-card-title">@(ne?"व्यायाम विवरण":"Exercise Details")</div>
+        </div>
+        <div class="exd-card-body" style="padding:8px 22px 16px">
+          <div class="exd-stat-row">
+            <span class="exd-stat-label">@(ne?"सेटहरू":"Sets")</span>
+            <span class="exd-stat-value">@ex.DefaultSets</span>
+          </div>
+          <div class="exd-stat-row">
+            <span class="exd-stat-label">@(ne?"रेपहरू":"Reps")</span>
+            <span class="exd-stat-value">@ex.DefaultReps</span>
+          </div>
+          <div class="exd-stat-row">
+            <span class="exd-stat-label">@(ne?"आराम":"Rest")</span>
+            <span class="exd-stat-value">@ex.RestSeconds s</span>
+          </div>
+          <div class="exd-stat-row">
+            <span class="exd-stat-label">@(ne?"उपकरण":"Equipment")</span>
+            <span class="exd-stat-value" style="text-align:right;max-width:180px">
+              @(ex.Equipment.Any() ? string.Join(", ", ex.Equipment) : (ne?"कुनै छैन":"None"))
+            </span>
+          </div>
+          <div class="exd-stat-row">
+            <span class="exd-stat-label">@(ne?"प्रकार":"Type")</span>
+            <span class="exd-stat-value">@(ex.IsCompound ? (ne?"यौगिक":"Compound") : (ne?"आइसोलेसन":"Isolation"))</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Movement Types (from API) -->
+      @if (apiEx != null && apiEx.Types.Any())
+      {
+      <div class="exd-card" style="margin-bottom:18px">
+        <div class="exd-card-header">
+          <span style="font-size:18px">🔁</span>
+          <div class="exd-card-title">@(ne?"आन्दोलन प्रकार":"Movement Type")</div>
+        </div>
+        <div class="exd-card-body">
+          <div class="exd-pill-row">
+            @foreach (var t in apiEx.Types)
+            { <span class="exd-pill exd-pill-indigo">@t.Name</span> }
+          </div>
+        </div>
+      </div>
+      }
+
+      <!-- Equipment/Categories (from API) -->
+      @if (apiEx != null && apiEx.Categories.Any())
+      {
+      <div class="exd-card" style="margin-bottom:18px">
+        <div class="exd-card-header">
+          <span style="font-size:18px">🏋️</span>
+          <div class="exd-card-title">@(ne?"उपकरण श्रेणी":"Equipment Category")</div>
+        </div>
+        <div class="exd-card-body">
+          <div class="exd-pill-row">
+            @foreach (var c in apiEx.Categories)
+            { <span class="exd-pill exd-pill-green">@c.Name</span> }
+          </div>
+        </div>
+      </div>
+      }
+
+      <!-- Target Muscles -->
+      @if (ex.TargetMuscles.Any())
+      {
+      <div class="exd-card" style="margin-bottom:18px">
+        <div class="exd-card-header">
+          <span style="font-size:18px">💪</span>
+          <div class="exd-card-title">@(ne?"लक्षित मांसपेशी":"Target Muscles")</div>
+        </div>
+        <div class="exd-card-body">
+          @if (apiEx != null)
+          {
+            <!-- Show with color dots from API -->
+            <div style="display:flex;flex-direction:column;gap:10px">
+              @foreach (var m in apiEx.PrimaryMuscles)
+              {
+              <div style="display:flex;align-items:center;gap:10px;font-size:13px">
+                <div style="width:12px;height:12px;border-radius:50%;background:@m.Color;flex-shrink:0;box-shadow:0 0 6px @(m.Color)66"></div>
+                <span style="font-weight:700;color:#0f172a">@m.Name</span>
+                <span style="font-size:11px;color:#94a3b8;margin-left:auto">Primary</span>
+              </div>
+              }
+              @foreach (var m in apiEx.SecondaryMuscles)
+              {
+              <div style="display:flex;align-items:center;gap:10px;font-size:13px;opacity:.7">
+                <div style="width:12px;height:12px;border-radius:50%;background:@m.Color;flex-shrink:0"></div>
+                <span style="font-weight:600;color:#475569">@m.Name</span>
+                <span style="font-size:11px;color:#94a3b8;margin-left:auto">Secondary</span>
+              </div>
+              }
+            </div>
+          }
+          else
+          {
+          <div class="exd-pill-row">
+            @foreach (var m in ex.TargetMuscles)
+            { <span class="exd-pill exd-pill-gray">@m</span> }
+          </div>
+          }
+        </div>
+      </div>
+      }
+
+      <!-- CTAs -->
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <a href="/Exercise" class="btn btn-ghost" style="justify-content:center;text-align:center">
+          ← @(ne?"पुस्तकालय फिर्ता":"Back to Library")
+        </a>
+        @if (Context.Session.GetString("UserId") != null)
+        {
+        <a href="/Workout" class="btn btn-primary" style="justify-content:center;text-align:center">
+          🏋️ @(ne?"व्यायाम योजना हेर्नुहोस्":"View Workout Plans")
+        </a>
+        }
+      </div>
+
+    </div>
+  </div>
+
+</div>
 </div>
