@@ -133,6 +133,37 @@
 
     <!-- RESULTS -->
     <div>
+      @{
+        // Weight goal calculations (safe to compute even if bmi is null, using 0 defaults)
+        double hm = height > 0 ? height / 100.0 : 1.7;
+        double idealMin = Math.Round(18.5 * hm * hm, 1);
+        double idealMax = Math.Round(24.9 * hm * hm, 1);
+        double idealMid = Math.Round((idealMin + idealMax) / 2, 1);
+        double diff = Math.Round(weight - idealMid, 1);
+        bool needsLoss = bmi.HasValue && bmi.Value >= 25;
+        bool needsGain = bmi.HasValue && bmi.Value < 18.5;
+        bool isNormal  = bmi.HasValue && !needsLoss && !needsGain;
+        int weeksNeeded = needsLoss ? (int)Math.Ceiling(Math.Abs(diff) / 0.5)
+                        : needsGain ? (int)Math.Ceiling(Math.Abs(diff) / 0.25) : 0;
+        int monthsNeeded = weeksNeeded > 0 ? (int)Math.Ceiling(weeksNeeded / 4.3) : 0;
+        int calDeficit = needsLoss ? 500 : needsGain ? 400 : 0;
+        string calAction = needsLoss
+            ? (ne ? $"दैनिक {calDeficit} क्यालोरी कम गर्नुहोस्" : $"Eat ~{calDeficit} cal/day less than your TDEE")
+            : needsGain
+            ? (ne ? $"दैनिक {calDeficit} क्यालोरी बढाउनुहोस्" : $"Eat ~{calDeficit} cal/day more than your TDEE")
+            : (ne ? "आफ्नो हालको क्यालोरी सन्तुलन राख्नुहोस्" : "Maintain your current calorie balance");
+        string goalColor = needsLoss ? "#ef4444" : needsGain ? "#3b82f6" : "#22c55e";
+        string goalBg   = needsLoss ? "#fef2f2" : needsGain ? "#eff6ff" : "#f0fdf4";
+        string goalIcon = needsLoss ? "📉" : needsGain ? "📈" : "✅";
+        string goalTitle = needsLoss
+            ? (ne ? "तौल घटाउने लक्ष्य" : "Weight Loss Goal")
+            : needsGain ? (ne ? "तौल बढाउने लक्ष्य" : "Weight Gain Goal")
+            : (ne ? "तपाईंको तौल उत्तम छ!" : "You're at a healthy weight!");
+        double barMin = idealMin - 15; double barMax = idealMax + 15;
+        double idealStartPct = (idealMin - barMin) / (barMax - barMin) * 100;
+        double idealWidthPct = (idealMax - idealMin) / (barMax - barMin) * 100;
+        double currentPct = Math.Min(Math.Max((weight - barMin) / (barMax - barMin) * 100, 1), 99);
+      }
       @if (bmi.HasValue)
       {
       <div class="bp-result" style="border-color:@bmiColor">
@@ -156,6 +187,83 @@
             <div class="bp-stat-val">@weight kg</div>
             <div class="bp-stat-lbl">@(ne?"तौल":"Weight")</div>
           </div>
+        </div>
+      </div>
+
+      <!-- Weight Goal Card -->
+      <div class="bp-card" style="border:none;background:@goalBg;outline:2px solid @(goalColor)22;overflow:visible">
+        <div class="bp-card-head" style="background:transparent;border-bottom:1px solid @(goalColor)22;color:#0f172a">
+          @goalIcon @goalTitle
+        </div>
+        <div class="bp-card-body" style="padding:16px 18px 20px">
+
+          @if (!isNormal)
+          {
+          <!-- Stat row -->
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px">
+            <div style="background:#ffffff;border-radius:12px;padding:14px;text-align:center;border:1px solid rgba(0,0,0,0.07)">
+              <div style="font-size:22px;font-weight:900;color:@goalColor">@Math.Abs(diff) kg</div>
+              <div style="font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.06em;margin-top:3px">
+                @(ne ? (needsLoss?"घटाउनु पर्ने":"बढाउनु पर्ने") : (needsLoss?"To Lose":"To Gain"))
+              </div>
+            </div>
+            <div style="background:#ffffff;border-radius:12px;padding:14px;text-align:center;border:1px solid rgba(0,0,0,0.07)">
+              <div style="font-size:22px;font-weight:900;color:#0f172a">@idealMid kg</div>
+              <div style="font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.06em;margin-top:3px">
+                @(ne?"लक्ष्य तौल":"Target Weight")
+              </div>
+            </div>
+            <div style="background:#ffffff;border-radius:12px;padding:14px;text-align:center;border:1px solid rgba(0,0,0,0.07)">
+              <div style="font-size:22px;font-weight:900;color:#16a34a">~@monthsNeeded @(ne?"महिना":"mo")</div>
+              <div style="font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.06em;margin-top:3px">
+                @(ne?"अनुमानित समय":"Est. Timeline")
+              </div>
+            </div>
+          </div>
+
+          <!-- Ideal range bar -->
+          <div style="margin-bottom:16px">
+            <div style="display:flex;justify-content:space-between;font-size:12px;color:#64748b;margin-bottom:6px">
+              <span>@(ne?"आदर्श तौल दायरा":"Ideal weight range for your height")</span>
+              <span style="font-weight:700;color:#16a34a">@idealMin – @idealMax kg</span>
+            </div>
+            <div style="height:8px;background:#e5e7eb;border-radius:999px;position:relative;overflow:hidden">
+              <div style="position:absolute;left:@idealStartPct.ToString("0.0")%;width:@idealWidthPct.ToString("0.0")%;height:100%;background:#22c55e;opacity:0.3"></div>
+              <div style="position:absolute;left:calc(@currentPct.ToString("0.0")% - 6px);top:-2px;width:12px;height:12px;background:@goalColor;border-radius:50%;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,0.2)"></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;font-size:10px;color:#94a3b8;margin-top:4px">
+              <span>@(barMin.ToString("0")) kg</span><span>@(ne?"🟢 स्वस्थ क्षेत्र":"🟢 Healthy zone")</span><span>@(barMax.ToString("0")) kg</span>
+            </div>
+          </div>
+
+          <!-- Calorie tip -->
+          <div style="background:#ffffff;border-radius:10px;padding:12px 14px;display:flex;align-items:center;gap:10px;border:1px solid rgba(0,0,0,0.07)">
+            <span style="font-size:20px">🔥</span>
+            <div>
+              <div style="font-size:12px;font-weight:700;color:#0f172a;margin-bottom:2px">@(ne?"क्यालोरी योजना":"Calorie Plan")</div>
+              <div style="font-size:12px;color:#475569">@calAction</div>
+            </div>
+          </div>
+
+          <!-- Safe rate note -->
+          <div style="margin-top:10px;font-size:11px;color:#94a3b8;text-align:center">
+            @(ne
+              ? $"सुरक्षित दर: {(needsLoss?"प्रति हप्ता ०.५ kg घटाउनुहोस्":"प्रति हप्ता ०.२५ kg बढाउनुहोस्")} · क्र्यास डाइट नगर्नुहोस्"
+              : $"Safe rate: {(needsLoss?"0.5 kg/week loss":"0.25 kg/week gain")} · Avoid crash diets or rapid changes")
+          </div>
+          }
+          else
+          {
+          <div style="text-align:center;padding:8px 0">
+            <div style="font-size:36px;margin-bottom:10px">🎉</div>
+            <div style="font-size:14px;color:#374151;margin-bottom:8px">
+              @(ne?"तपाईंको BMI स्वस्थ दायरामा छ। यो अवस्था कायम राख्नु महत्त्वपूर्ण छ।":"Your BMI is in the healthy range. The goal now is to maintain it!")
+            </div>
+            <div style="font-size:13px;color:#16a34a;font-weight:700">
+              @(ne?"आदर्श तौल दायरा":"Ideal range"): @idealMin – @idealMax kg
+            </div>
+          </div>
+          }
         </div>
       </div>
 
