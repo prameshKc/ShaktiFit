@@ -88,12 +88,12 @@
     </div>
 
     <!-- Disclaimer -->
-    <div class="card" style="margin-top:32px;background:var(--indigo-bg);border-color:rgba(79,70,229,0.2)">
-        <div class="card-body" style="display:flex;align-items:flex-start;gap:16px">
+    <div style="margin-top:32px;background:#eef2ff;border:1px solid rgba(79,70,229,0.2);border-radius:16px">
+        <div style="padding:22px;display:flex;align-items:flex-start;gap:16px">
             <div style="font-size:32px;flex-shrink:0">⚕️</div>
             <div>
-                <h3 style="font-size:16px;margin-bottom:6px">@(ne?"महत्त्वपूर्ण सूचना":"Medical Disclaimer")</h3>
-                <p style="font-size:13px;color:var(--text-secondary);line-height:1.7">
+                <h3 style="font-size:16px;margin-bottom:6px;color:#1e1b4b">@(ne?"महत्त्वपूर्ण सूचना":"Medical Disclaimer")</h3>
+                <p style="font-size:13px;color:#374151;line-height:1.7;margin:0">
                     @(ne
                         ? "ShaktiFit मा प्रदान गरिएको जानकारी सामान्य शैक्षिक उद्देश्यको लागि मात्र हो। यसलाई चिकित्सकीय सल्लाहको विकल्प मानिँदैन। कुनै पनि स्वास्थ्य समस्याको लागि योग्य स्वास्थ्यकर्मी वा डाक्टरसँग परामर्श लिनुहोस्।"
                         : "Information provided on ShaktiFit is for general educational purposes only and should not be considered as medical advice. Always consult with a qualified healthcare professional or doctor before making any health decisions or starting a new exercise or nutrition program.")
@@ -104,13 +104,13 @@
 
     @if (!isAuth)
     {
-    <div class="card" style="margin-top:24px;text-align:center;padding:32px">
+    <div style="margin-top:24px;text-align:center;padding:40px;background:#ffffff;border:1px solid rgba(0,0,0,0.08);border-radius:16px">
         <div style="font-size:48px;margin-bottom:12px">🏋️</div>
-        <h2 style="margin-bottom:8px">@(ne?"व्यक्तिगत स्वास्थ्य योजना पाउनुहोस्":"Get a Personalized Health Plan")</h2>
-        <p style="color:var(--text-secondary);margin-bottom:24px">@(ne?"दर्ता गरेर आफ्नो BMI, लक्ष्य र स्वास्थ्य अनुसार व्यक्तिगत व्यायाम र पोषण योजना पाउनुहोस्।":"Register to get a personalized workout and nutrition plan based on your BMI, goals, and health profile.")</p>
+        <h2 style="margin-bottom:8px;color:#0f172a;font-size:22px;font-weight:800">@(ne?"व्यक्तिगत स्वास्थ्य योजना पाउनुहोस्":"Get a Personalized Health Plan")</h2>
+        <p style="color:#475569;margin-bottom:24px;font-size:14px">@(ne?"दर्ता गरेर आफ्नो BMI, लक्ष्य र स्वास्थ्य अनुसार व्यक्तिगत व्यायाम र पोषण योजना पाउनुहोस्।":"Register to get a personalized workout and nutrition plan based on your BMI, goals, and health profile.")</p>
         <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
-            <a href="/Account/Register" class="btn btn-primary btn-lg">@(ne?"निःशुल्क दर्ता गर्नुहोस्":"Register Free")</a>
-            <a href="/Bmi" class="btn btn-outline btn-lg">⚖️ @(ne?"BMI जाँच्नुहोस्":"Check BMI")</a>
+            <a href="/Account/Register" style="padding:12px 28px;background:linear-gradient(135deg,#22c55e,#16a34a);color:#ffffff;font-weight:700;font-size:15px;border-radius:12px;text-decoration:none;display:inline-flex;align-items:center;gap:8px">@(ne?"निःशुल्क दर्ता गर्नुहोस्":"Register Free")</a>
+            <a href="/Bmi" style="padding:12px 24px;background:#ffffff;color:#374151;font-weight:600;font-size:15px;border:1.5px solid rgba(0,0,0,0.15);border-radius:12px;text-decoration:none;display:inline-flex;align-items:center;gap:8px">⚖️ @(ne?"BMI जाँच्नुहोस्":"Check BMI")</a>
         </div>
     </div>
     }

@@ -341,13 +341,13 @@ html:not([data-accent]) { --accent:#22c55e; --accent-dark:#16a34a; --shadow-acce
 .btn-success:hover { transform: translateY(-1px); color: white; }
 .btn-outline {
   background: transparent;
-  color: var(--text-primary);
-  border: 1.5px solid var(--border);
+  color: #374151;
+  border: 1.5px solid rgba(0,0,0,0.15);
 }
-.btn-outline:hover { background: var(--bg-secondary); border-color: var(--text-primary); }
+.btn-outline:hover { background: #f8faf8; border-color: rgba(0,0,0,0.25); color: #0f172a; }
 .btn-ghost {
-  background: var(--bg-secondary);
-  color: var(--text-secondary);
+  background: #f8faf8;
+  color: #475569;
   border: 1px solid var(--border);
 }
 .btn-ghost:hover { background: var(--border); color: var(--text-primary); }
