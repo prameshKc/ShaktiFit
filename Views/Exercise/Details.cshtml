@@ -3,382 +3,441 @@
 @{
     var ex    = Model;
     var apiEx = ViewBag.ApiExercise as WorkoutApiExercise;
-    ViewBag.Title      = $"{ex.Name} – ShaktiFit";
-    ViewBag.ActiveNav  = "exercises";
+    ViewBag.Title     = $"{ex.Name} – ShaktiFit";
+    ViewBag.ActiveNav = "exercise";
     var lang = Context.Session.GetString("Lang") ?? "en";
     bool ne  = lang == "ne";
-    string ExName() => ne && !string.IsNullOrEmpty(ex.NameNepali) ? ex.NameNepali : ex.Name;
-    string ExDesc() => ne && !string.IsNullOrEmpty(ex.DescriptionNepali) ? ex.DescriptionNepali : ex.Description;
+    var isAuth = Context.Session.GetString("UserId") != null;
+    if (!isAuth) { ViewBag.IsLanding = true; }
+
+    // Build muscle sets from API data (or fallback)
+    var primaryMuscles   = apiEx?.PrimaryMuscles   ?? new List<WorkoutApiMuscle>();
+    var secondaryMuscles = apiEx?.SecondaryMuscles ?? new List<WorkoutApiMuscle>();
+
+    // Muscle → SVG path id map (matches the SVG below)
+    var muscleToSvg = new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase)
+    {
+        ["TRAPEZIUS"]   = new[]{"svg-trapezius-f","svg-trapezius-b"},
+        ["SHOULDERS"]   = new[]{"svg-shoulders-l","svg-shoulders-r"},
+        ["CHEST"]       = new[]{"svg-chest"},
+        ["BACK"]        = new[]{"svg-back-upper","svg-back-lower"},
+        ["BICEPS"]      = new[]{"svg-biceps-l","svg-biceps-r"},
+        ["TRICEPS"]     = new[]{"svg-triceps-l","svg-triceps-r"},
+        ["FOREARMS"]    = new[]{"svg-forearms-l","svg-forearms-r"},
+        ["ABS"]         = new[]{"svg-abs"},
+        ["OBLIQUES"]    = new[]{"svg-obliques-l","svg-obliques-r"},
+        ["GLUTES"]      = new[]{"svg-glutes"},
+        ["QUADRICEPS"]  = new[]{"svg-quads-l","svg-quads-r"},
+        ["HAMSTRINGS"]  = new[]{"svg-hamstrings-l","svg-hamstrings-r"},
+        ["ABDUCTORS"]   = new[]{"svg-abductors-l","svg-abductors-r"},
+        ["ADDUCTORS"]   = new[]{"svg-adductors-l","svg-adductors-r"},
+        ["CALVES"]      = new[]{"svg-calves-l","svg-calves-r"},
+    };
+
+    // Build highlight map: svgId → color
+    var highlights = new Dictionary<string, (string color, bool isPrimary)>();
+    foreach (var m in primaryMuscles)
+    {
+        if (muscleToSvg.TryGetValue(m.Code, out var ids))
+            foreach (var id in ids)
+                highlights[id] = (m.Color, true);
+    }
+    foreach (var m in secondaryMuscles)
+    {
+        if (muscleToSvg.TryGetValue(m.Code, out var ids))
+            foreach (var id in ids)
+                if (!highlights.ContainsKey(id))
+                    highlights[id] = (m.Color, false);
+    }
+
+    string GetFill(string svgId, string def = "#e2e8f0") =>
+        highlights.TryGetValue(svgId, out var h) ? h.color : def;
+    string GetOpacity(string svgId) =>
+        highlights.ContainsKey(svgId)
+            ? (highlights[svgId].isPrimary ? "1" : "0.5")
+            : "0.18";
+
+    // Steps
+    var steps = ex.Instructions.Count > 0 ? ex.Instructions
+              : ex.Description.Split(new[]{ ". " }, StringSplitOptions.RemoveEmptyEntries)
+                              .Select(s => s.Trim().TrimEnd('.') + ".")
+                              .Where(s => s.Length > 3)
+                              .ToList();
+
+    string DiffColor(string d) => d switch {
+        "Beginner"     => "#22c55e",
+        "Advanced"     => "#ef4444",
+        _              => "#f59e0b"
+    };
+    string DiffBg(string d) => d switch {
+        "Beginner"     => "#f0fdf4",
+        "Advanced"     => "#fef2f2",
+        _              => "#fefce8"
+    };
 }
 
 <style>
-/* ── Detail page ── */
-.exd-page { background:#f8faf8; min-height:100vh; }
-.exd-wrap { max-width:1100px; margin:0 auto; padding:28px 24px 80px; }
+.exd { background:#f8faf8; min-height:100vh; }
+.exd-wrap { max-width:1100px; margin:0 auto; padding:24px 20px 80px; }
 
-/* ── Hero band ── */
+/* Hero */
 .exd-hero {
   background:linear-gradient(135deg,#0f1f0f 0%,#1a3a1a 55%,#16a34a 100%);
-  border-radius:20px; padding:32px 36px 28px; margin-bottom:28px;
+  border-radius:20px; padding:30px 34px 26px; margin-bottom:24px;
   position:relative; overflow:hidden;
 }
-.exd-hero::before {
-  content:''; position:absolute; top:-50px; right:-50px;
-  width:220px; height:220px; background:rgba(34,197,94,0.10); border-radius:50%;
-}
-.exd-hero-back {
-  display:inline-flex; align-items:center; gap:6px;
-  color:rgba(240,253,244,0.6); font-size:13px; font-weight:600;
-  text-decoration:none; margin-bottom:18px;
-  transition:color .15s;
-}
-.exd-hero-back:hover { color:#86efac; }
-.exd-hero-top { display:flex; align-items:flex-start; gap:20px; flex-wrap:wrap; }
-.exd-hero-icon {
-  width:72px; height:72px; border-radius:18px;
-  background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.12);
-  display:flex; align-items:center; justify-content:center;
-  font-size:36px; flex-shrink:0;
-}
-.exd-hero-meta { flex:1; min-width:0; }
-.exd-hero-badges { display:flex; gap:7px; flex-wrap:wrap; margin-bottom:10px; }
-.exd-badge {
-  display:inline-flex; align-items:center; gap:5px; padding:4px 12px;
-  border-radius:999px; font-size:11px; font-weight:700; letter-spacing:0.04em;
-}
-.exd-badge-green  { background:rgba(34,197,94,0.18); border:1px solid rgba(34,197,94,0.35); color:#86efac; }
-.exd-badge-white  { background:rgba(255,255,255,0.10); border:1px solid rgba(255,255,255,0.18); color:rgba(240,253,244,0.8); }
-.exd-badge-amber  { background:rgba(245,197,66,0.18); border:1px solid rgba(245,197,66,0.35); color:#fde68a; }
-.exd-hero-name { font-size:30px; font-weight:900; color:#f0fdf4; letter-spacing:-0.03em; line-height:1.15; margin-bottom:6px; }
-.exd-hero-code { font-size:12px; font-weight:700; color:rgba(240,253,244,0.35); letter-spacing:0.12em; text-transform:uppercase; }
+.exd-hero::before { content:''; position:absolute; top:-40px; right:-40px; width:200px; height:200px; background:rgba(34,197,94,0.1); border-radius:50%; }
+.exd-back { display:inline-flex; align-items:center; gap:6px; color:rgba(240,253,244,0.6); font-size:13px; font-weight:600; text-decoration:none; margin-bottom:16px; transition:color .15s; }
+.exd-back:hover { color:#4ade80; }
+.exd-code { display:inline-flex; align-items:center; gap:6px; padding:4px 12px; background:rgba(34,197,94,0.18); border:1px solid rgba(34,197,94,0.3); border-radius:999px; font-size:10px; font-weight:800; color:#86efac; letter-spacing:0.1em; margin-bottom:10px; }
+.exd-name { font-size:30px; font-weight:900; color:#f0fdf4; letter-spacing:-0.03em; margin-bottom:8px; line-height:1.15; }
+.exd-badges { display:flex; gap:8px; flex-wrap:wrap; }
+.exd-badge { padding:5px 13px; border-radius:999px; font-size:12px; font-weight:700; }
 
-/* ── Muscle chips row ── */
-.exd-muscles { display:flex; flex-wrap:wrap; gap:8px; margin-top:20px; }
-.exd-muscle-chip {
-  display:inline-flex; align-items:center; gap:6px;
-  padding:6px 14px; border-radius:999px;
-  font-size:12px; font-weight:700;
-  background:rgba(255,255,255,0.08);
-  border:1px solid rgba(255,255,255,0.15);
-  color:#f0fdf4;
-}
-.exd-muscle-dot { width:9px; height:9px; border-radius:50%; flex-shrink:0; }
-.exd-muscle-chip.secondary { opacity:.65; }
+/* Layout */
+.exd-layout { display:grid; grid-template-columns:340px 1fr; gap:20px; align-items:start; }
 
-/* ── Body grid ── */
-.exd-grid { display:grid; grid-template-columns:1fr 340px; gap:22px; align-items:start; }
+/* Muscle Diagram Card */
+.exd-muscle-card { background:#ffffff; border:1.5px solid rgba(0,0,0,0.08); border-radius:18px; overflow:hidden; box-shadow:0 1px 4px rgba(0,0,0,0.05); }
+.exd-muscle-title { padding:16px 18px 12px; border-bottom:1px solid rgba(0,0,0,0.06); font-size:13px; font-weight:800; color:#0f172a; display:flex; align-items:center; gap:8px; }
+.exd-body-wrap { display:flex; gap:8px; justify-content:center; padding:20px 16px 12px; background:#fafbff; }
+.exd-body-label { font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; color:#94a3b8; text-align:center; margin-bottom:4px; }
 
-/* ── Cards ── */
-.exd-card { background:#ffffff; border:1.5px solid rgba(0,0,0,0.07); border-radius:18px; overflow:hidden; margin-bottom:18px; box-shadow:0 1px 4px rgba(0,0,0,0.05); }
-.exd-card-header { padding:16px 22px; border-bottom:1px solid rgba(0,0,0,0.06); display:flex; align-items:center; gap:9px; }
-.exd-card-title { font-size:14px; font-weight:800; color:#0f172a; }
-.exd-card-body { padding:20px 22px; }
+/* Muscle legend */
+.exd-legend { padding:12px 18px 18px; }
+.exd-legend-title { font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:0.08em; color:#94a3b8; margin-bottom:10px; }
+.exd-muscle-chip { display:inline-flex; align-items:center; gap:6px; padding:5px 11px; border-radius:999px; font-size:12px; font-weight:700; margin:3px; }
+.exd-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
 
-/* ── Description ── */
-.exd-desc { font-size:15px; line-height:1.75; color:#374151; }
+/* Info cards */
+.exd-right { display:flex; flex-direction:column; gap:16px; }
+.exd-card { background:#ffffff; border:1.5px solid rgba(0,0,0,0.08); border-radius:18px; overflow:hidden; box-shadow:0 1px 4px rgba(0,0,0,0.05); }
+.exd-card-head { padding:14px 20px; border-bottom:1px solid rgba(0,0,0,0.06); font-size:14px; font-weight:800; color:#0f172a; display:flex; align-items:center; gap:8px; }
+.exd-card-body { padding:16px 20px; }
 
-/* ── Steps ── */
-.exd-steps { display:flex; flex-direction:column; gap:14px; }
-.exd-step { display:flex; gap:14px; align-items:flex-start; }
-.exd-step-num {
-  width:30px; height:30px; border-radius:50%; flex-shrink:0;
-  background:linear-gradient(135deg,#22c55e,#16a34a);
-  color:#fff; display:flex; align-items:center; justify-content:center;
-  font-size:12px; font-weight:800; box-shadow:0 2px 8px rgba(34,197,94,0.35);
-}
-.exd-step-text { font-size:14px; line-height:1.65; color:#374151; padding-top:5px; }
+/* Steps */
+.exd-step { display:flex; align-items:flex-start; gap:14px; padding:12px 0; border-bottom:1px solid rgba(0,0,0,0.05); }
+.exd-step:last-child { border-bottom:none; }
+.exd-step-num { width:28px; height:28px; background:linear-gradient(135deg,#22c55e,#16a34a); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:800; color:#fff; flex-shrink:0; margin-top:1px; }
+.exd-step-text { font-size:14px; color:#374151; line-height:1.65; padding-top:3px; }
 
-/* ── Stats sidebar ── */
-.exd-stat-row { display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid rgba(0,0,0,0.06); font-size:14px; }
-.exd-stat-row:last-child { border-bottom:none; }
-.exd-stat-label { color:#64748b; font-weight:500; }
-.exd-stat-value { font-weight:800; color:#0f172a; }
+/* Stats row */
+.exd-stats { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
+.exd-stat { text-align:center; background:#f8faf8; border-radius:12px; padding:14px 10px; }
+.exd-stat-val { font-size:22px; font-weight:900; color:#0f172a; line-height:1; }
+.exd-stat-lbl { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.07em; color:#94a3b8; margin-top:4px; }
 
-/* ── Type/Category pills ── */
-.exd-pill-row { display:flex; flex-wrap:wrap; gap:7px; }
-.exd-pill { padding:5px 13px; border-radius:999px; font-size:12px; font-weight:700; border:1.5px solid; }
-.exd-pill-indigo { background:#eef2ff; border-color:#c7d2fe; color:#4338ca; }
-.exd-pill-green  { background:#f0fdf4; border-color:#bbf7d0; color:#15803d; }
-.exd-pill-gray   { background:#f1f5f9; border-color:#e2e8f0; color:#475569; }
+/* Pills */
+.exd-pills { display:flex; flex-wrap:wrap; gap:7px; }
+.exd-pill { padding:6px 14px; border-radius:999px; font-size:12px; font-weight:700; }
 
-/* ── Source badge ── */
-.exd-source { display:inline-flex; align-items:center; gap:6px; padding:4px 12px; background:#f0fdf4; border:1px solid rgba(34,197,94,0.2); border-radius:999px; font-size:11px; font-weight:700; color:#16a34a; }
-
-/* ── Responsive ── */
-@@media (max-width:768px) {
-  .exd-wrap { padding:18px 14px 80px; }
-  .exd-hero { padding:22px 20px 20px; border-radius:16px; }
-  .exd-hero-name { font-size:22px; }
-  .exd-grid { grid-template-columns:1fr; }
-  .exd-hero-icon { width:56px; height:56px; font-size:28px; border-radius:14px; }
+@@media(max-width:768px){
+  .exd-layout { grid-template-columns:1fr; }
+  .exd-name { font-size:22px; }
+  .exd-wrap { padding:16px 14px 100px; }
+  .exd-stats { grid-template-columns:repeat(3,1fr); }
 }
 </style>
 
-<div class="exd-page">
+<div class="exd">
 <div class="exd-wrap">
 
-  <!-- ── Hero ── -->
+  <!-- Hero -->
   <div class="exd-hero">
-    <a href="/Exercise" class="exd-hero-back">← @(ne ? "पुस्तकालयमा फर्कनुहोस्" : "Back to Library")</a>
-
-    <div class="exd-hero-top">
-      <div class="exd-hero-icon">💪</div>
-      <div class="exd-hero-meta">
-        <div class="exd-hero-badges">
-          @if (apiEx != null)
-          {
-            <span class="exd-source">✦ WorkoutAPI</span>
-          }
-          @if (ex.IsCompound)
-          { <span class="exd-badge exd-badge-amber">⚡ @(ne?"यौगिक":"Compound")</span> }
-          <span class="exd-badge exd-badge-green">@ex.Category</span>
-          @if (!string.IsNullOrEmpty(ex.Difficulty))
-          { <span class="exd-badge exd-badge-white">@ex.Difficulty</span> }
-          @if (apiEx != null)
-          {
-            foreach (var t in apiEx.Types)
-            { <span class="exd-badge exd-badge-white">@t.Name</span> }
-          }
-        </div>
-        <div class="exd-hero-name">@ExName()</div>
-        @if (apiEx != null)
-        { <div class="exd-hero-code">@apiEx.Code</div> }
-      </div>
-    </div>
-
-    <!-- Muscle chips -->
-    @if (ex.TargetMuscles.Any() || (apiEx != null && (apiEx.PrimaryMuscles.Any() || apiEx.SecondaryMuscles.Any())))
-    {
-    <div class="exd-muscles">
-      @if (apiEx != null)
-      {
-        foreach (var m in apiEx.PrimaryMuscles)
-        {
-        <span class="exd-muscle-chip">
-          <span class="exd-muscle-dot" style="background:@m.Color"></span>
-          @m.Name
-        </span>
-        }
-        foreach (var m in apiEx.SecondaryMuscles)
-        {
-        <span class="exd-muscle-chip secondary">
-          <span class="exd-muscle-dot" style="background:@m.Color;opacity:.5"></span>
-          @m.Name <span style="font-size:10px;opacity:.6">(secondary)</span>
-        </span>
-        }
+    <a href="/Exercise" class="exd-back">← @(ne?"व्यायाम पुस्तकालय":"Exercise Library")</a>
+    <div class="exd-code">🏋️ @(apiEx?.Code ?? ex.Category.ToUpper())</div>
+    <div class="exd-name">@ex.Name</div>
+    <div class="exd-badges">
+      <span class="exd-badge" style="background:@DiffBg(ex.Difficulty);color:@DiffColor(ex.Difficulty)">@ex.Difficulty</span>
+      @if (ex.IsCompound) {
+      <span class="exd-badge" style="background:rgba(34,197,94,0.18);color:#86efac">⚡ Compound</span>
       }
-      else
-      {
-        foreach (var m in ex.TargetMuscles)
-        { <span class="exd-muscle-chip"><span class="exd-muscle-dot" style="background:#22c55e"></span>@m</span> }
-      }
+      @foreach (var t in (apiEx?.Types ?? new List<WorkoutApiType>()))
+      {<span class="exd-badge" style="background:rgba(255,255,255,0.1);color:rgba(240,253,244,0.75)">@t.Name</span>}
+      @foreach (var c in (apiEx?.Categories ?? new List<WorkoutApiCategory>()))
+      {<span class="exd-badge" style="background:rgba(255,255,255,0.08);color:rgba(240,253,244,0.6)">@c.Name</span>}
     </div>
-    }
   </div>
 
-  <!-- ── Body ── -->
-  <div class="exd-grid">
+  <div class="exd-layout">
 
-    <!-- Left column -->
+    <!-- LEFT: Muscle Diagram -->
     <div>
+      <div class="exd-muscle-card">
+        <div class="exd-muscle-title">💪 @(ne?"लक्षित मांसपेशी":"Target Muscles")</div>
 
-      <!-- Description -->
-      <div class="exd-card">
-        <div class="exd-card-header">
-          <span style="font-size:18px">📖</span>
-          <div class="exd-card-title">@(ne?"विवरण":"Description")</div>
+        <div class="exd-body-wrap">
+          <!-- FRONT VIEW -->
+          <div>
+            <div class="exd-body-label">Front</div>
+            <svg viewBox="0 0 120 280" width="110" xmlns="http://www.w3.org/2000/svg" style="display:block">
+              <!-- Head -->
+              <ellipse cx="60" cy="18" rx="14" ry="16" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1"/>
+              <!-- Neck -->
+              <rect x="54" y="33" width="12" height="10" rx="3" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1"/>
+              <!-- Shoulders -->
+              <ellipse id="svg-shoulders-l" cx="30" cy="52" rx="13" ry="9" fill="@GetFill("svg-shoulders-l")" opacity="@GetOpacity("svg-shoulders-l")" stroke="#cbd5e1" stroke-width="0.8"/>
+              <ellipse id="svg-shoulders-r" cx="90" cy="52" rx="13" ry="9" fill="@GetFill("svg-shoulders-r")" opacity="@GetOpacity("svg-shoulders-r")" stroke="#cbd5e1" stroke-width="0.8"/>
+              <!-- Chest -->
+              <path id="svg-chest" d="M43 48 Q60 62 77 48 L77 72 Q60 78 43 72 Z" fill="@GetFill("svg-chest")" opacity="@GetOpacity("svg-chest")" stroke="#cbd5e1" stroke-width="0.8"/>
+              <!-- Trapezius (front visible) -->
+              <path id="svg-trapezius-f" d="M46 44 Q60 50 74 44 L74 48 Q60 52 46 48 Z" fill="@GetFill("svg-trapezius-f")" opacity="@GetOpacity("svg-trapezius-f")" stroke="#cbd5e1" stroke-width="0.8"/>
+              <!-- Abs -->
+              <rect id="svg-abs" x="49" y="74" width="22" height="34" rx="5" fill="@GetFill("svg-abs")" opacity="@GetOpacity("svg-abs")" stroke="#cbd5e1" stroke-width="0.8"/>
+              <!-- Obliques -->
+              <path id="svg-obliques-l" d="M43 72 L49 74 L49 108 L38 100 Z" fill="@GetFill("svg-obliques-l")" opacity="@GetOpacity("svg-obliques-l")" stroke="#cbd5e1" stroke-width="0.8"/>
+              <path id="svg-obliques-r" d="M77 72 L71 74 L71 108 L82 100 Z" fill="@GetFill("svg-obliques-r")" opacity="@GetOpacity("svg-obliques-r")" stroke="#cbd5e1" stroke-width="0.8"/>
+              <!-- Upper arms (biceps) -->
+              <rect id="svg-biceps-l" x="18" y="55" width="10" height="36" rx="5" fill="@GetFill("svg-biceps-l")" opacity="@GetOpacity("svg-biceps-l")" stroke="#cbd5e1" stroke-width="0.8"/>
+              <rect id="svg-biceps-r" x="92" y="55" width="10" height="36" rx="5" fill="@GetFill("svg-biceps-r")" opacity="@GetOpacity("svg-biceps-r")" stroke="#cbd5e1" stroke-width="0.8"/>
+              <!-- Forearms -->
+              <rect id="svg-forearms-l" x="14" y="93" width="10" height="32" rx="4" fill="@GetFill("svg-forearms-l")" opacity="@GetOpacity("svg-forearms-l")" stroke="#cbd5e1" stroke-width="0.8"/>
+              <rect id="svg-forearms-r" x="96" y="93" width="10" height="32" rx="4" fill="@GetFill("svg-forearms-r")" opacity="@GetOpacity("svg-forearms-r")" stroke="#cbd5e1" stroke-width="0.8"/>
+              <!-- Torso -->
+              <rect x="43" y="48" width="34" height="62" rx="6" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="0.8" style="z-index:-1"/>
+              <!-- Adductors -->
+              <path id="svg-adductors-l" d="M49 112 L60 118 L57 155 L46 148 Z" fill="@GetFill("svg-adductors-l")" opacity="@GetOpacity("svg-adductors-l")" stroke="#cbd5e1" stroke-width="0.8"/>
+              <path id="svg-adductors-r" d="M71 112 L60 118 L63 155 L74 148 Z" fill="@GetFill("svg-adductors-r")" opacity="@GetOpacity("svg-adductors-r")" stroke="#cbd5e1" stroke-width="0.8"/>
+              <!-- Quads -->
+              <path id="svg-quads-l" d="M40 112 L50 112 L54 152 L38 148 Z" fill="@GetFill("svg-quads-l")" opacity="@GetOpacity("svg-quads-l")" stroke="#cbd5e1" stroke-width="0.8"/>
+              <path id="svg-quads-r" d="M80 112 L70 112 L66 152 L82 148 Z" fill="@GetFill("svg-quads-r")" opacity="@GetOpacity("svg-quads-r")" stroke="#cbd5e1" stroke-width="0.8"/>
+              <!-- Abductors -->
+              <path id="svg-abductors-l" d="M36 112 L42 112 L40 148 L32 140 Z" fill="@GetFill("svg-abductors-l")" opacity="@GetOpacity("svg-abductors-l")" stroke="#cbd5e1" stroke-width="0.8"/>
+              <path id="svg-abductors-r" d="M84 112 L78 112 L80 148 L88 140 Z" fill="@GetFill("svg-abductors-r")" opacity="@GetOpacity("svg-abductors-r")" stroke="#cbd5e1" stroke-width="0.8"/>
+              <!-- Knees -->
+              <ellipse cx="46" cy="156" rx="10" ry="8" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="0.8"/>
+              <ellipse cx="74" cy="156" rx="10" ry="8" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="0.8"/>
+              <!-- Calves (front) -->
+              <path id="svg-calves-l" d="M36 164 L56 164 L54 205 L38 205 Z" fill="@GetFill("svg-calves-l")" opacity="@GetOpacity("svg-calves-l")" stroke="#cbd5e1" stroke-width="0.8"/>
+              <path id="svg-calves-r" d="M64 164 L84 164 L82 205 L66 205 Z" fill="@GetFill("svg-calves-r")" opacity="@GetOpacity("svg-calves-r")" stroke="#cbd5e1" stroke-width="0.8"/>
+              <!-- Feet -->
+              <ellipse cx="46" cy="208" rx="10" ry="5" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="0.8"/>
+              <ellipse cx="74" cy="208" rx="10" ry="5" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="0.8"/>
+              <!-- Hands -->
+              <ellipse cx="19" cy="127" rx="7" ry="5" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="0.8"/>
+              <ellipse cx="101" cy="127" rx="7" ry="5" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="0.8"/>
+            </svg>
+          </div>
+
+          <!-- BACK VIEW -->
+          <div>
+            <div class="exd-body-label">Back</div>
+            <svg viewBox="0 0 120 280" width="110" xmlns="http://www.w3.org/2000/svg" style="display:block">
+              <!-- Head -->
+              <ellipse cx="60" cy="18" rx="14" ry="16" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1"/>
+              <!-- Neck -->
+              <rect x="54" y="33" width="12" height="10" rx="3" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1"/>
+              <!-- Shoulders (back) -->
+              <ellipse cx="30" cy="52" rx="13" ry="9" fill="@GetFill("svg-shoulders-l")" opacity="@GetOpacity("svg-shoulders-l")" stroke="#cbd5e1" stroke-width="0.8"/>
+              <ellipse cx="90" cy="52" rx="13" ry="9" fill="@GetFill("svg-shoulders-r")" opacity="@GetOpacity("svg-shoulders-r")" stroke="#cbd5e1" stroke-width="0.8"/>
+              <!-- Trapezius (back) -->
+              <path id="svg-trapezius-b" d="M44 43 Q60 56 76 43 L77 72 Q60 66 43 72 Z" fill="@GetFill("svg-trapezius-b")" opacity="@GetOpacity("svg-trapezius-b")" stroke="#cbd5e1" stroke-width="0.8"/>
+              <!-- Upper back -->
+              <path id="svg-back-upper" d="M43 48 Q60 54 77 48 L77 80 Q60 86 43 80 Z" fill="@GetFill("svg-back-upper")" opacity="@GetOpacity("svg-back-upper")" stroke="#cbd5e1" stroke-width="0.8"/>
+              <!-- Lower back -->
+              <path id="svg-back-lower" d="M43 80 Q60 86 77 80 L77 112 Q60 112 43 112 Z" fill="@GetFill("svg-back-lower")" opacity="@GetOpacity("svg-back-lower")" stroke="#cbd5e1" stroke-width="0.8"/>
+              <!-- Triceps -->
+              <rect id="svg-triceps-l" x="18" y="55" width="10" height="36" rx="5" fill="@GetFill("svg-triceps-l")" opacity="@GetOpacity("svg-triceps-l")" stroke="#cbd5e1" stroke-width="0.8"/>
+              <rect id="svg-triceps-r" x="92" y="55" width="10" height="36" rx="5" fill="@GetFill("svg-triceps-r")" opacity="@GetOpacity("svg-triceps-r")" stroke="#cbd5e1" stroke-width="0.8"/>
+              <!-- Forearms back -->
+              <rect x="14" y="93" width="10" height="32" rx="4" fill="@GetFill("svg-forearms-l")" opacity="@GetOpacity("svg-forearms-l")" stroke="#cbd5e1" stroke-width="0.8"/>
+              <rect x="96" y="93" width="10" height="32" rx="4" fill="@GetFill("svg-forearms-r")" opacity="@GetOpacity("svg-forearms-r")" stroke="#cbd5e1" stroke-width="0.8"/>
+              <!-- Glutes -->
+              <path id="svg-glutes" d="M43 112 Q60 122 77 112 L77 135 Q60 140 43 135 Z" fill="@GetFill("svg-glutes")" opacity="@GetOpacity("svg-glutes")" stroke="#cbd5e1" stroke-width="0.8"/>
+              <!-- Hamstrings -->
+              <path id="svg-hamstrings-l" d="M40 135 L56 133 L54 168 L38 168 Z" fill="@GetFill("svg-hamstrings-l")" opacity="@GetOpacity("svg-hamstrings-l")" stroke="#cbd5e1" stroke-width="0.8"/>
+              <path id="svg-hamstrings-r" d="M80 135 L64 133 L66 168 L82 168 Z" fill="@GetFill("svg-hamstrings-r")" opacity="@GetOpacity("svg-hamstrings-r")" stroke="#cbd5e1" stroke-width="0.8"/>
+              <!-- Calves back -->
+              <path x="36" d="M37 172 L57 172 L55 210 L39 210 Z" fill="@GetFill("svg-calves-l")" opacity="@GetOpacity("svg-calves-l")" stroke="#cbd5e1" stroke-width="0.8"/>
+              <path d="M63 172 L83 172 L81 210 L65 210 Z" fill="@GetFill("svg-calves-r")" opacity="@GetOpacity("svg-calves-r")" stroke="#cbd5e1" stroke-width="0.8"/>
+              <!-- Knees back -->
+              <ellipse cx="46" cy="170" rx="10" ry="8" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="0.8"/>
+              <ellipse cx="74" cy="170" rx="10" ry="8" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="0.8"/>
+              <!-- Feet -->
+              <ellipse cx="46" cy="212" rx="10" ry="5" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="0.8"/>
+              <ellipse cx="74" cy="212" rx="10" ry="5" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="0.8"/>
+              <!-- Hands -->
+              <ellipse cx="19" cy="127" rx="7" ry="5" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="0.8"/>
+              <ellipse cx="101" cy="127" rx="7" ry="5" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="0.8"/>
+            </svg>
+          </div>
         </div>
+
+        <!-- Legend -->
+        <div class="exd-legend">
+          @if (primaryMuscles.Any())
+          {
+          <div class="exd-legend-title">🎯 @(ne?"मुख्य मांसपेशी":"Primary Muscles")</div>
+          <div style="margin-bottom:10px">
+            @foreach (var m in primaryMuscles)
+            {
+            <span class="exd-muscle-chip" style="background:@m.Color;color:#fff;box-shadow:0 2px 8px @(m.Color)55">
+              <span class="exd-dot" style="background:#ffffff55"></span>@m.Name
+            </span>
+            }
+          </div>
+          }
+          @if (secondaryMuscles.Any())
+          {
+          <div class="exd-legend-title" style="margin-top:6px">↗ @(ne?"सहायक मांसपेशी":"Secondary Muscles")</div>
+          <div>
+            @foreach (var m in secondaryMuscles)
+            {
+            <span class="exd-muscle-chip" style="background:@(m.Color)22;color:@m.Color;border:1px solid @(m.Color)44">
+              <span class="exd-dot" style="background:@m.Color"></span>@m.Name
+            </span>
+            }
+          </div>
+          }
+          @if (!primaryMuscles.Any() && ex.TargetMuscles.Any())
+          {
+          <div class="exd-legend-title">💪 @(ne?"मांसपेशी":"Muscles")</div>
+          @foreach (var m in ex.TargetMuscles)
+          {<span class="exd-muscle-chip" style="background:#f0fdf4;color:#16a34a;border:1px solid rgba(34,197,94,0.2)"><span class="exd-dot" style="background:#22c55e"></span>@m</span>}
+          }
+
+          <!-- Legend key -->
+          <div style="margin-top:14px;padding-top:12px;border-top:1px solid rgba(0,0,0,0.06);display:flex;gap:14px;font-size:11px;color:#64748b">
+            <span style="display:flex;align-items:center;gap:5px"><span style="width:12px;height:12px;border-radius:2px;background:#22c55e;display:inline-block"></span>@(ne?"मुख्य":"Primary")</span>
+            <span style="display:flex;align-items:center;gap:5px"><span style="width:12px;height:12px;border-radius:2px;background:#94a3b8;opacity:0.5;display:inline-block"></span>@(ne?"सहायक":"Secondary")</span>
+            <span style="display:flex;align-items:center;gap:5px"><span style="width:12px;height:12px;border-radius:2px;background:#e2e8f0;display:inline-block"></span>@(ne?"निष्क्रिय":"Inactive")</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stats Card -->
+      <div class="exd-card" style="margin-top:16px">
+        <div class="exd-card-head">📊 @(ne?"व्यायाम तथ्याङ्क":"Exercise Stats")</div>
         <div class="exd-card-body">
-          <p class="exd-desc">@ExDesc()</p>
+          <div class="exd-stats">
+            <div class="exd-stat">
+              <div class="exd-stat-val" style="color:#22c55e">@ex.DefaultSets</div>
+              <div class="exd-stat-lbl">@(ne?"सेट":"Sets")</div>
+            </div>
+            <div class="exd-stat">
+              <div class="exd-stat-val" style="color:#3b82f6">@ex.DefaultReps</div>
+              <div class="exd-stat-lbl">@(ne?"पुनरावृत्ति":"Reps")</div>
+            </div>
+            <div class="exd-stat">
+              <div class="exd-stat-val" style="color:#f59e0b">@ex.RestSeconds<span style="font-size:12px">s</span></div>
+              <div class="exd-stat-lbl">@(ne?"आराम":"Rest")</div>
+            </div>
+          </div>
+
+          @if (ex.Equipment.Any())
+          {
+          <div style="margin-top:14px">
+            <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;color:#94a3b8;margin-bottom:8px">🏋️ @(ne?"उपकरण":"Equipment")</div>
+            <div class="exd-pills">
+              @foreach (var eq in ex.Equipment)
+              {<span class="exd-pill" style="background:#f1f5f9;color:#475569;border:1px solid rgba(0,0,0,0.08)">@eq</span>}
+            </div>
+          </div>
+          }
+
+          @if (apiEx?.Types.Any() == true)
+          {
+          <div style="margin-top:12px">
+            <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;color:#94a3b8;margin-bottom:8px">⚡ @(ne?"आन्दोलन प्रकार":"Movement Type")</div>
+            <div class="exd-pills">
+              @foreach (var t in apiEx.Types)
+              {
+              bool isCompound = t.Code == "POLYARTICULAR";
+              <span class="exd-pill" style="background:@(isCompound?"#f0fdf4":"#eff6ff");color:@(isCompound?"#16a34a":"#2563eb");border:1px solid @(isCompound?"rgba(34,197,94,0.2)":"rgba(37,99,235,0.2)")">
+                @(isCompound?"⚡ Compound":"🎯 Isolation")
+              </span>
+              }
+            </div>
+          </div>
+          }
         </div>
       </div>
-
-      <!-- Instructions (step-by-step) -->
-      @if (ex.Instructions.Any())
-      {
-      <div class="exd-card">
-        <div class="exd-card-header">
-          <span style="font-size:18px">📋</span>
-          <div class="exd-card-title">@(ne?"चरण-दर-चरण निर्देशन":"Step-by-Step Instructions")</div>
-        </div>
-        <div class="exd-card-body">
-          <div class="exd-steps">
-            @{ int step = 1; }
-            @foreach (var ins in ex.Instructions)
-            {
-            <div class="exd-step">
-              <div class="exd-step-num">@(step++)</div>
-              <div class="exd-step-text">@ins</div>
-            </div>
-            }
-          </div>
-        </div>
-      </div>
-      }
-
-      <!-- Common Mistakes & Tips (local data only) -->
-      @if (ex.CommonMistakes.Any() || ex.Tips.Any())
-      {
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
-        @if (ex.CommonMistakes.Any())
-        {
-        <div class="exd-card">
-          <div class="exd-card-header"><span style="font-size:16px">⚠️</span><div class="exd-card-title">@(ne?"सामान्य गल्तीहरू":"Common Mistakes")</div></div>
-          <div class="exd-card-body" style="padding:14px 18px">
-            @foreach (var m in ex.CommonMistakes)
-            {
-            <div style="display:flex;gap:8px;padding:7px 0;border-bottom:1px solid rgba(0,0,0,0.05);font-size:13px;color:#475569">
-              <span style="color:#ef4444;flex-shrink:0;margin-top:1px">✗</span> @m
-            </div>
-            }
-          </div>
-        </div>
-        }
-        @if (ex.Tips.Any())
-        {
-        <div class="exd-card">
-          <div class="exd-card-header"><span style="font-size:16px">💡</span><div class="exd-card-title">@(ne?"सुझावहरू":"Pro Tips")</div></div>
-          <div class="exd-card-body" style="padding:14px 18px">
-            @foreach (var tip in ex.Tips)
-            {
-            <div style="display:flex;gap:8px;padding:7px 0;border-bottom:1px solid rgba(0,0,0,0.05);font-size:13px;color:#475569">
-              <span style="color:#22c55e;flex-shrink:0;margin-top:1px">✓</span> @tip
-            </div>
-            }
-          </div>
-        </div>
-        }
-      </div>
-      }
-
     </div>
 
-    <!-- Right sidebar -->
-    <div>
+    <!-- RIGHT: Instructions + Info -->
+    <div class="exd-right">
 
-      <!-- Exercise Stats -->
-      <div class="exd-card" style="margin-bottom:18px">
-        <div class="exd-card-header">
-          <span style="font-size:18px">📊</span>
-          <div class="exd-card-title">@(ne?"व्यायाम विवरण":"Exercise Details")</div>
-        </div>
-        <div class="exd-card-body" style="padding:8px 22px 16px">
-          <div class="exd-stat-row">
-            <span class="exd-stat-label">@(ne?"सेटहरू":"Sets")</span>
-            <span class="exd-stat-value">@ex.DefaultSets</span>
-          </div>
-          <div class="exd-stat-row">
-            <span class="exd-stat-label">@(ne?"रेपहरू":"Reps")</span>
-            <span class="exd-stat-value">@ex.DefaultReps</span>
-          </div>
-          <div class="exd-stat-row">
-            <span class="exd-stat-label">@(ne?"आराम":"Rest")</span>
-            <span class="exd-stat-value">@ex.RestSeconds s</span>
-          </div>
-          <div class="exd-stat-row">
-            <span class="exd-stat-label">@(ne?"उपकरण":"Equipment")</span>
-            <span class="exd-stat-value" style="text-align:right;max-width:180px">
-              @(ex.Equipment.Any() ? string.Join(", ", ex.Equipment) : (ne?"कुनै छैन":"None"))
-            </span>
-          </div>
-          <div class="exd-stat-row">
-            <span class="exd-stat-label">@(ne?"प्रकार":"Type")</span>
-            <span class="exd-stat-value">@(ex.IsCompound ? (ne?"यौगिक":"Compound") : (ne?"आइसोलेसन":"Isolation"))</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Movement Types (from API) -->
-      @if (apiEx != null && apiEx.Types.Any())
-      {
-      <div class="exd-card" style="margin-bottom:18px">
-        <div class="exd-card-header">
-          <span style="font-size:18px">🔁</span>
-          <div class="exd-card-title">@(ne?"आन्दोलन प्रकार":"Movement Type")</div>
-        </div>
-        <div class="exd-card-body">
-          <div class="exd-pill-row">
-            @foreach (var t in apiEx.Types)
-            { <span class="exd-pill exd-pill-indigo">@t.Name</span> }
-          </div>
-        </div>
-      </div>
-      }
-
-      <!-- Equipment/Categories (from API) -->
-      @if (apiEx != null && apiEx.Categories.Any())
-      {
-      <div class="exd-card" style="margin-bottom:18px">
-        <div class="exd-card-header">
-          <span style="font-size:18px">🏋️</span>
-          <div class="exd-card-title">@(ne?"उपकरण श्रेणी":"Equipment Category")</div>
-        </div>
-        <div class="exd-card-body">
-          <div class="exd-pill-row">
-            @foreach (var c in apiEx.Categories)
-            { <span class="exd-pill exd-pill-green">@c.Name</span> }
-          </div>
-        </div>
-      </div>
-      }
-
-      <!-- Target Muscles -->
-      @if (ex.TargetMuscles.Any())
-      {
-      <div class="exd-card" style="margin-bottom:18px">
-        <div class="exd-card-header">
-          <span style="font-size:18px">💪</span>
-          <div class="exd-card-title">@(ne?"लक्षित मांसपेशी":"Target Muscles")</div>
-        </div>
-        <div class="exd-card-body">
-          @if (apiEx != null)
+      <!-- Step-by-step instructions -->
+      <div class="exd-card">
+        <div class="exd-card-head">📋 @(ne?"चरण-दर-चरण निर्देशनहरू":"Step-by-Step Instructions")</div>
+        <div class="exd-card-body" style="padding:12px 20px 16px">
+          @if (steps.Any())
           {
-            <!-- Show with color dots from API -->
-            <div style="display:flex;flex-direction:column;gap:10px">
-              @foreach (var m in apiEx.PrimaryMuscles)
-              {
-              <div style="display:flex;align-items:center;gap:10px;font-size:13px">
-                <div style="width:12px;height:12px;border-radius:50%;background:@m.Color;flex-shrink:0;box-shadow:0 0 6px @(m.Color)66"></div>
-                <span style="font-weight:700;color:#0f172a">@m.Name</span>
-                <span style="font-size:11px;color:#94a3b8;margin-left:auto">Primary</span>
-              </div>
-              }
-              @foreach (var m in apiEx.SecondaryMuscles)
-              {
-              <div style="display:flex;align-items:center;gap:10px;font-size:13px;opacity:.7">
-                <div style="width:12px;height:12px;border-radius:50%;background:@m.Color;flex-shrink:0"></div>
-                <span style="font-weight:600;color:#475569">@m.Name</span>
-                <span style="font-size:11px;color:#94a3b8;margin-left:auto">Secondary</span>
-              </div>
-              }
-            </div>
+          @for (int i = 0; i < steps.Count; i++)
+          {
+          <div class="exd-step">
+            <div class="exd-step-num">@(i+1)</div>
+            <div class="exd-step-text">@steps[i]</div>
+          </div>
+          }
           }
           else
           {
-          <div class="exd-pill-row">
-            @foreach (var m in ex.TargetMuscles)
-            { <span class="exd-pill exd-pill-gray">@m</span> }
+          <p style="color:#64748b;font-size:14px;line-height:1.7">@ex.Description</p>
+          }
+        </div>
+      </div>
+
+      <!-- Common Mistakes -->
+      @if (ex.CommonMistakes.Any())
+      {
+      <div class="exd-card">
+        <div class="exd-card-head" style="color:#dc2626">⚠️ @(ne?"सामान्य गल्तीहरू":"Common Mistakes")</div>
+        <div class="exd-card-body">
+          @foreach (var m in ex.CommonMistakes)
+          {
+          <div class="exd-step">
+            <div style="width:28px;height:28px;background:#fef2f2;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0">⚠️</div>
+            <div class="exd-step-text">@m</div>
           </div>
           }
         </div>
       </div>
       }
 
-      <!-- CTAs -->
-      <div style="display:flex;flex-direction:column;gap:10px">
-        <a href="/Exercise" class="btn btn-ghost" style="justify-content:center;text-align:center">
-          ← @(ne?"पुस्तकालय फिर्ता":"Back to Library")
-        </a>
-        @if (Context.Session.GetString("UserId") != null)
-        {
-        <a href="/Workout" class="btn btn-primary" style="justify-content:center;text-align:center">
-          🏋️ @(ne?"व्यायाम योजना हेर्नुहोस्":"View Workout Plans")
-        </a>
-        }
+      <!-- Pro Tips -->
+      @if (ex.Tips.Any())
+      {
+      <div class="exd-card">
+        <div class="exd-card-head" style="color:#16a34a">💡 @(ne?"प्रो सुझावहरू":"Pro Tips")</div>
+        <div class="exd-card-body">
+          @foreach (var tip in ex.Tips)
+          {
+          <div class="exd-step">
+            <div style="width:28px;height:28px;background:#f0fdf4;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0">💡</div>
+            <div class="exd-step-text">@tip</div>
+          </div>
+          }
+        </div>
+      </div>
+      }
+
+      <!-- Similar exercises -->
+      <div class="exd-card">
+        <div class="exd-card-head">🔄 @(ne?"समान व्यायाम खोज्नुहोस्":"Explore More Exercises")</div>
+        <div class="exd-card-body">
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <a href="/Exercise?category=@Uri.EscapeDataString(ex.Category)" style="padding:10px 20px;background:#f0fdf4;border:1.5px solid rgba(34,197,94,0.25);border-radius:12px;color:#16a34a;font-weight:700;font-size:13px;text-decoration:none">
+              💪 @(ne?"अधिक":"More") @ex.Category @(ne?"व्यायाम":"Exercises")
+            </a>
+            @if (isAuth) {
+            <a href="/Workout/Builder" style="padding:10px 20px;background:linear-gradient(135deg,#22c55e,#16a34a);border-radius:12px;color:#fff;font-weight:700;font-size:13px;text-decoration:none">
+              ✏️ @(ne?"योजनामा थप्नुहोस्":"Add to Workout Plan")
+            </a>
+            }
+          </div>
+        </div>
       </div>
 
+      <!-- API Source badge -->
+      @if (apiEx != null)
+      {
+      <div style="text-align:right">
+        <span style="font-size:10px;color:#94a3b8;font-weight:600">📡 @(ne?"स्रोत":"Source"): WorkoutAPI · @apiEx.Code</span>
+      </div>
+      }
     </div>
-  </div>
 
+  </div>
 </div>
 </div>
