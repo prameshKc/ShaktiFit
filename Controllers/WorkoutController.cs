@@ -96,6 +96,8 @@ public class WorkoutController : Controller
         await _workouts.SaveUserRoutinesAsync(userId, existing);
 
         TempData["Success"] = $"✅ '{planName}' saved with {newWorkouts.Count} workout days!";
+        TempData["SavedPlanName"] = planName;
+        TempData["SavedPlanJson"] = planJson;
         return RedirectToAction("Index");
     }
 

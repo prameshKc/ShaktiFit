@@ -31,6 +31,8 @@ public class UserService
         return user;
     }
 
+    public Task<List<User>> GetAllAsync() => _storage.ReadAsync<User>(File);
+
     public async Task<User?> GetByIdAsync(string id) =>
         await _storage.FindByIdAsync<User>(File, u => u.Id == id);
 

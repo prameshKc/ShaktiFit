@@ -23,4 +23,9 @@ public class User
     public int TotalWorkoutsCompleted { get; set; } = 0;
     public List<string> Achievements { get; set; } = new();
     public List<string> FavoriteWorkouts { get; set; } = new();
+
+    // Email notification preferences
+    public bool EmailRemindersEnabled { get; set; } = false;
+    public int ReminderHour { get; set; } = 7;   // 7 AM
+    public string ReminderDays { get; set; } = "Mon,Tue,Wed,Thu,Fri"; // comma-separated
 }

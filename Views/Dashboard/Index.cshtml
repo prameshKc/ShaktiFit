@@ -13,15 +13,28 @@
 <div class="page-container">
 
     @if (TempData["Success"] != null)
-    {
-    <div class="alert alert-success">✅ @TempData["Success"]</div>
-    }
+    { <div class="alert alert-success">✅ @TempData["Success"]</div> }
+    @if (TempData["EmailSuccess"] != null)
+    { <div style="background:#f0fdf4;border:1.5px solid rgba(34,197,94,.3);border-radius:12px;padding:13px 18px;margin-bottom:14px;font-size:14px;font-weight:700;color:#16a34a">@TempData["EmailSuccess"]</div> }
+    @if (TempData["EmailError"] != null)
+    { <div style="background:#fef2f2;border:1.5px solid rgba(239,68,68,.3);border-radius:12px;padding:13px 18px;margin-bottom:14px;font-size:14px;font-weight:700;color:#dc2626">@TempData["EmailError"]</div> }
 
     <!-- Welcome Strip -->
-    <div class="welcome-strip">
+    <div class="welcome-strip" style="position:relative">
         <div class="ws-greeting">@(ne?"नमस्ते":"Welcome back"), @user.Name! 👋</div>
         <div class="ws-quote">"@Model.MotivationalQuote"</div>
-        <div class="ws-streak">🔥 @user.WorkoutStreak @(ne?"दिनको लहर":"day streak")</div>
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:14px">
+          <div class="ws-streak">🔥 @user.WorkoutStreak @(ne?"दिनको लहर":"day streak")</div>
+          <form method="post" action="/Email/SendReminder" style="display:inline">
+            @Html.AntiForgeryToken()
+            <button type="submit"
+              style="padding:8px 16px;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);border-radius:999px;color:#f0fdf4;font-size:12px;font-weight:700;cursor:pointer;transition:all .15s"
+              onmouseover="this.style.background='rgba(255,255,255,0.25)'"
+              onmouseout="this.style.background='rgba(255,255,255,0.15)'">
+              📧 @(ne?"आजको Reminder पठाउनुहोस्":"Email Today's Workout")
+            </button>
+          </form>
+        </div>
     </div>
 
     <!-- Stats -->

@@ -133,6 +133,67 @@
         <button type="submit" class="btn btn-primary" style="padding:13px 32px">💾 @(ne?"परिवर्तन सुरक्षित गर्नुहोस्":"Save Changes")</button>
 
     </form>
+
+    <!-- ── Email Notification Settings ── -->
+    <div style="margin-top:28px">
+    <form method="post" action="/Email/SavePreferences">
+      @Html.AntiForgeryToken()
+      <div class="card" style="margin-bottom:20px;background:#ffffff;border:1.5px solid rgba(0,0,0,.08)">
+        <div class="card-header" style="background:#fff">
+          <div class="card-title" style="color:#0f172a">📧 @(ne?"इमेल सूचना":"Email Notifications")</div>
+        </div>
+        <div class="card-body">
+
+          <!-- Toggle -->
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid rgba(0,0,0,.06)">
+            <div>
+              <div style="font-size:14px;font-weight:700;color:#0f172a">@(ne?"दैनिक Workout Reminder":"Daily Workout Reminder")</div>
+              <div style="font-size:12px;color:#64748b;margin-top:2px">@(ne?"हरेक दिन तपाईंको आजको workout को इमेल पाउनुहोस्":"Get your today's workout emailed every morning")</div>
+            </div>
+            <label style="position:relative;display:inline-block;width:46px;height:26px;cursor:pointer">
+              <input type="checkbox" name="emailRemindersEnabled" value="true" @(user.EmailRemindersEnabled ? "checked" : "")
+                style="opacity:0;width:0;height:0" onchange="document.getElementById('reminderOptions').style.display=this.checked?'block':'none'" />
+              <span style="position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background:@(user.EmailRemindersEnabled?"#22c55e":"#cbd5e1");border-radius:999px;transition:.2s">
+                <span style="position:absolute;height:20px;width:20px;left:@(user.EmailRemindersEnabled?"22":"3")px;bottom:3px;background:#fff;border-radius:50%;transition:.2s"></span>
+              </span>
+            </label>
+          </div>
+
+          <!-- Options (shown when enabled) -->
+          <div id="reminderOptions" style="display:@(user.EmailRemindersEnabled?"block":"none");padding-top:16px">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+              <div>
+                <label style="display:block;font-size:12px;font-weight:700;color:#374151;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">
+                  @(ne?"समय (UTC)":"Reminder Time (UTC)")
+                </label>
+                <select name="reminderHour" style="width:100%;padding:10px 12px;border:1.5px solid rgba(0,0,0,.1);border-radius:10px;font-size:14px;font-weight:600;color:#0f172a;background:#f8faf8">
+                  @for (int h = 4; h <= 22; h++) {
+                  if (user.ReminderHour == h) { <option value="@h" selected>@($"{h:D2}:00 UTC")</option> }
+                  else { <option value="@h">@($"{h:D2}:00 UTC")</option> }
+                  }
+                </select>
+              </div>
+              <div>
+                <label style="display:block;font-size:12px;font-weight:700;color:#374151;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">
+                  @(ne?"दिनहरू":"Active Days")
+                </label>
+                <input type="text" name="reminderDays" value="@user.ReminderDays"
+                  placeholder="Mon,Tue,Wed,Thu,Fri"
+                  style="width:100%;padding:10px 12px;border:1.5px solid rgba(0,0,0,.1);border-radius:10px;font-size:14px;color:#0f172a;background:#f8faf8;box-sizing:border-box" />
+              </div>
+            </div>
+            <div style="font-size:11px;color:#94a3b8">
+              💡 Days format: <code>Mon,Tue,Wed,Thu,Fri,Sat,Sun</code> (use any combination)
+            </div>
+          </div>
+
+        </div>
+      </div>
+      <button type="submit" style="padding:12px 28px;background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer">
+        💾 @(ne?"सूचना सेटिङ सुरक्षित गर्नुहोस्":"Save Notification Settings")
+      </button>
+    </form>
+    </div>
     }
 
 </div>

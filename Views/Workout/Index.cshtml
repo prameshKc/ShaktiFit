@@ -66,6 +66,35 @@
     <div class="wp-hero-sub">@(ne?"हरेक योजना तपाईंको फिटनेस स्तर अनुसार बनाइएको छ।":"Each plan is designed for your fitness level and goals.")</div>
   </div>
 
+  @if (TempData["Success"] != null)
+  {
+  <div style="background:#f0fdf4;border:1.5px solid rgba(34,197,94,.3);border-radius:14px;padding:16px 20px;margin-bottom:18px;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap">
+    <div style="display:flex;align-items:center;gap:10px">
+      <span style="font-size:20px">✅</span>
+      <span style="font-size:14px;font-weight:700;color:#16a34a">@TempData["Success"]</span>
+    </div>
+    @if (TempData["SavedPlanName"] != null)
+    {
+    <form method="post" action="/Email/SendRoutine" style="display:flex;gap:8px;align-items:center">
+      @Html.AntiForgeryToken()
+      <input type="hidden" name="routineName" value="@TempData["SavedPlanName"]" />
+      <input type="hidden" name="planJson" value="@TempData["SavedPlanJson"]" />
+      <button type="submit" style="padding:9px 18px;background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer">
+        📧 Email me this routine
+      </button>
+    </form>
+    }
+  </div>
+  }
+  @if (TempData["EmailSuccess"] != null)
+  {
+  <div style="background:#f0fdf4;border:1.5px solid rgba(34,197,94,.3);border-radius:14px;padding:14px 20px;margin-bottom:18px;font-size:14px;font-weight:700;color:#16a34a">@TempData["EmailSuccess"]</div>
+  }
+  @if (TempData["EmailError"] != null)
+  {
+  <div style="background:#fef2f2;border:1.5px solid rgba(239,68,68,.3);border-radius:14px;padding:14px 20px;margin-bottom:18px;font-size:14px;font-weight:700;color:#dc2626">@TempData["EmailError"]</div>
+  }
+
   <!-- Build Your Own CTA -->
   <div class="builder-cta">
     <div class="builder-cta-text">

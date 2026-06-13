@@ -17,6 +17,10 @@ builder.Services.AddScoped<WorkoutService>();
 builder.Services.AddScoped<ProgressService>();
 builder.Services.AddScoped<ActivityService>();
 
+// Email service
+builder.Services.AddSingleton<EmailService>();
+builder.Services.AddHostedService<WorkoutReminderService>();
+
 // WorkoutAPI integration
 var workoutApiBase = builder.Configuration["WorkoutApi:BaseUrl"] ?? "https://api.workoutapi.com";
 var workoutApiKey  = builder.Configuration["WorkoutApi:ApiKey"] ?? "";
