@@ -44,7 +44,7 @@
         </div>
         @if (isAuth)
         {
-        <a href="/Workout/Builder" style="display:inline-flex;align-items:center;gap:8px;padding:10px 20px;background:#f5c542;color:#1c1917;font-weight:700;font-size:14px;border-radius:10px;text-decoration:none">
+        <a href="/Workout/Builder" style="display:inline-flex;align-items:center;gap:8px;padding:10px 20px;background:var(--accent,#22c55e);color:#ffffff;font-weight:700;font-size:14px;border-radius:10px;text-decoration:none">
             ✏️ @(ne?"कस्टम योजना बनाउनुहोस्":"Build Custom Plan")
         </a>
         }
@@ -59,7 +59,7 @@
                 style="width:100%;background:#ffffff;border:1.5px solid rgba(0,0,0,0.1);border-radius:10px;color:#18181b;padding:10px 12px 10px 36px;font-size:14px;font-family:inherit;outline:none" />
         </div>
         <div style="display:flex;gap:6px;flex-wrap:wrap">
-            <button class="ex-filter active" data-cat="all" onclick="filterEx(this)" style="padding:7px 16px;background:rgba(245,197,66,0.15);border:1px solid rgba(245,197,66,0.4);border-radius:999px;color:#f5c542;font-size:12px;font-weight:700;cursor:pointer">
+            <button class="ex-filter active" data-cat="all" onclick="filterEx(this)" style="padding:7px 16px;background:rgba(34,197,94,0.12);border:1px solid rgba(34,197,94,0.4);border-radius:999px;color:#16a34a;font-size:12px;font-weight:700;cursor:pointer">
                 @(ne?"सबै":"All") (@exercises.Count)
             </button>
             @foreach (var cat in categories)
@@ -85,7 +85,7 @@
             <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px">
                 <div style="width:44px;height:44px;background:@(color)18;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:22px">@icon</div>
                 @if (ex.IsCompound) {
-                <span style="font-size:10px;font-weight:700;color:#f5c542;background:rgba(245,197,66,0.1);border:1px solid rgba(245,197,66,0.2);border-radius:999px;padding:3px 8px">⚡ @(ne?"यौगिक":"Compound")</span>
+                <span style="font-size:10px;font-weight:700;color:#16a34a;background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.2);border-radius:999px;padding:3px 8px">⚡ @(ne?"यौगिक":"Compound")</span>
                 }
             </div>
             <div style="font-size:10px;font-weight:700;color:@color;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px">@ex.Category</div>
@@ -119,8 +119,8 @@
 </div>
 
 <style>
-.ex-card2:hover { border-color:rgba(245,197,66,0.3) !important; transform:translateY(-2px); }
-.ex-filter.active { background:rgba(245,197,66,0.15) !important; border-color:rgba(245,197,66,0.4) !important; color:#f5c542 !important; }
+.ex-card2:hover { border-color:rgba(34,197,94,0.4) !important; transform:translateY(-2px); }
+.ex-filter.active { background:rgba(34,197,94,0.12) !important; border-color:rgba(34,197,94,0.4) !important; color:#16a34a !important; }
 </style>
 
 @section Scripts {

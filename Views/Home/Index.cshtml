@@ -6,32 +6,33 @@
 
 <style>
 /* ── APP LANDING PAGE STYLES ── */
-.app-page { background:#fafaf9; min-height:100vh; color:#18181b; }
+.app-page { background:#f8faf8; min-height:100vh; color:#0f172a; }
 
 /* NAV */
 .app-nav {
   position:fixed; top:0; left:0; right:0; z-index:999;
   display:flex; align-items:center; justify-content:space-between;
   padding:0 40px; height:60px;
-  background:rgba(250,250,249,0.9);
+  background:rgba(255,255,255,0.97);
   backdrop-filter:blur(20px);
   border-bottom:1px solid rgba(0,0,0,0.07);
+  box-shadow:0 1px 12px rgba(0,0,0,0.06);
 }
 .app-nav-logo { display:flex; align-items:center; gap:10px; }
-.app-nav-logo-icon { width:32px; height:32px; background:#f59e0b; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:16px; }
-.app-nav-logo-text { font-size:15px; font-weight:800; color:#18181b; letter-spacing:-0.02em; }
+.app-nav-logo-icon { width:32px; height:32px; background:#22c55e; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:16px; }
+.app-nav-logo-text { font-size:15px; font-weight:800; color:#0f172a; letter-spacing:-0.02em; }
 .app-nav-links { display:flex; align-items:center; gap:4px; }
 .app-nav-link { padding:6px 14px; font-size:13px; font-weight:500; color:#52525b; border-radius:6px; transition:all 0.15s; cursor:pointer; }
 .app-nav-link:hover { color:#18181b; background:rgba(0,0,0,0.05); }
 .app-nav-link.active { color:#18181b; font-weight:700; }
 .app-nav-lang { display:flex; gap:2px; margin-right:8px; padding:3px; background:rgba(0,0,0,0.05); border-radius:6px; }
 .lang-btn { padding:4px 10px; font-size:12px; font-weight:600; border-radius:4px; color:#71717a; cursor:pointer; transition:all 0.15s; }
-.lang-btn.active { background:rgba(245,158,11,0.15); color:#d97706; }
+.lang-btn.active { background:rgba(34,197,94,0.15); color:#16a34a; }
 .app-nav-actions { display:flex; gap:8px; align-items:center; }
 .app-btn-login { padding:7px 16px; font-size:13px; font-weight:600; color:#52525b; border:1px solid rgba(0,0,0,0.12); border-radius:8px; transition:all 0.15s; }
 .app-btn-login:hover { color:#18181b; border-color:rgba(0,0,0,0.25); background:rgba(0,0,0,0.03); }
-.app-btn-start { padding:7px 18px; font-size:13px; font-weight:700; color:#1c1917; background:#f59e0b; border-radius:8px; transition:all 0.15s; }
-.app-btn-start:hover { background:#d97706; }
+.app-btn-start { padding:7px 18px; font-size:13px; font-weight:700; color:#ffffff; background:#22c55e; border-radius:8px; transition:all 0.15s; }
+.app-btn-start:hover { background:#16a34a; }
 
 /* HERO */
 .app-hero {
@@ -39,23 +40,23 @@
   align-items:center; justify-content:center; text-align:center;
   padding:100px 24px 60px;
   position:relative; overflow:hidden;
-  background: radial-gradient(ellipse 80% 60% at 50% -10%, rgba(245,158,11,0.1) 0%, transparent 60%),
-              radial-gradient(ellipse 60% 50% at 80% 80%, rgba(245,158,11,0.05) 0%, transparent 50%),
-              #fafaf9;
+  background: radial-gradient(ellipse 80% 60% at 50% -10%, rgba(34,197,94,0.1) 0%, transparent 60%),
+              radial-gradient(ellipse 60% 50% at 80% 80%, rgba(34,197,94,0.05) 0%, transparent 50%),
+              #f8faf8;
 }
 .hero-eyebrow {
   display:inline-flex; align-items:center; gap:8px;
-  padding:6px 14px; background:rgba(245,158,11,0.1); border:1px solid rgba(245,158,11,0.25);
-  border-radius:999px; font-size:12px; font-weight:600; color:#d97706;
+  padding:6px 14px; background:rgba(34,197,94,0.1); border:1px solid rgba(34,197,94,0.25);
+  border-radius:999px; font-size:12px; font-weight:600; color:#16a34a;
   letter-spacing:0.04em; margin-bottom:28px;
 }
-.hero-eyebrow-dot { width:6px; height:6px; border-radius:50%; background:#f59e0b; animation:pulse 2s infinite; }
+.hero-eyebrow-dot { width:6px; height:6px; border-radius:50%; background:#22c55e; animation:pulse 2s infinite; }
 @@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
 .app-hero h1 {
   font-size:clamp(42px,6vw,80px); font-weight:900; line-height:1.05;
   letter-spacing:-0.04em; margin-bottom:24px; max-width:800px; color:#18181b;
 }
-.app-hero h1 em { font-style:normal; color:#f59e0b; }
+.app-hero h1 em { font-style:normal; color:#22c55e; }
 .app-hero-sub {
   font-size:clamp(15px,2vw,18px); color:#71717a;
   max-width:520px; line-height:1.7; margin-bottom:40px;
@@ -63,11 +64,11 @@
 .hero-actions { display:flex; gap:12px; justify-content:center; flex-wrap:wrap; margin-bottom:60px; }
 .hero-btn-primary {
   display:inline-flex; align-items:center; gap:8px;
-  padding:14px 28px; background:#f59e0b; color:#1c1917;
+  padding:14px 28px; background:linear-gradient(135deg,#22c55e,#16a34a); color:#ffffff;
   font-size:15px; font-weight:700; border-radius:12px;
-  transition:all 0.2s; box-shadow:0 0 0 0 rgba(245,158,11,0.4);
+  transition:all 0.2s; box-shadow:0 4px 20px rgba(34,197,94,0.35);
 }
-.hero-btn-primary:hover { transform:translateY(-1px); box-shadow:0 8px 28px rgba(245,158,11,0.3); }
+.hero-btn-primary:hover { transform:translateY(-1px); box-shadow:0 8px 28px rgba(34,197,94,0.4); filter:brightness(1.05); }
 .hero-btn-secondary {
   display:inline-flex; align-items:center; gap:8px;
   padding:14px 28px; border:1px solid rgba(0,0,0,0.12);
@@ -99,23 +100,23 @@
   border-radius:20px; padding:28px; overflow:hidden; position:relative;
   transition:border-color 0.2s; box-shadow:0 1px 3px rgba(0,0,0,0.04);
 }
-.bento-card:hover { border-color:rgba(245,158,11,0.25); }
+.bento-card:hover { border-color:rgba(34,197,94,0.3); }
 .bento-card.span2 { grid-column:span 2; }
 .bento-card.span3 { grid-column:span 3; }
 .bento-card.tall { min-height:280px; }
-.bento-card.accent { background:linear-gradient(135deg,#f59e0b 0%,#f97316 100%); border-color:transparent; }
-.bento-card.accent * { color:#1c1917 !important; }
+.bento-card.accent { background:linear-gradient(135deg,#22c55e 0%,#16a34a 100%); border-color:transparent; }
+.bento-card.accent * { color:#ffffff !important; }
 .bento-card.dark2 { background:#18181b; }
 .bento-icon { font-size:28px; margin-bottom:16px; }
 .bento-tag {
-  display:inline-block; padding:3px 10px; background:rgba(245,158,11,0.1);
-  border:1px solid rgba(245,158,11,0.2); border-radius:999px;
-  font-size:10px; font-weight:700; color:#d97706; letter-spacing:0.08em;
+  display:inline-block; padding:3px 10px; background:rgba(34,197,94,0.1);
+  border:1px solid rgba(34,197,94,0.2); border-radius:999px;
+  font-size:10px; font-weight:700; color:#16a34a; letter-spacing:0.08em;
   text-transform:uppercase; margin-bottom:12px;
 }
-.bento-title { font-size:20px; font-weight:800; color:#18181b; letter-spacing:-0.02em; margin-bottom:8px; }
-.bento-desc { font-size:13px; color:#71717a; line-height:1.65; }
-.bento-num { font-size:52px; font-weight:900; color:#f59e0b; letter-spacing:-0.04em; line-height:1; }
+.bento-title { font-size:20px; font-weight:800; color:#0f172a; letter-spacing:-0.02em; margin-bottom:8px; }
+.bento-desc { font-size:13px; color:#475569; line-height:1.65; }
+.bento-num { font-size:52px; font-weight:900; color:#22c55e; letter-spacing:-0.04em; line-height:1; }
 .bento-num-label { font-size:13px; color:#71717a; margin-top:6px; }
 
 /* INLINE BMI WIDGET */
@@ -127,13 +128,13 @@
   font-size:15px; font-weight:600; width:100%; font-family:inherit;
   outline:none;
 }
-.bento-bmi-input:focus { border-color:#f59e0b; }
+.bento-bmi-input:focus { border-color:#22c55e; }
 .bento-bmi-input::placeholder { color:#a1a1aa; font-weight:400; }
 .bento-bmi-result {
   text-align:center; padding:14px; background:#f9f9f8;
   border-radius:10px; border:1px solid rgba(0,0,0,0.06);
 }
-.bento-bmi-val { font-size:36px; font-weight:900; color:#f59e0b; line-height:1; }
+.bento-bmi-val { font-size:36px; font-weight:900; color:#22c55e; line-height:1; }
 .bento-bmi-cat { font-size:12px; color:#71717a; margin-top:4px; }
 
 /* FEATURE ROWS */
@@ -147,17 +148,17 @@
 .feature-row.rev > * { direction:ltr; }
 .feature-row-text { padding:48px; }
 .feature-row-tag {
-  display:inline-block; padding:4px 12px; background:rgba(245,158,11,0.1);
-  border:1px solid rgba(245,158,11,0.2); border-radius:999px;
-  font-size:11px; font-weight:700; color:#d97706; letter-spacing:0.06em;
+  display:inline-block; padding:4px 12px; background:rgba(34,197,94,0.1);
+  border:1px solid rgba(34,197,94,0.2); border-radius:999px;
+  font-size:11px; font-weight:700; color:#16a34a; letter-spacing:0.06em;
   text-transform:uppercase; margin-bottom:16px;
 }
-.feature-row-title { font-size:28px; font-weight:800; color:#18181b; letter-spacing:-0.025em; margin-bottom:12px; }
-.feature-row-desc { font-size:14px; color:#71717a; line-height:1.7; margin-bottom:24px; }
+.feature-row-title { font-size:28px; font-weight:800; color:#0f172a; letter-spacing:-0.025em; margin-bottom:12px; }
+.feature-row-desc { font-size:14px; color:#475569; line-height:1.7; margin-bottom:24px; }
 .feature-row-link {
   display:inline-flex; align-items:center; gap:6px;
-  font-size:13px; font-weight:700; color:#d97706;
-  border-bottom:1px solid rgba(245,158,11,0.3); padding-bottom:2px;
+  font-size:13px; font-weight:700; color:#16a34a;
+  border-bottom:1px solid rgba(34,197,94,0.3); padding-bottom:2px;
 }
 .feature-row-visual {
   background:#f9f9f8; height:100%; min-height:280px;
@@ -175,14 +176,14 @@
 .mock-stat-row { display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; }
 .mock-label { font-size:11px; color:#a1a1aa; }
 .mock-val { font-size:18px; font-weight:800; color:#18181b; }
-.mock-accent { color:#f59e0b !important; }
+.mock-accent { color:#22c55e !important; }
 .mock-bar { height:6px; background:rgba(0,0,0,0.06); border-radius:999px; overflow:hidden; margin-bottom:8px; }
-.mock-bar-fill { height:100%; background:linear-gradient(90deg,#f59e0b,#f97316); border-radius:999px; }
+.mock-bar-fill { height:100%; background:linear-gradient(90deg,#22c55e,#16a34a); border-radius:999px; }
 .mock-chips { display:flex; flex-wrap:wrap; gap:4px; }
-.mock-chip { padding:3px 10px; background:rgba(245,158,11,0.12); border-radius:999px; font-size:10px; font-weight:600; color:#d97706; }
+.mock-chip { padding:3px 10px; background:rgba(34,197,94,0.12); border-radius:999px; font-size:10px; font-weight:600; color:#16a34a; }
 
 /* SOCIAL PROOF STRIP */
-.social-strip { border-top:1px solid rgba(0,0,0,0.06); border-bottom:1px solid rgba(0,0,0,0.06); padding:20px 24px; overflow:hidden; background:#f3f2ef; }
+.social-strip { border-top:1px solid rgba(0,0,0,0.06); border-bottom:1px solid rgba(0,0,0,0.06); padding:20px 24px; overflow:hidden; background:#f0f7f0; }
 .social-strip-inner { display:flex; gap:40px; align-items:center; justify-content:center; flex-wrap:wrap; }
 .social-item { display:flex; align-items:center; gap:8px; }
 .social-avatar { width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; color:#1c1917; }
@@ -192,34 +193,35 @@
 /* FINAL CTA */
 .app-cta {
   margin:0 24px 80px; border-radius:24px;
-  background:linear-gradient(135deg,#f5c542 0%,#f59e0b 100%);
+  background:linear-gradient(135deg,#0f1f0f 0%,#1a3a1a 60%,#16a34a 100%);
   padding:64px 48px; text-align:center; position:relative; overflow:hidden;
 }
 .app-cta::before {
   content:''; position:absolute; top:-50%; right:-10%;
   width:400px; height:400px;
-  background:radial-gradient(circle,rgba(255,255,255,0.15) 0%,transparent 60%);
+  background:radial-gradient(circle,rgba(34,197,94,0.2) 0%,transparent 60%);
   border-radius:50%; pointer-events:none;
 }
-.app-cta h2 { font-size:clamp(28px,4vw,48px); font-weight:900; color:#1c1917; letter-spacing:-0.03em; margin-bottom:12px; }
-.app-cta p { font-size:16px; color:rgba(28,25,23,0.6); margin-bottom:32px; }
+.app-cta h2 { font-size:clamp(28px,4vw,48px); font-weight:900; color:#f0fdf4; letter-spacing:-0.03em; margin-bottom:12px; }
+.app-cta p { font-size:16px; color:rgba(240,253,244,0.65); margin-bottom:32px; }
 .cta-btn-dark {
   display:inline-flex; align-items:center; gap:8px;
-  padding:14px 32px; background:#1c1917; color:#f5c542;
+  padding:14px 32px; background:#22c55e; color:#ffffff;
   font-size:15px; font-weight:700; border-radius:12px; transition:all 0.2s;
+  box-shadow:0 4px 20px rgba(34,197,94,0.4);
 }
-.cta-btn-dark:hover { background:#292524; transform:translateY(-1px); }
+.cta-btn-dark:hover { background:#16a34a; transform:translateY(-1px); }
 .cta-btn-ghost {
   display:inline-flex; align-items:center; gap:8px;
-  padding:14px 32px; border:2px solid rgba(28,25,23,0.2);
-  color:#1c1917; font-size:15px; font-weight:600; border-radius:12px;
+  padding:14px 32px; border:2px solid rgba(240,253,244,0.25);
+  color:#f0fdf4; font-size:15px; font-weight:600; border-radius:12px;
   transition:all 0.2s; background:transparent;
 }
-.cta-btn-ghost:hover { background:rgba(28,25,23,0.06); }
+.cta-btn-ghost:hover { background:rgba(240,253,244,0.1); }
 
 /* FOOTER */
 .app-footer {
-  background:#f3f2ef; border-top:1px solid rgba(0,0,0,0.06);
+  background:#f0f7f0; border-top:1px solid rgba(0,0,0,0.06);
   padding:48px 40px 32px;
 }
 .app-footer-grid { display:grid; grid-template-columns:2fr 1fr 1fr 1fr; gap:40px; max-width:1100px; margin:0 auto 40px; }
@@ -320,7 +322,7 @@
                     <div class="bento-bmi-val" id="bVal">—</div>
                     <div class="bento-bmi-cat" id="bCat">@(ne?"उचाइ र तौल भर्नुहोस्":"Enter height & weight above")</div>
                 </div>
-                <a href="/Bmi" style="display:flex;align-items:center;justify-content:center;gap:6px;background:#f5c542;color:#1c1917;font-weight:700;font-size:13px;padding:11px;border-radius:10px;">
+                <a href="/Bmi" style="display:flex;align-items:center;justify-content:center;gap:6px;background:#22c55e;color:#ffffff;font-weight:700;font-size:13px;padding:11px;border-radius:10px;">
                     @(ne?"विस्तृत विश्लेषण →":"Full Analysis →")
                 </a>
             </div>
@@ -329,9 +331,9 @@
         <!-- Stat: Streak -->
         <div class="bento-card accent">
             <div class="bento-icon">🔥</div>
-            <div class="bento-num" style="color:#1c1917">21</div>
-            <div class="bento-num-label" style="color:rgba(28,25,23,0.6);margin-top:6px">@(ne?"दिनको लहर":"day streak avg")</div>
-            <div style="margin-top:16px;font-size:13px;font-weight:600;color:rgba(28,25,23,0.55)">@(ne?"सदस्यहरूको औसत streak":"average member streak")</div>
+            <div class="bento-num" style="color:#ffffff">21</div>
+            <div class="bento-num-label" style="color:rgba(255,255,255,0.7);margin-top:6px">@(ne?"दिनको लहर":"day streak avg")</div>
+            <div style="margin-top:16px;font-size:13px;font-weight:600;color:rgba(255,255,255,0.6)">@(ne?"सदस्यहरूको औसत streak":"average member streak")</div>
         </div>
 
         <!-- Workout plans -->
@@ -354,7 +356,7 @@
             <div class="bento-title">@(ne?"दौड कोचिङ":"Running Coach")</div>
             <div class="bento-desc">@(ne?"5K र 10K योजना, गति क्यालकुलेटर।":"5K & 10K plans, pace calculator, weekly tracking.")</div>
             <div style="margin-top:20px">
-                <div style="display:flex;justify-content:space-between;font-size:12px;color:rgba(245,240,232,0.35);margin-bottom:6px"><span>@(ne?"साप्ताहिक किमी":"Weekly km")</span><span style="color:#f5c542;font-weight:700">32.4</span></div>
+                <div style="display:flex;justify-content:space-between;font-size:12px;color:#94a3b8;margin-bottom:6px"><span>@(ne?"साप्ताहिक किमी":"Weekly km")</span><span style="color:#22c55e;font-weight:700">32.4</span></div>
                 <div class="mock-bar"><div class="mock-bar-fill" style="width:65%"></div></div>
                 <div style="display:flex;justify-content:space-between;font-size:12px;color:rgba(245,240,232,0.35);margin-bottom:6px;margin-top:10px"><span>@(ne?"यस हप्ता":"This week")</span><span style="color:#4ade80;font-weight:700">4 @(ne?"दौड":"runs")</span></div>
                 <div class="mock-bar"><div class="mock-bar-fill" style="width:80%;background:linear-gradient(90deg,#4ade80,#16a34a)"></div></div>
@@ -386,7 +388,7 @@
         </div>
 
         <!-- Language -->
-        <div class="bento-card" style="background:linear-gradient(135deg,rgba(245,197,66,0.08),rgba(245,197,66,0.03));border-color:rgba(245,197,66,0.15)">
+        <div class="bento-card" style="background:linear-gradient(135deg,rgba(34,197,94,0.08),rgba(34,197,94,0.03));border-color:rgba(34,197,94,0.15)">
             <div style="font-size:32px;margin-bottom:14px">🇳🇵</div>
             <div class="bento-title">@(ne?"नेपाली भाषा":"नेपाली / English")</div>
             <div class="bento-desc">@(ne?"सम्पूर्ण नेपाली भाषा समर्थन — आफ्नै भाषामा तालिम लिनुहोस्।":"Full Nepali language support. Switch anytime.")</div>
@@ -399,7 +401,7 @@
 <div class="social-strip">
     <div class="social-strip-inner">
         @foreach (var r in new[]{
-            ("#f5c542","P","Pramesh KC", ne?"BMI र व्यायाम दुवै एकै ठाउँमा! 🔥":"BMI + workouts in one app!"),
+            ("#22c55e","P","Pramesh KC", ne?"BMI र व्यायाम दुवै एकै ठाउँमा! 🔥":"BMI + workouts in one app!"),
             ("#4ade80","S","Sunita T.", ne?"नेपाली भाषामा पाएर खुसी लाग्यो।":"Love the Nepali language support."),
             ("#60a5fa","R","Rajesh S.", ne?"5K मा 24 मिनेट पुगें! धन्यवाद 🏃":"Hit 24min 5K after 8 weeks!")
         }) {
@@ -444,7 +446,7 @@
                 <div style="font-size:15px;font-weight:800;color:#f5f0e8;margin-bottom:4px">Upper Body Power</div>
                 <div style="font-size:12px;color:rgba(245,240,232,0.35);margin-bottom:12px">⏱ 45min · 🔥 420 kcal</div>
                 @foreach (var ex in new[]{"Bench Press","Pull-Ups","OHP"})
-                {<div style="display:flex;justify-content:space-between;font-size:12px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.05)"><span style="color:rgba(245,240,232,0.6)">@ex</span><span style="color:#f5c542;font-weight:700">4×8</span></div>}
+                {<div style="display:flex;justify-content:space-between;font-size:12px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.05)"><span style="color:rgba(245,240,232,0.6)">@ex</span><span style="color:#4ade80;font-weight:700">4×8</span></div>}
             </div>
         </div>
     </div>
@@ -464,7 +466,7 @@
                 <div style="display:flex;justify-content:space-between;font-size:12px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.05)">
                     <span style="color:rgba(245,240,232,0.4)">@r.Item1</span>
                     <span style="color:#f5f0e8;font-weight:700">@r.Item2</span>
-                    <span style="color:#f5c542">@r.Item3</span>
+                    <span style="color:#4ade80">@r.Item3</span>
                 </div>
                 }
                 <div style="margin-top:10px;font-size:11px;color:rgba(245,240,232,0.3)">Total · <strong style="color:#4ade80">16.3km</strong></div>
@@ -546,7 +548,7 @@ function calcBmi() {
   const valEl = document.getElementById('bVal');
   const catEl = document.getElementById('bCat');
   if (!h || !w || h < 100 || w < 20) {
-    valEl.textContent = '—'; valEl.style.color = '#f5c542';
+    valEl.textContent = '—'; valEl.style.color = '#22c55e';
     catEl.textContent = pageLang === 'ne' ? 'उचाइ र तौल भर्नुहोस्' : 'Enter height & weight above';
     catEl.style.color = 'rgba(245,240,232,0.45)'; return;
   }

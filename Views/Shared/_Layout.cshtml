@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <meta name="theme-color" content="#f5c542" />
+    <meta name="theme-color" content="#22c55e" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -27,20 +27,20 @@
     /* ── MOBILE TOP NAV (authenticated) ── */
     .mobile-topbar {
       display:none; position:fixed; top:0; left:0; right:0; z-index:950;
-      height:56px; background:#1c1917;
-      border-bottom:1px solid rgba(255,255,255,0.06);
+      height:56px; background:#ffffff;
+      border-bottom:1px solid rgba(0,0,0,0.08);
       align-items:center; justify-content:space-between;
       padding:0 16px; gap:12px;
     }
     .mobile-topbar-logo { display:flex; align-items:center; gap:8px; }
     .mobile-topbar-logo-icon { width:28px; height:28px; background:var(--accent); border-radius:7px; display:flex; align-items:center; justify-content:center; font-size:14px; }
-    .mobile-topbar-title { font-size:15px; font-weight:800; color:#f5f0e8; }
-    .mobile-topbar-user { width:30px; height:30px; background:var(--accent); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; color:#1c1917; cursor:pointer; }
+    .mobile-topbar-title { font-size:15px; font-weight:800; color:#0f172a; }
+    .mobile-topbar-user { width:30px; height:30px; background:var(--accent); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; color:#ffffff; cursor:pointer; }
 
     /* ── MOBILE BOTTOM NAV ── */
     .mobile-bottom-nav {
       display:none; position:fixed; bottom:0; left:0; right:0; z-index:950;
-      background:#1c1917; border-top:1px solid rgba(255,255,255,0.08);
+      background:#0f1f0f; border-top:1px solid rgba(255,255,255,0.08);
       padding:8px 4px calc(8px + env(safe-area-inset-bottom));
       grid-template-columns:repeat(5,1fr);
     }
@@ -70,7 +70,7 @@
     /* ── THEME PANEL ── */
     .theme-panel {
       position:fixed; right:-320px; top:0; bottom:0; width:300px; z-index:980;
-      background:#131110; border-left:1px solid rgba(255,255,255,0.08);
+      background:#ffffff; border-left:1px solid rgba(0,0,0,0.1);
       transition:right 0.3s cubic-bezier(0.4,0,0.2,1); padding:24px;
       overflow-y:auto;
     }
@@ -83,27 +83,28 @@
     .theme-swatch.active { border-color:#f5f0e8; transform:scale(1.1); }
     .theme-swatch:hover { transform:scale(1.05); }
 
-    /* ── GUEST NAV (dark style) ── */
+    /* ── GUEST NAV (light style) ── */
     .guest-nav {
       position:fixed; top:0; left:0; right:0; z-index:900;
       display:flex; align-items:center; justify-content:space-between;
       padding:0 32px; height:60px;
-      background:rgba(13,11,9,0.92);
+      background:rgba(255,255,255,0.97);
       backdrop-filter:blur(20px);
-      border-bottom:1px solid rgba(255,255,255,0.07);
+      border-bottom:1px solid rgba(0,0,0,0.08);
+      box-shadow:0 1px 12px rgba(0,0,0,0.06);
     }
     .guest-nav-logo { display:flex; align-items:center; gap:10px; text-decoration:none; }
     .guest-nav-logo-icon { width:32px; height:32px; background:var(--accent); border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:16px; flex-shrink:0; }
-    .guest-nav-logo-text { font-size:15px; font-weight:800; color:#f5f0e8; }
+    .guest-nav-logo-text { font-size:15px; font-weight:800; color:#0f172a; }
     .guest-nav-links { display:flex; align-items:center; gap:4px; }
-    .guest-nav-link { padding:7px 14px; font-size:13px; font-weight:500; color:rgba(245,240,232,0.65); border-radius:8px; transition:all 0.15s; text-decoration:none; }
-    .guest-nav-link:hover { color:#f5f0e8; background:rgba(255,255,255,0.07); }
+    .guest-nav-link { padding:7px 14px; font-size:13px; font-weight:500; color:#475569; border-radius:8px; transition:all 0.15s; text-decoration:none; }
+    .guest-nav-link:hover { color:#0f172a; background:rgba(34,197,94,0.08); }
     .guest-nav-actions { display:flex; gap:8px; align-items:center; }
-    .guest-btn-login { padding:7px 16px; font-size:13px; font-weight:600; color:rgba(245,240,232,0.75); border:1px solid rgba(255,255,255,0.14); border-radius:8px; transition:all 0.15s; text-decoration:none; }
-    .guest-btn-login:hover { color:#f5f0e8; border-color:rgba(255,255,255,0.28); background:rgba(255,255,255,0.05); }
-    .guest-btn-start { padding:7px 18px; font-size:13px; font-weight:700; color:#1c1917; background:var(--accent); border-radius:8px; transition:all 0.15s; text-decoration:none; }
+    .guest-btn-login { padding:7px 16px; font-size:13px; font-weight:600; color:#475569; border:1px solid rgba(0,0,0,0.15); border-radius:8px; transition:all 0.15s; text-decoration:none; }
+    .guest-btn-login:hover { color:#0f172a; border-color:rgba(0,0,0,0.3); background:#f8faf8; }
+    .guest-btn-start { padding:7px 18px; font-size:13px; font-weight:700; color:#ffffff; background:var(--accent); border-radius:8px; transition:all 0.15s; text-decoration:none; }
     .guest-btn-start:hover { filter:brightness(1.08); }
-    .guest-nav-hamburger { display:none; background:none; border:none; color:#f5f0e8; font-size:22px; cursor:pointer; padding:4px; }
+    .guest-nav-hamburger { display:none; background:none; border:none; color:#475569; font-size:22px; cursor:pointer; padding:4px; }
 
     /* ── RESPONSIVE ── */
     @@media (max-width: 768px) {
@@ -153,12 +154,12 @@
     <!-- Mobile Top Bar -->
     <div class="mobile-topbar">
         <div class="mobile-topbar-logo">
-            <button onclick="openDrawer()" style="background:none;border:none;color:rgba(245,240,232,0.6);font-size:22px;cursor:pointer;padding:0;margin-right:4px">☰</button>
+            <button onclick="openDrawer()" style="background:none;border:none;color:#475569;font-size:22px;cursor:pointer;padding:0;margin-right:4px">☰</button>
             <div class="mobile-topbar-logo-icon">💪</div>
             <span class="mobile-topbar-title">ShaktiFit</span>
         </div>
         <div style="display:flex;gap:8px;align-items:center">
-            <button onclick="openTheme()" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#f5f0e8;font-size:16px;width:36px;height:36px;cursor:pointer">🎨</button>
+            <button onclick="openTheme()" style="background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.2);border-radius:8px;color:#16a34a;font-size:16px;width:36px;height:36px;cursor:pointer">🎨</button>
             <div class="mobile-topbar-user" onclick="window.location='/Settings'">@userInitial</div>
         </div>
     </div>
@@ -307,10 +308,10 @@ else
             <a href="/Bmi" class="guest-nav-link">BMI</a>
         </div>
         <div class="guest-nav-actions">
-            <a href="/Home/SetLang?lang=@(lang=="en"?"ne":"en")&returnUrl=@Context.Request.Path" style="font-size:12px;font-weight:700;color:rgba(245,240,232,0.5);padding:6px 12px;border:1px solid rgba(255,255,255,0.1);border-radius:6px">
+            <a href="/Home/SetLang?lang=@(lang=="en"?"ne":"en")&returnUrl=@Context.Request.Path" style="font-size:12px;font-weight:700;color:#475569;padding:6px 12px;border:1px solid rgba(0,0,0,0.12);border-radius:6px">
                 @(lang=="en"?"🇳🇵 नेपाली":"🇬🇧 English")
             </a>
-            <button onclick="openTheme()" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#f5f0e8;font-size:15px;width:34px;height:34px;cursor:pointer">🎨</button>
+            <button onclick="openTheme()" style="background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.2);border-radius:8px;color:#16a34a;font-size:15px;width:34px;height:34px;cursor:pointer">🎨</button>
             <a href="/Account/Login" class="guest-btn-login">@(lang=="ne"?"लगइन":"Login")</a>
             <a href="/Account/Register" class="guest-btn-start">@(lang=="ne"?"दर्ता":"Register")</a>
         </div>
@@ -318,25 +319,25 @@ else
     </nav>
     <!-- Guest Mobile Menu -->
     <div class="drawer-overlay" id="guestOverlay" onclick="closeGuestMenu()"></div>
-    <div class="sidebar-drawer" id="guestDrawer">
-        <div style="padding:20px 16px;border-bottom:1px solid rgba(255,255,255,0.07);display:flex;align-items:center;justify-content:space-between">
+    <div class="sidebar-drawer" id="guestDrawer" style="background:#ffffff;">
+        <div style="padding:20px 16px;border-bottom:1px solid rgba(0,0,0,0.08);display:flex;align-items:center;justify-content:space-between">
             <div style="display:flex;align-items:center;gap:8px">
                 <div style="width:28px;height:28px;background:var(--accent);border-radius:7px;display:flex;align-items:center;justify-content:center">💪</div>
-                <span style="font-weight:800;color:#f5f0e8">ShaktiFit</span>
+                <span style="font-weight:800;color:#0f172a">ShaktiFit</span>
             </div>
-            <button onclick="closeGuestMenu()" style="background:none;border:none;color:rgba(245,240,232,0.5);font-size:22px;cursor:pointer">✕</button>
+            <button onclick="closeGuestMenu()" style="background:none;border:none;color:#94a3b8;font-size:22px;cursor:pointer">✕</button>
         </div>
         <div style="padding:12px 8px">
             @foreach (var item in new[]{ ("/","🏠",lang=="ne"?"गृहपृष्ठ":"Home"), ("/Health","🏥",lang=="ne"?"स्वास्थ्य":"Health"), ("/Exercise","📚",lang=="ne"?"व्यायाम":"Exercises"), ("/Bmi","⚖️","BMI") })
             {
-            <a href="@item.Item1" onclick="closeGuestMenu()" style="display:flex;align-items:center;gap:10px;padding:12px 10px;border-radius:10px;text-decoration:none;color:rgba(245,240,232,0.75);font-size:14px;font-weight:600;margin-bottom:2px">
+            <a href="@item.Item1" onclick="closeGuestMenu()" style="display:flex;align-items:center;gap:10px;padding:12px 10px;border-radius:10px;text-decoration:none;color:#475569;font-size:14px;font-weight:600;margin-bottom:2px">
                 <span style="font-size:20px">@item.Item2</span> @item.Item3
             </a>
             }
         </div>
-        <div style="padding:16px;border-top:1px solid rgba(255,255,255,0.07);display:flex;flex-direction:column;gap:10px;margin-top:auto">
-            <a href="/Account/Login" style="display:block;text-align:center;padding:12px;border:1px solid rgba(255,255,255,0.15);border-radius:10px;color:#f5f0e8;font-weight:600;text-decoration:none">@(lang=="ne"?"लगइन":"Login")</a>
-            <a href="/Account/Register" style="display:block;text-align:center;padding:12px;background:var(--accent);border-radius:10px;color:#1c1917;font-weight:700;text-decoration:none">@(lang=="ne"?"दर्ता":"Register")</a>
+        <div style="padding:16px;border-top:1px solid rgba(0,0,0,0.08);display:flex;flex-direction:column;gap:10px;margin-top:auto">
+            <a href="/Account/Login" style="display:block;text-align:center;padding:12px;border:1px solid rgba(0,0,0,0.15);border-radius:10px;color:#475569;font-weight:600;text-decoration:none">@(lang=="ne"?"लगइन":"Login")</a>
+            <a href="/Account/Register" style="display:block;text-align:center;padding:12px;background:var(--accent);border-radius:10px;color:#ffffff;font-weight:700;text-decoration:none">@(lang=="ne"?"दर्ता":"Register")</a>
         </div>
     </div>
     <div style="padding-top:60px">@RenderBody()</div>
@@ -346,15 +347,15 @@ else
 <div class="drawer-overlay" id="themeOverlay" onclick="closeTheme()"></div>
 <div class="theme-panel" id="themePanel">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px">
-        <div style="font-size:16px;font-weight:800;color:#f5f0e8">🎨 @(lang=="ne"?"थिम":"Theme")</div>
-        <button onclick="closeTheme()" style="background:none;border:none;color:rgba(245,240,232,0.5);font-size:22px;cursor:pointer">✕</button>
+        <div style="font-size:16px;font-weight:800;color:#0f172a">🎨 @(lang=="ne"?"थिम":"Theme")</div>
+        <button onclick="closeTheme()" style="background:none;border:none;color:#94a3b8;font-size:22px;cursor:pointer">✕</button>
     </div>
     <!-- Accent color -->
-    <div style="font-size:11px;font-weight:700;color:rgba(245,240,232,0.4);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:12px">Accent Color</div>
+    <div style="font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:12px">Accent Color</div>
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:28px">
         @foreach (var c in new[]{
-            ("yellow","#f5c542","☀️ Yellow"),("blue","#3b82f6","🔵 Blue"),
-            ("green","#22c55e","🟢 Green"),("purple","#a855f7","🟣 Purple"),
+            ("green","#22c55e","🟢 Green"),("yellow","#f5c542","☀️ Yellow"),
+            ("blue","#3b82f6","🔵 Blue"),("purple","#a855f7","🟣 Purple"),
             ("red","#ef4444","🔴 Red"),("orange","#f97316","🟠 Orange")
         })
         {
@@ -362,17 +363,17 @@ else
             style="padding:10px 6px;border-radius:10px;border:2px solid rgba(255,255,255,0.08);background:@(c.Item2)18;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;transition:all 0.15s"
             class="accent-btn">
             <div style="width:28px;height:28px;background:@c.Item2;border-radius:7px"></div>
-            <div style="font-size:10px;font-weight:700;color:rgba(245,240,232,0.6)">@c.Item3.Split(' ')[1]</div>
+            <div style="font-size:10px;font-weight:700;color:#475569">@c.Item3.Split(' ')[1]</div>
         </button>
         }
     </div>
     <!-- Dark/Light mode -->
-    <div style="font-size:11px;font-weight:700;color:rgba(245,240,232,0.4);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:12px">App Mode</div>
+    <div style="font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:12px">App Mode</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:24px">
         <button onclick="setMode('dark')" id="modeDark" style="padding:12px;border-radius:10px;border:2px solid rgba(245,197,66,0.4);background:#0d0b09;color:#f5f0e8;font-size:13px;font-weight:700;cursor:pointer">🌙 Dark</button>
         <button onclick="setMode('light')" id="modeLight" style="padding:12px;border-radius:10px;border:2px solid rgba(255,255,255,0.1);background:#f0ece4;color:#1c1917;font-size:13px;font-weight:700;cursor:pointer">☀️ Light</button>
     </div>
-    <div style="font-size:12px;color:rgba(245,240,232,0.3);line-height:1.6;padding:12px;background:rgba(255,255,255,0.03);border-radius:10px;border:1px solid rgba(255,255,255,0.06)">
+    <div style="font-size:12px;color:#94a3b8;line-height:1.6;padding:12px;background:#f8faf8;border-radius:10px;border:1px solid rgba(0,0,0,0.07)">
         💡 Theme settings are saved automatically and persist across sessions.
     </div>
 </div>
@@ -428,8 +429,8 @@ function setMode(mode) {
 }
 // ── RESTORE SAVED THEME ──
 (function() {
-  const accent = localStorage.getItem('sf-accent') || 'yellow';
-  const mode   = localStorage.getItem('sf-mode') || 'dark';
+  const accent = localStorage.getItem('sf-accent') || 'green';
+  const mode   = localStorage.getItem('sf-mode') || 'light';
   document.documentElement.setAttribute('data-accent', accent);
   document.documentElement.setAttribute('data-theme',  mode);
 })();
