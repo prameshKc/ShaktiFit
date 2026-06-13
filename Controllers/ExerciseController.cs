@@ -70,10 +70,18 @@ public class ExerciseController : Controller
 
         var categories = allMerged.Select(e => e.Category).Distinct().OrderBy(c => c).ToList();
 
+        // Build name → api-id map so the view can show thumbnails for local exercises too
+        var apiAll = await apiTask;
+        var apiIdByName = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var ae in apiAll)
+            if (!apiIdByName.ContainsKey(ae.Name))
+                apiIdByName[ae.Name] = ae.Id;
+
         ViewBag.Categories = categories;
         ViewBag.SelectedCategory = category ?? "All";
         ViewBag.Search = search;
         ViewBag.T = _translations.GetAll(Lang);
+        ViewBag.ApiIdByName = apiIdByName;
         return View(merged);
     }
 
@@ -97,8 +105,12 @@ public class ExerciseController : Controller
         if (exercise != null && ViewBag.ApiExercise == null)
         {
             var all = await _workoutApi.GetExercisesAsync();
+            // Try exact match first, then fuzzy (API name contains local name or vice versa)
+            var localLower = exercise.Name.ToLower();
             var match = all.FirstOrDefault(e =>
-                string.Equals(e.Name, exercise.Name, StringComparison.OrdinalIgnoreCase));
+                string.Equals(e.Name, exercise.Name, StringComparison.OrdinalIgnoreCase))
+                ?? all.FirstOrDefault(e => e.Name.ToLower().Contains(localLower))
+                ?? all.FirstOrDefault(e => localLower.Contains(e.Name.ToLower()));
             if (match != null)
                 ViewBag.ApiExercise = match;
         }

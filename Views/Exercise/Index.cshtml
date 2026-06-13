@@ -250,16 +250,19 @@
        data-diff="@ex.Difficulty.ToLower()">
       <div class="ex-card-top" style="background:@color"></div>
       @{
-        // Check if this exercise has a WorkoutAPI id (guid format = from API)
-        bool hasApiImg = ex.Id.Length == 36 && ex.Id.Contains('-');
+        // Resolve API id: either exercise is from API (GUID id) or local with a name match
+        var apiIdMap = ViewBag.ApiIdByName as Dictionary<string, string> ?? new Dictionary<string, string>();
+        bool isGuid = ex.Id.Length == 36 && ex.Id.Contains('-');
+        string apiImgId = isGuid ? ex.Id : (apiIdMap.TryGetValue(ex.Name, out var mapped) ? mapped : "");
+        bool hasApiImg = !string.IsNullOrEmpty(apiImgId);
       }
       @if (hasApiImg)
       {
       <!-- SVG illustration thumbnail -->
       <div style="height:110px;background:linear-gradient(135deg,#f8faf8,#f0fdf4);display:flex;align-items:center;justify-content:center;overflow:hidden;border-radius:16px 16px 0 0;border-bottom:1px solid rgba(0,0,0,0.05)">
-        <img src="/Exercise/Image/@ex.Id" alt="@ex.Name"
+        <img src="/Exercise/Image/@apiImgId" alt="@ex.Name"
              style="max-height:100px;max-width:100%;object-fit:contain;padding:6px;filter:drop-shadow(0 2px 6px rgba(0,0,0,0.1))"
-             onerror="this.parentElement.innerHTML='<div style=\'font-size:36px;padding:20px\'>@icon</div>'" />
+             onerror="this.style.display='none'" />
       </div>
       }
       <div class="ex-card-body">
