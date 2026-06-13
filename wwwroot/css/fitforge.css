@@ -251,8 +251,8 @@ html:not([data-accent]) { --accent:#22c55e; --accent-dark:#16a34a; --shadow-acce
 
 /* ── Cards ───────────────────────────────────────────────────── */
 .card {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
+  background: #ffffff;
+  border: 1px solid rgba(0,0,0,0.08);
   border-radius: var(--radius);
   box-shadow: var(--shadow-sm);
   transition: var(--transition);
@@ -794,21 +794,21 @@ html:not([data-accent]) { --accent:#22c55e; --accent-dark:#16a34a; --shadow-acce
 /* Health grid */
 .health-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px,1fr)); gap: 18px; }
 .health-card {
-  background: var(--bg-card);
-  border: 1.5px solid var(--border);
+  background: #ffffff;
+  border: 1.5px solid rgba(0,0,0,0.08);
   border-radius: var(--radius);
   overflow: hidden;
   cursor: pointer;
   transition: var(--transition);
-  box-shadow: var(--shadow-sm);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.05);
 }
-.health-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); border-color: var(--accent-dark); }
+.health-card:hover { box-shadow: 0 6px 24px rgba(34,197,94,0.15); transform: translateY(-2px); border-color: rgba(34,197,94,0.4); }
 .health-card-header { padding: 20px 22px; display: flex; align-items: center; gap: 14px; }
 .health-icon-lg { font-size: 32px; flex-shrink: 0; }
-.health-card-title { font-size: 16px; font-weight: 700; color: var(--text-primary); }
-.health-card-sub { font-size: 12px; color: var(--text-muted); margin-top: 3px; }
+.health-card-title { font-size: 16px; font-weight: 700; color: #0f172a; }
+.health-card-sub { font-size: 12px; color: #64748b; margin-top: 3px; }
 .health-card-body { padding: 0 22px 20px; }
-.health-tip { display: flex; align-items: flex-start; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 13px; color: var(--text-secondary); line-height: 1.6; }
+.health-tip { display: flex; align-items: flex-start; gap: 10px; padding: 8px 0; border-bottom: 1px solid rgba(0,0,0,0.06); font-size: 13px; color: #374151; line-height: 1.6; }
 .health-tip-icon { margin-top: 4px; flex-shrink: 0; font-size: 9px; }
 
 /* Suggestion card */
