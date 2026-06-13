@@ -101,6 +101,48 @@ public class EmailController : Controller
         return RedirectToAction("Index", "Workout");
     }
 
+    // GET /Email/Test  – shows exactly what happens when sending (debug only)
+    public async Task<IActionResult> Test()
+    {
+        if (UserId == null) return Content("Not logged in");
+        var user = await _users.GetByIdAsync(UserId);
+        if (user == null) return Content("User not found");
+
+        var result = new System.Text.StringBuilder();
+        result.AppendLine($"<pre style='font-family:monospace;font-size:14px;padding:20px'>");
+        result.AppendLine($"IsConfigured : {_email.IsConfigured}");
+        result.AppendLine($"To email     : {user.Email}");
+        result.AppendLine($"User name    : {user.Name}");
+        result.AppendLine();
+
+        if (!_email.IsConfigured)
+        {
+            result.AppendLine("❌ Email not configured — SenderEmail or Password is empty in Railway vars.");
+            result.AppendLine("</pre>");
+            return Content(result.ToString(), "text/html");
+        }
+
+        result.AppendLine("Attempting to send test email...");
+        try
+        {
+            var ok = await _email.SendAsync(user.Email, user.Name,
+                "✅ ShaktiFit Email Test",
+                "<h2>It works! 🎉</h2><p>Your ShaktiFit email is correctly configured.</p>");
+
+            result.AppendLine(ok ? "✅ Email sent successfully! Check your inbox." : "❌ Send returned false (check logs).");
+        }
+        catch (Exception ex)
+        {
+            result.AppendLine($"❌ Exception: {ex.GetType().Name}");
+            result.AppendLine($"Message: {ex.Message}");
+            if (ex.InnerException != null)
+                result.AppendLine($"Inner: {ex.InnerException.Message}");
+        }
+
+        result.AppendLine("</pre>");
+        return Content(result.ToString(), "text/html");
+    }
+
     // POST /Email/SavePreferences
     [HttpPost]
     [ValidateAntiForgeryToken]
