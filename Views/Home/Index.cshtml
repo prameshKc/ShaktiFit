@@ -106,7 +106,7 @@
 .bento-card.tall { min-height:280px; }
 .bento-card.accent { background:linear-gradient(135deg,#22c55e 0%,#16a34a 100%); border-color:transparent; }
 .bento-card.accent * { color:#ffffff !important; }
-.bento-card.dark2 { background:#18181b; }
+.bento-card.dark2 { background:linear-gradient(135deg,#0f1f0f,#1a3a1a); }
 .bento-icon { font-size:28px; margin-bottom:16px; }
 .bento-tag {
   display:inline-block; padding:3px 10px; background:rgba(34,197,94,0.1);
@@ -303,18 +303,18 @@
     <div class="bento-grid">
 
         <!-- Live BMI Calculator — large card -->
-        <div class="bento-card span2 tall dark2">
+        <div class="bento-card span2 tall" style="background:#ffffff;border:1.5px solid rgba(34,197,94,0.2);">
             <div class="bento-tag">⚖️ @(ne?"लाइभ BMI":"Live BMI")</div>
-            <div class="bento-title">@(ne?"अहिले नै आफ्नो BMI जाँच्नुहोस्":"Check Your BMI Instantly")</div>
-            <div class="bento-desc" style="margin-bottom:18px">@(ne?"कुनै खाता चाहिँदैन।":"No account needed — get your result right now.")</div>
+            <div class="bento-title" style="color:#0f172a">@(ne?"अहिले नै आफ्नो BMI जाँच्नुहोस्":"Check Your BMI Instantly")</div>
+            <div class="bento-desc" style="margin-bottom:18px;color:#64748b">@(ne?"कुनै खाता चाहिँदैन।":"No account needed — get your result right now.")</div>
             <div class="bento-bmi">
                 <div class="bento-bmi-inputs">
                     <div>
-                        <div style="font-size:10px;font-weight:600;color:rgba(245,240,232,0.3);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px">@(ne?"उचाइ cm":"Height cm")</div>
+                        <div style="font-size:10px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px">@(ne?"उचाइ cm":"Height cm")</div>
                         <input type="number" class="bento-bmi-input" id="bH" placeholder="172" min="100" max="250" oninput="calcBmi()" />
                     </div>
                     <div>
-                        <div style="font-size:10px;font-weight:600;color:rgba(245,240,232,0.3);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px">@(ne?"तौल kg":"Weight kg")</div>
+                        <div style="font-size:10px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px">@(ne?"तौल kg":"Weight kg")</div>
                         <input type="number" class="bento-bmi-input" id="bW" placeholder="70" min="30" max="300" oninput="calcBmi()" />
                     </div>
                 </div>
