@@ -208,6 +208,21 @@
     </div>
   </div>
 
+  <!-- ── Tab Switcher ── -->
+  <div style="display:flex;gap:6px;background:#f0fdf4;border:1.5px solid rgba(34,197,94,0.2);border-radius:14px;padding:5px;margin-bottom:20px">
+    <button id="tab-library" onclick="switchTab('library')"
+      style="flex:1;padding:10px 16px;border-radius:10px;border:none;cursor:pointer;font-size:14px;font-weight:700;transition:all .2s;background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;box-shadow:0 2px 8px rgba(34,197,94,0.3)">
+      🏋️ @(ne?"व्यायाम पुस्तकालय":"Exercise Library")
+    </button>
+    <button id="tab-splits" onclick="switchTab('splits')"
+      style="flex:1;padding:10px 16px;border-radius:10px;border:none;cursor:pointer;font-size:14px;font-weight:700;transition:all .2s;background:transparent;color:#16a34a">
+      📚 @(ne?"कसरत विभाजन गाइड":"Workout Splits Guide")
+    </button>
+  </div>
+
+  <!-- ── TAB: Exercise Library ── -->
+  <div id="panel-library">
+
   <!-- ── Search ── -->
   <div class="ex-search-bar">
     <div class="ex-search-wrap">
@@ -302,9 +317,10 @@
   </div>
 
 
-  <!-- ═══════════════════════════════════════════════════════ -->
-  <!--  WORKOUT SPLITS GUIDE                                   -->
-  <!-- ═══════════════════════════════════════════════════════ -->
+  </div><!-- /panel-library -->
+
+  <!-- ── TAB: Workout Splits Guide ── -->
+  <div id="panel-splits" style="display:none">
   <div class="splits-section">
     <div class="splits-header">
       <div>
@@ -550,12 +566,28 @@
     }
 
   </div><!-- /splits-section -->
+  </div><!-- /panel-splits -->
 
 </div>
 </div>
 
 @section Scripts {
 <script>
+// ── Tab switcher ──
+function switchTab(tab) {
+  const isLib = tab === 'library';
+  document.getElementById('panel-library').style.display = isLib ? '' : 'none';
+  document.getElementById('panel-splits').style.display  = isLib ? 'none' : '';
+  const libBtn = document.getElementById('tab-library');
+  const splBtn = document.getElementById('tab-splits');
+  libBtn.style.background    = isLib ? 'linear-gradient(135deg,#22c55e,#16a34a)' : 'transparent';
+  libBtn.style.color         = isLib ? '#fff' : '#16a34a';
+  libBtn.style.boxShadow     = isLib ? '0 2px 8px rgba(34,197,94,0.3)' : 'none';
+  splBtn.style.background    = isLib ? 'transparent' : 'linear-gradient(135deg,#22c55e,#16a34a)';
+  splBtn.style.color         = isLib ? '#16a34a' : '#fff';
+  splBtn.style.boxShadow     = isLib ? 'none' : '0 2px 8px rgba(34,197,94,0.3)';
+}
+
 // ── Category filter ──
 function filterEx(btn) {
   document.querySelectorAll('.ex-filter').forEach(b => b.classList.remove('active'));
