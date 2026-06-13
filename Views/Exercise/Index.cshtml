@@ -10,140 +10,575 @@
     var categories = (IEnumerable<string>)(ViewBag.Categories ?? new List<string>());
 
     string CatIcon(string cat) => cat.ToLower() switch {
-        "chest"    => "🫸",
-        "back"     => "🔙",
-        "legs"     => "🦵",
-        "shoulders"=> "🤸",
-        "arms"     => "💪",
-        "core"     => "🧘",
-        "cardio"   => "🏃",
-        "mobility" => "🙆",
-        "full body" or "fullbody" => "⚡",
-        _          => "🏋️"
+        "chest"    => "🫸", "back" => "🔙", "legs" => "🦵",
+        "shoulders"=> "🤸", "arms" => "💪", "core" => "🧘",
+        "cardio"   => "🏃", "mobility" => "🙆",
+        "full body" or "fullbody" => "⚡", _ => "🏋️"
     };
     string CatColor(string cat) => cat.ToLower() switch {
-        "chest"    => "#f87171",
-        "back"     => "#60a5fa",
-        "legs"     => "#4ade80",
-        "shoulders"=> "#a78bfa",
-        "arms"     => "#f5c542",
-        "core"     => "#fb923c",
-        "cardio"   => "#34d399",
-        "mobility" => "#f472b6",
-        _          => "#94a3b8"
+        "chest"    => "#f87171", "back"     => "#60a5fa",
+        "legs"     => "#4ade80", "shoulders"=> "#a78bfa",
+        "arms"     => "#f5c542", "core"     => "#fb923c",
+        "cardio"   => "#34d399", "mobility" => "#f472b6",
+        _ => "#94a3b8"
+    };
+    string CatBg(string cat) => cat.ToLower() switch {
+        "chest"    => "#fff1f1", "back"     => "#eff6ff",
+        "legs"     => "#f0fdf4", "shoulders"=> "#faf5ff",
+        "arms"     => "#fefce8", "core"     => "#fff7ed",
+        "cardio"   => "#ecfdf5", "mobility" => "#fdf2f8",
+        _ => "#f8fafc"
     };
 }
 
-<div style="min-height:100vh;background:#f8faf8">
-<div class="page-container" style="padding:28px 32px">
-
-    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;margin-bottom:28px">
-        <div>
-            <h1 style="font-size:26px;font-weight:900;color:#0f172a;letter-spacing:-0.02em;margin-bottom:4px">@(ne?"व्यायाम पुस्तकालय":"Exercise Library")</h1>
-            <p style="color:#64748b;font-size:14px">@exercises.Count @(ne?"व्यायामहरू उपलब्ध":"exercises available")</p>
-        </div>
-        @if (isAuth)
-        {
-        <a href="/Workout/Builder" style="display:inline-flex;align-items:center;gap:8px;padding:10px 20px;background:var(--accent,#22c55e);color:#ffffff;font-weight:700;font-size:14px;border-radius:10px;text-decoration:none">
-            ✏️ @(ne?"कस्टम योजना बनाउनुहोस्":"Build Custom Plan")
-        </a>
-        }
-    </div>
-
-    <!-- Search + Filters -->
-    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:24px;align-items:center">
-        <div style="position:relative;flex:1;min-width:200px;max-width:300px">
-            <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#a1a1aa;font-size:14px">🔍</span>
-            <input type="text" id="exSearch"
-                placeholder="@(ne?"व्यायाम खोज्नुहोस्...":"Search exercises...")"
-                style="width:100%;background:#ffffff;border:1.5px solid rgba(0,0,0,0.1);border-radius:10px;color:#18181b;padding:10px 12px 10px 36px;font-size:14px;font-family:inherit;outline:none" />
-        </div>
-        <div style="display:flex;gap:6px;flex-wrap:wrap">
-            <button class="ex-filter active" data-cat="all" onclick="filterEx(this)" style="padding:7px 16px;background:rgba(34,197,94,0.12);border:1px solid rgba(34,197,94,0.4);border-radius:999px;color:#16a34a;font-size:12px;font-weight:700;cursor:pointer">
-                @(ne?"सबै":"All") (@exercises.Count)
-            </button>
-            @foreach (var cat in categories)
-            {
-            var cnt = exercises.Count(e => e.Category == cat);
-            <button class="ex-filter" data-cat="@cat.ToLower()" onclick="filterEx(this)"
-                style="padding:7px 14px;background:#f3f4f6;border:1px solid rgba(0,0,0,0.1);border-radius:999px;color:#52525b;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:5px">
-                <span>@CatIcon(cat)</span> @cat <span style="color:#a1a1aa">(@cnt)</span>
-            </button>
-            }
-        </div>
-    </div>
-
-    <!-- Grid -->
-    <div id="exGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px">
-        @foreach (var ex in exercises)
-        {
-        var icon = CatIcon(ex.Category);
-        var color = CatColor(ex.Category);
-        <a href="/Exercise/Details/@ex.Id" class="ex-card2" data-cat="@ex.Category.ToLower()" data-name="@ex.Name.ToLower() @(ex.NameNepali?.ToLower())"
-           style="background:#ffffff;border:1px solid rgba(0,0,0,0.08);border-radius:16px;padding:20px;text-decoration:none;display:block;transition:border-color 0.2s,transform 0.15s;position:relative;overflow:hidden">
-            <div style="position:absolute;top:0;left:0;right:0;height:3px;background:@color;opacity:0.7;border-radius:16px 16px 0 0"></div>
-            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px">
-                <div style="width:44px;height:44px;background:@(color)18;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:22px">@icon</div>
-                @if (ex.IsCompound) {
-                <span style="font-size:10px;font-weight:700;color:#16a34a;background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.2);border-radius:999px;padding:3px 8px">⚡ @(ne?"यौगिक":"Compound")</span>
-                }
-            </div>
-            <div style="font-size:10px;font-weight:700;color:@color;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px">@ex.Category</div>
-            <div style="font-size:15px;font-weight:800;color:#18181b;margin-bottom:3px;letter-spacing:-0.01em">@(ne && !string.IsNullOrEmpty(ex.NameNepali) ? ex.NameNepali : ex.Name)</div>
-            @if (!string.IsNullOrEmpty(ex.NameNepali)) {
-            <div style="font-size:11px;color:#a1a1aa;margin-bottom:10px">@(ne ? ex.Name : ex.NameNepali)</div>
-            }
-            <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">
-                <span style="font-size:10px;padding:3px 8px;border-radius:999px;font-weight:700;
-                    @(ex.Difficulty == "Beginner" ? "background:rgba(74,222,128,0.12);color:#4ade80;" :
-                      ex.Difficulty == "Advanced"  ? "background:rgba(248,113,113,0.12);color:#f87171;" :
-                                                     "background:rgba(251,191,36,0.12);color:#fbbf24;")">
-                    @ex.Difficulty
-                </span>
-                @foreach (var m in ex.TargetMuscles.Take(2))
-                {<span style="font-size:10px;color:#71717a;padding:3px 8px;background:#f3f4f6;border-radius:999px">@m</span>}
-            </div>
-            <div style="font-size:11px;color:#a1a1aa;border-top:1px solid rgba(0,0,0,0.06);padding-top:10px">
-                @ex.DefaultSets×@ex.DefaultReps · @ex.RestSeconds s @(ne?"आराम":"rest")
-            </div>
-        </a>
-        }
-    </div>
-
-    <div id="noResult" style="display:none;text-align:center;padding:80px;color:#a1a1aa">
-        <div style="font-size:48px;margin-bottom:12px">🔍</div>
-        <div style="font-size:16px;font-weight:600">@(ne?"कुनै व्यायाम भेटिएन।":"No exercises found.")</div>
-    </div>
-
-</div>
-</div>
-
 <style>
-.ex-card2:hover { border-color:rgba(34,197,94,0.4) !important; transform:translateY(-2px); }
-.ex-filter.active { background:rgba(34,197,94,0.12) !important; border-color:rgba(34,197,94,0.4) !important; color:#16a34a !important; }
+/* ── Page ── */
+.ex-page { min-height:100vh; background:#f8faf8; }
+.ex-wrap { max-width:1400px; margin:0 auto; padding:32px 24px 80px; }
+
+/* ── Hero Header ── */
+.ex-hero {
+  background:linear-gradient(135deg,#0f1f0f 0%,#1a3a1a 60%,#16a34a 100%);
+  border-radius:20px; padding:36px 40px; margin-bottom:32px;
+  position:relative; overflow:hidden;
+}
+.ex-hero::before {
+  content:''; position:absolute; top:-40px; right:-40px;
+  width:200px; height:200px; background:rgba(34,197,94,0.12);
+  border-radius:50%;
+}
+.ex-hero::after {
+  content:''; position:absolute; bottom:-60px; right:120px;
+  width:150px; height:150px; background:rgba(34,197,94,0.08);
+  border-radius:50%;
+}
+.ex-hero-tag { display:inline-flex; align-items:center; gap:6px; padding:5px 14px; background:rgba(34,197,94,0.2); border:1px solid rgba(34,197,94,0.35); border-radius:999px; font-size:11px; font-weight:700; color:#86efac; letter-spacing:0.08em; margin-bottom:14px; }
+.ex-hero-title { font-size:32px; font-weight:900; color:#f0fdf4; letter-spacing:-0.03em; margin-bottom:8px; }
+.ex-hero-sub { font-size:14px; color:rgba(240,253,244,0.65); margin-bottom:24px; }
+.ex-hero-stats { display:flex; gap:28px; flex-wrap:wrap; }
+.ex-hero-stat { text-align:center; }
+.ex-hero-stat-num { font-size:26px; font-weight:900; color:#4ade80; line-height:1; }
+.ex-hero-stat-lbl { font-size:11px; color:rgba(240,253,244,0.5); margin-top:3px; font-weight:600; text-transform:uppercase; letter-spacing:0.06em; }
+
+/* ── Search bar ── */
+.ex-search-bar { display:flex; gap:12px; align-items:center; margin-bottom:20px; flex-wrap:wrap; }
+.ex-search-wrap { position:relative; flex:1; min-width:220px; max-width:380px; }
+.ex-search-icon { position:absolute; left:14px; top:50%; transform:translateY(-50%); font-size:16px; color:#94a3b8; }
+.ex-search { width:100%; background:#ffffff; border:1.5px solid rgba(0,0,0,0.1); border-radius:12px; color:#0f172a; padding:11px 14px 11px 42px; font-size:14px; font-family:inherit; outline:none; transition:border-color .15s; box-shadow:0 1px 4px rgba(0,0,0,0.04); }
+.ex-search:focus { border-color:#22c55e; box-shadow:0 0 0 3px rgba(34,197,94,0.1); }
+.ex-search::placeholder { color:#94a3b8; }
+
+/* ── Filter pills ── */
+.ex-filters { display:flex; gap:7px; flex-wrap:wrap; margin-bottom:28px; }
+.ex-filter {
+  display:inline-flex; align-items:center; gap:5px;
+  padding:8px 16px; background:#ffffff; border:1.5px solid rgba(0,0,0,0.09);
+  border-radius:999px; color:#64748b; font-size:12px; font-weight:600;
+  cursor:pointer; transition:all .15s; white-space:nowrap;
+  box-shadow:0 1px 3px rgba(0,0,0,0.04);
+}
+.ex-filter:hover { border-color:rgba(34,197,94,0.4); color:#16a34a; background:#f0fdf4; }
+.ex-filter.active { background:linear-gradient(135deg,#22c55e,#16a34a) !important; border-color:transparent !important; color:#ffffff !important; box-shadow:0 3px 12px rgba(34,197,94,0.35) !important; }
+.ex-filter-count { background:rgba(255,255,255,0.25); border-radius:999px; padding:1px 7px; font-size:10px; font-weight:800; }
+.ex-filter:not(.active) .ex-filter-count { background:rgba(0,0,0,0.06); }
+
+/* ── Difficulty toggle ── */
+.ex-diff-wrap { display:flex; gap:6px; align-items:center; margin-left:auto; }
+.ex-diff-btn { padding:7px 13px; background:#ffffff; border:1.5px solid rgba(0,0,0,0.09); border-radius:999px; font-size:11px; font-weight:700; cursor:pointer; transition:all .15s; }
+.ex-diff-btn.active-beg { background:#f0fdf4; border-color:#4ade80; color:#16a34a; }
+.ex-diff-btn.active-int { background:#fefce8; border-color:#fbbf24; color:#92400e; }
+.ex-diff-btn.active-adv { background:#fef2f2; border-color:#f87171; color:#dc2626; }
+
+/* ── Exercise Grid ── */
+.ex-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:16px; }
+
+/* ── Exercise Card ── */
+.ex-card {
+  background:#ffffff; border:1.5px solid rgba(0,0,0,0.07);
+  border-radius:18px; text-decoration:none; display:flex;
+  flex-direction:column; overflow:hidden;
+  transition:transform .18s, box-shadow .18s, border-color .18s;
+  position:relative;
+  box-shadow:0 1px 4px rgba(0,0,0,0.05);
+}
+.ex-card:hover { transform:translateY(-4px); box-shadow:0 12px 32px rgba(0,0,0,0.1); border-color:rgba(34,197,94,0.35); }
+.ex-card-top { height:4px; border-radius:18px 18px 0 0; }
+.ex-card-body { padding:18px 18px 14px; flex:1; }
+.ex-card-icon-row { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:14px; }
+.ex-card-icon { width:48px; height:48px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:24px; }
+.ex-compound-badge { display:inline-flex; align-items:center; gap:4px; padding:4px 9px; background:#f0fdf4; border:1px solid rgba(34,197,94,0.25); border-radius:999px; font-size:10px; font-weight:700; color:#16a34a; }
+.ex-cat-label { font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:0.1em; margin-bottom:6px; }
+.ex-name { font-size:16px; font-weight:800; color:#0f172a; letter-spacing:-0.01em; margin-bottom:3px; line-height:1.25; }
+.ex-name-alt { font-size:11px; color:#94a3b8; margin-bottom:12px; }
+.ex-tags { display:flex; flex-wrap:wrap; gap:5px; margin-bottom:14px; }
+.ex-diff-tag { font-size:10px; padding:3px 9px; border-radius:999px; font-weight:700; }
+.ex-muscle-tag { font-size:10px; color:#64748b; padding:3px 9px; background:#f1f5f9; border-radius:999px; font-weight:500; }
+.ex-card-footer { padding:10px 18px 14px; border-top:1px solid rgba(0,0,0,0.06); display:flex; justify-content:space-between; align-items:center; }
+.ex-card-sets { font-size:12px; color:#64748b; font-weight:600; }
+.ex-card-arrow { font-size:16px; color:#22c55e; opacity:0; transition:opacity .15s, transform .15s; }
+.ex-card:hover .ex-card-arrow { opacity:1; transform:translateX(3px); }
+
+/* ── Splits Section ── */
+.splits-section { margin-top:56px; }
+.splits-header { display:flex; align-items:flex-start; justify-content:space-between; flex-wrap:wrap; gap:16px; margin-bottom:28px; }
+.splits-eyebrow { font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:0.12em; color:#22c55e; margin-bottom:6px; }
+.splits-title { font-size:26px; font-weight:900; color:#0f172a; letter-spacing:-0.02em; margin-bottom:6px; }
+.splits-desc { font-size:14px; color:#64748b; max-width:560px; line-height:1.6; }
+
+.splits-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:18px; margin-bottom:32px; }
+.split-card {
+  background:#ffffff; border:1.5px solid rgba(0,0,0,0.08);
+  border-radius:18px; overflow:hidden;
+  transition:transform .18s, box-shadow .18s;
+  cursor:pointer; box-shadow:0 1px 4px rgba(0,0,0,0.05);
+}
+.split-card:hover { transform:translateY(-3px); box-shadow:0 10px 28px rgba(0,0,0,0.09); }
+.split-card-header { padding:20px 22px 16px; position:relative; }
+.split-badge { display:inline-flex; align-items:center; gap:6px; padding:5px 12px; border-radius:999px; font-size:11px; font-weight:800; margin-bottom:12px; }
+.split-name { font-size:19px; font-weight:900; color:#0f172a; letter-spacing:-0.02em; margin-bottom:4px; }
+.split-tagline { font-size:12px; color:#64748b; font-weight:500; }
+.split-card-body { padding:0 22px 20px; }
+.split-schedule { display:flex; gap:5px; margin:14px 0; flex-wrap:wrap; }
+.split-day { padding:5px 10px; border-radius:8px; font-size:11px; font-weight:700; text-align:center; }
+.split-benefits { list-style:none; padding:0; margin:0; }
+.split-benefits li { display:flex; align-items:flex-start; gap:8px; padding:6px 0; font-size:13px; color:#374151; border-bottom:1px solid rgba(0,0,0,0.05); }
+.split-benefits li:last-child { border-bottom:none; }
+.split-check { color:#22c55e; font-size:13px; flex-shrink:0; margin-top:1px; }
+.split-best-for { margin-top:14px; padding:10px 14px; border-radius:10px; font-size:12px; }
+.split-best-label { font-weight:700; margin-bottom:2px; }
+
+/* ── Frequency Guide ── */
+.freq-guide { background:#ffffff; border:1.5px solid rgba(0,0,0,0.08); border-radius:18px; padding:28px; margin-top:24px; }
+.freq-title { font-size:17px; font-weight:800; color:#0f172a; margin-bottom:20px; }
+.freq-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); gap:12px; }
+.freq-item { text-align:center; padding:16px 12px; border-radius:12px; }
+.freq-days { font-size:28px; font-weight:900; line-height:1; margin-bottom:4px; }
+.freq-label { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.07em; margin-bottom:8px; }
+.freq-desc { font-size:11px; color:#64748b; line-height:1.5; }
+
+@@media (max-width:768px) {
+  .ex-wrap { padding:20px 16px 100px; }
+  .ex-hero { padding:24px 22px; border-radius:16px; }
+  .ex-hero-title { font-size:24px; }
+  .ex-grid { grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:12px; }
+  .ex-card-body { padding:14px 14px 10px; }
+  .ex-card-footer { padding:8px 14px 12px; }
+  .splits-grid { grid-template-columns:1fr; }
+  .freq-grid { grid-template-columns:repeat(2,1fr); }
+  .ex-hero-stats { gap:16px; }
+}
+@@media (max-width:480px) {
+  .ex-grid { grid-template-columns:1fr 1fr; }
+  .ex-hero-stats { gap:12px; }
+  .ex-hero-stat-num { font-size:20px; }
+}
 </style>
+
+<div class="ex-page">
+<div class="ex-wrap">
+
+  <!-- ── Hero Header ── -->
+  <div class="ex-hero">
+    <div class="ex-hero-tag">🏋️ @(ne?"व्यायाम पुस्तकालय":"Exercise Library")</div>
+    <div class="ex-hero-title">@(ne?"सबै व्यायाम एकै ठाउँमा":"Every Exercise, All in One Place")</div>
+    <div class="ex-hero-sub">@(ne?"फिल्टर गर्नुहोस्, खोज्नुहोस् र आफ्नो कसरत बनाउनुहोस्":"Filter by muscle group, search by name, and build your perfect workout")</div>
+    <div class="ex-hero-stats">
+      <div class="ex-hero-stat">
+        <div class="ex-hero-stat-num">@exercises.Count</div>
+        <div class="ex-hero-stat-lbl">@(ne?"व्यायाम":"Exercises")</div>
+      </div>
+      <div class="ex-hero-stat">
+        <div class="ex-hero-stat-num">@categories.Count()</div>
+        <div class="ex-hero-stat-lbl">@(ne?"मांसपेशी समूह":"Muscle Groups")</div>
+      </div>
+      <div class="ex-hero-stat">
+        <div class="ex-hero-stat-num">@exercises.Count(e => e.IsCompound)</div>
+        <div class="ex-hero-stat-lbl">@(ne?"यौगिक":"Compound")</div>
+      </div>
+      <div class="ex-hero-stat">
+        <div class="ex-hero-stat-num">3</div>
+        <div class="ex-hero-stat-lbl">@(ne?"कठिनाई स्तर":"Levels")</div>
+      </div>
+      @if (isAuth)
+      {
+      <a href="/Workout/Builder" style="margin-left:auto;align-self:flex-end;display:inline-flex;align-items:center;gap:8px;padding:11px 22px;background:#22c55e;color:#ffffff;font-weight:700;font-size:14px;border-radius:12px;text-decoration:none;box-shadow:0 4px 16px rgba(34,197,94,0.4)">
+        ✏️ @(ne?"कस्टम योजना":"Build Plan")
+      </a>
+      }
+    </div>
+  </div>
+
+  <!-- ── Search ── -->
+  <div class="ex-search-bar">
+    <div class="ex-search-wrap">
+      <span class="ex-search-icon">🔍</span>
+      <input type="text" id="exSearch" class="ex-search"
+             placeholder="@(ne?"व्यायाम खोज्नुहोस्...":"Search by name or muscle...")" />
+    </div>
+    <div style="display:flex;gap:6px;margin-left:auto">
+      <button class="ex-diff-btn" id="dAll" onclick="filterDiff('all',this)" style="background:linear-gradient(135deg,#22c55e,#16a34a);border-color:transparent;color:#fff">@(ne?"सबै":"All")</button>
+      <button class="ex-diff-btn" id="dBeg" onclick="filterDiff('beginner',this)">🟢 @(ne?"सुरुवाती":"Beginner")</button>
+      <button class="ex-diff-btn" id="dInt" onclick="filterDiff('intermediate',this)">🟡 @(ne?"मध्यम":"Inter.")</button>
+      <button class="ex-diff-btn" id="dAdv" onclick="filterDiff('advanced',this)">🔴 @(ne?"उन्नत":"Advanced")</button>
+    </div>
+  </div>
+
+  <!-- ── Category Filters ── -->
+  <div class="ex-filters">
+    <button class="ex-filter active" data-cat="all" onclick="filterEx(this)">
+      @(ne?"सबै":"All") <span class="ex-filter-count">@exercises.Count</span>
+    </button>
+    @foreach (var cat in categories)
+    {
+    var cnt = exercises.Count(e => e.Category == cat);
+    <button class="ex-filter" data-cat="@cat.ToLower()" onclick="filterEx(this)">
+      <span>@CatIcon(cat)</span> @cat <span class="ex-filter-count">@cnt</span>
+    </button>
+    }
+  </div>
+
+  <!-- ── Exercise Grid ── -->
+  <div class="ex-grid" id="exGrid">
+    @foreach (var ex in exercises)
+    {
+    var icon  = CatIcon(ex.Category);
+    var color = CatColor(ex.Category);
+    var bg    = CatBg(ex.Category);
+    <a href="/Exercise/Details/@ex.Id" class="ex-card"
+       data-cat="@ex.Category.ToLower()"
+       data-name="@ex.Name.ToLower() @(ex.NameNepali?.ToLower())"
+       data-diff="@ex.Difficulty.ToLower()">
+      <div class="ex-card-top" style="background:@color"></div>
+      <div class="ex-card-body">
+        <div class="ex-card-icon-row">
+          <div class="ex-card-icon" style="background:@bg">@icon</div>
+          @if (ex.IsCompound) {
+          <span class="ex-compound-badge">⚡ @(ne?"यौगिक":"Compound")</span>
+          }
+        </div>
+        <div class="ex-cat-label" style="color:@color">@ex.Category</div>
+        <div class="ex-name">@(ne && !string.IsNullOrEmpty(ex.NameNepali) ? ex.NameNepali : ex.Name)</div>
+        @if (!string.IsNullOrEmpty(ex.NameNepali)) {
+        <div class="ex-name-alt">@(ne ? ex.Name : ex.NameNepali)</div>
+        }
+        <div class="ex-tags">
+          <span class="ex-diff-tag" style="@(ex.Difficulty=="Beginner"?"background:#f0fdf4;color:#16a34a":ex.Difficulty=="Advanced"?"background:#fef2f2;color:#dc2626":"background:#fefce8;color:#92400e")">
+            @ex.Difficulty
+          </span>
+          @foreach (var m in ex.TargetMuscles.Take(2))
+          { <span class="ex-muscle-tag">@m</span> }
+        </div>
+      </div>
+      <div class="ex-card-footer">
+        <span class="ex-card-sets">@ex.DefaultSets×@ex.DefaultReps · @ex.RestSeconds s @(ne?"आराम":"rest")</span>
+        <span class="ex-card-arrow">→</span>
+      </div>
+    </a>
+    }
+  </div>
+
+  <div id="noResult" style="display:none;text-align:center;padding:80px 20px;color:#94a3b8">
+    <div style="font-size:52px;margin-bottom:14px">🔍</div>
+    <div style="font-size:16px;font-weight:700;margin-bottom:6px;color:#64748b">@(ne?"कुनै व्यायाम भेटिएन।":"No exercises found.")</div>
+    <div style="font-size:13px">@(ne?"फिल्टर हटाउनुहोस् र फेरि खोज्नुहोस्।":"Try removing a filter or searching a different term.")</div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!--  WORKOUT SPLITS GUIDE                                   -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <div class="splits-section">
+    <div class="splits-header">
+      <div>
+        <div class="splits-eyebrow">📚 @(ne?"व्यायाम मार्गदर्शिका":"Training Guide")</div>
+        <div class="splits-title">@(ne?"कसरत विभाजन बुझ्नुहोस्":"Understand Workout Splits")</div>
+        <div class="splits-desc">@(ne?"कुन split तपाईंको लागि उपयुक्त छ? लक्ष्य, उपलब्ध समय र अनुभव अनुसार सही योजना छान्नुहोस्।":"Which split is right for you? Learn the differences, benefits, and who each program is best for.")</div>
+      </div>
+    </div>
+
+    <div class="splits-grid">
+
+      <!-- Full Body -->
+      <div class="split-card" onclick="toggleSplit('fullbody')">
+        <div class="split-card-header">
+          <div class="split-badge" style="background:#f0fdf4;color:#16a34a;border:1px solid rgba(34,197,94,0.2)">⚡ @(ne?"पूर्ण शरीर":"Full Body") · @(ne?"सुरुवाती":"Beginner")</div>
+          <div class="split-name">@(ne?"पूर्ण शरीर विभाजन":"Full Body Split")</div>
+          <div class="split-tagline">@(ne?"हरेक सत्रमा सबै मांसपेशी काम गर्नु":"Train every muscle group every session")</div>
+          <div class="split-schedule" style="margin-top:14px">
+            @foreach (var d in new[]{"Mon","Tue","Wed","Thu","Fri","Sat","Sun"})
+            {
+            bool isOn = d is "Mon" or "Wed" or "Fri";
+            <div class="split-day" style="background:@(isOn?"#f0fdf4":"#f8fafc");color:@(isOn?"#16a34a":"#94a3b8");border:1px solid @(isOn?"rgba(34,197,94,0.3)":"rgba(0,0,0,0.07)")">@d</div>
+            }
+          </div>
+        </div>
+        <div class="split-card-body" id="split-fullbody">
+          <ul class="split-benefits">
+            <li><span class="split-check">✓</span>@(ne?"हप्तामा ३ दिन — सर्वोत्तम पुनःप्राप्ति समय":"3 days/week — maximum recovery time")</li>
+            <li><span class="split-check">✓</span>@(ne?"सुरुवाती र व्यस्त मानिसको लागि आदर्श":"Ideal for beginners and busy schedules")</li>
+            <li><span class="split-check">✓</span>@(ne?"प्रत्येक मांसपेशी हप्तामा ३ पटक काम पाउँछ":"Each muscle trained 3× per week for rapid strength")</li>
+            <li><span class="split-check">✓</span>@(ne?"Squat, Deadlift, Bench — मुख्य यौगिक व्यायाम":"Focus on squat, deadlift, bench, row compounds")</li>
+          </ul>
+          <div class="split-best-for" style="background:#f0fdf4;border:1px solid rgba(34,197,94,0.15)">
+            <div class="split-best-label" style="color:#16a34a">@(ne?"सबैभन्दा उपयुक्त:":"Best for:")</div>
+            <div style="font-size:12px;color:#374151">@(ne?"नयाँ प्रशिक्षार्थी · हप्तामा ३ दिन मात्र समय छ · तौल घटाउनु छ":"Beginners · Only 3 days/week · Weight loss goal")</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Upper / Lower -->
+      <div class="split-card" onclick="toggleSplit('upperlower')">
+        <div class="split-card-header">
+          <div class="split-badge" style="background:#eff6ff;color:#2563eb;border:1px solid rgba(37,99,235,0.2)">💪 @(ne?"माथि/तल":"Upper/Lower") · @(ne?"मध्यम":"Intermediate")</div>
+          <div class="split-name">@(ne?"माथि / तल विभाजन":"Upper / Lower Split")</div>
+          <div class="split-tagline">@(ne?"माथिल्लो र तल्लो शरीर छुट्टाछुट्टै":"Alternate upper & lower body days")</div>
+          <div class="split-schedule" style="margin-top:14px">
+            @foreach (var d in new[]{"Mon","Tue","Wed","Thu","Fri","Sat","Sun"})
+            {
+            bool isOn = d is "Mon" or "Tue" or "Thu" or "Fri";
+            string label = d is "Mon" or "Thu" ? "U" : d is "Tue" or "Fri" ? "L" : "R";
+            <div class="split-day" style="background:@(isOn?"#eff6ff":"#f8fafc");color:@(isOn?"#2563eb":"#94a3b8");border:1px solid @(isOn?"rgba(37,99,235,0.25)":"rgba(0,0,0,0.07)")">@(isOn?label:d)</div>
+            }
+          </div>
+        </div>
+        <div class="split-card-body" id="split-upperlower">
+          <ul class="split-benefits">
+            <li><span class="split-check">✓</span>@(ne?"हप्तामा ४ दिन — उत्तम सन्तुलन":"4 days/week — perfect balance of volume & recovery")</li>
+            <li><span class="split-check">✓</span>@(ne?"प्रत्येक मांसपेशी हप्तामा २ पटक":"Each muscle hit 2× per week — great for hypertrophy")</li>
+            <li><span class="split-check">✓</span>@(ne?"शक्ति र मांसपेशी वृद्धि दुवैको लागि":"Works for both strength and muscle building")</li>
+            <li><span class="split-check">✓</span>@(ne?"लचिलो — दिन सार्न सकिन्छ":"Flexible scheduling — easy to rearrange days")</li>
+          </ul>
+          <div class="split-best-for" style="background:#eff6ff;border:1px solid rgba(37,99,235,0.15)">
+            <div class="split-best-label" style="color:#2563eb">@(ne?"सबैभन्दा उपयुक्त:":"Best for:")</div>
+            <div style="font-size:12px;color:#374151">@(ne?"मध्यम प्रशिक्षार्थी · हप्तामा ४ दिन · शक्ति र आकार बढाउन":"Intermediate · 4 days/week · Strength & size goals")</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PPL -->
+      <div class="split-card" onclick="toggleSplit('ppl')">
+        <div class="split-card-header">
+          <div class="split-badge" style="background:#faf5ff;color:#7c3aed;border:1px solid rgba(124,58,237,0.2)">🔥 PPL · @(ne?"उन्नत":"Advanced")</div>
+          <div class="split-name">@(ne?"धक्का / तान्नु / खुट्टा":"Push / Pull / Legs")</div>
+          <div class="split-tagline">@(ne?"आन्दोलन अनुसार मांसपेशी विभाजन":"Group muscles by movement pattern")</div>
+          <div class="split-schedule" style="margin-top:14px">
+            @foreach (var (d,lbl) in new[]{("Mon","P"),("Tue","Pu"),("Wed","L"),("Thu","P"),("Fri","Pu"),("Sat","L"),("Sun","R")})
+            {
+            bool isOn = d is not "Sun";
+            string clr = lbl=="P"?"#f87171":lbl=="Pu"?"#60a5fa":lbl=="L"?"#4ade80":"#94a3b8";
+            string bg2 = lbl=="P"?"#fff1f1":lbl=="Pu"?"#eff6ff":lbl=="L"?"#f0fdf4":"#f8fafc";
+            <div class="split-day" style="background:@bg2;color:@clr;border:1px solid @(clr)44">@lbl</div>
+            }
+          </div>
+        </div>
+        <div class="split-card-body" id="split-ppl">
+          <ul class="split-benefits">
+            <li><span class="split-check">✓</span>@(ne?"हप्तामा ६ दिन — उच्च भार":"6 days/week — maximum training volume")</li>
+            <li><span class="split-check">✓</span>@(ne?"Chest/Shoulders/Triceps एकै दिन":"Push: Chest, Shoulders, Triceps together")</li>
+            <li><span class="split-check">✓</span>@(ne?"Back/Biceps/Rear delt एकै दिन":"Pull: Back, Biceps, Rear delts together")</li>
+            <li><span class="split-check">✓</span>@(ne?"Quads/Hamstrings/Glutes/Calves एकै दिन":"Legs: Quads, Hamstrings, Glutes, Calves")</li>
+          </ul>
+          <div class="split-best-for" style="background:#faf5ff;border:1px solid rgba(124,58,237,0.15)">
+            <div class="split-best-label" style="color:#7c3aed">@(ne?"सबैभन्दा उपयुक्त:":"Best for:")</div>
+            <div style="font-size:12px;color:#374151">@(ne?"उन्नत प्रशिक्षार्थी · हप्तामा ५–६ दिन · मांसपेशी बढाउन":"Advanced · 5-6 days/week · Maximum muscle growth")</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bro Split -->
+      <div class="split-card" onclick="toggleSplit('bro')">
+        <div class="split-card-header">
+          <div class="split-badge" style="background:#fff7ed;color:#c2410c;border:1px solid rgba(234,88,12,0.2)">🏋️ @(ne?"परम्परागत":"Classic") · @(ne?"मध्यम-उन्नत":"Int-Adv")</div>
+          <div class="split-name">@(ne?"एक मांसपेशी प्रति दिन":"Bro Split (1 Muscle/Day)")</div>
+          <div class="split-tagline">@(ne?"हरेक दिन एउटा मांसपेशी समूहमा ध्यान":"Dedicate each day to one muscle group")</div>
+          <div class="split-schedule" style="margin-top:14px">
+            @foreach (var (d,lbl,clr,bg2) in new[]{
+              ("Mon","CH","#f87171","#fff1f1"),("Tue","BK","#60a5fa","#eff6ff"),
+              ("Wed","SH","#a78bfa","#faf5ff"),("Thu","AR","#f5c542","#fefce8"),
+              ("Fri","LG","#4ade80","#f0fdf4"),("Sat","CO","#fb923c","#fff7ed"),
+              ("Sun","R","#94a3b8","#f8fafc")})
+            {
+            <div class="split-day" style="background:@bg2;color:@clr;border:1px solid @(clr)44;font-size:9px">@lbl</div>
+            }
+          </div>
+        </div>
+        <div class="split-card-body" id="split-bro">
+          <ul class="split-benefits">
+            <li><span class="split-check">✓</span>@(ne?"हरेक मांसपेशीमा अधिकतम ध्यान":"Maximum focus and volume per muscle")</li>
+            <li><span class="split-check">✓</span>@(ne?"७ दिन मध्ये ५–६ दिन प्रशिक्षण":"5-6 training days per week")</li>
+            <li><span class="split-check">✓</span>@(ne?"मांसपेशीलाई ७ दिनको पुनःप्राप्ति":"Full 7-day recovery per muscle — less soreness")</li>
+            <li><span class="split-check">✓</span>@(ne?"जिम उत्साही र bodybuilder को लागि":"Popular with gym enthusiasts & bodybuilders")</li>
+          </ul>
+          <div class="split-best-for" style="background:#fff7ed;border:1px solid rgba(234,88,12,0.15)">
+            <div class="split-best-label" style="color:#c2410c">@(ne?"सबैभन्दा उपयुक्त:":"Best for:")</div>
+            <div style="font-size:12px;color:#374151">@(ne?"अनुभवी · हप्तामा ५-६ दिन समय छ · Bodybuilding लक्ष्य":"Experienced · 5-6 days/week · Bodybuilding aesthetic goals")</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- HIIT/Cardio -->
+      <div class="split-card" onclick="toggleSplit('hiit')">
+        <div class="split-card-header">
+          <div class="split-badge" style="background:#ecfdf5;color:#059669;border:1px solid rgba(5,150,105,0.2)">⚡ HIIT/Cardio · @(ne?"सबै स्तर":"All Levels")</div>
+          <div class="split-name">@(ne?"HIIT र कार्डियो विभाजन":"HIIT & Cardio Split")</div>
+          <div class="split-tagline">@(ne?"उच्च-तीव्रता र कार्डियो मिश्रण":"Mix of high-intensity and steady-state cardio")</div>
+          <div class="split-schedule" style="margin-top:14px">
+            @foreach (var (d,lbl,clr,bg2) in new[]{
+              ("Mon","HI","#f87171","#fef2f2"),("Tue","SS","#4ade80","#f0fdf4"),
+              ("Wed","R","#94a3b8","#f8fafc"),("Thu","HI","#f87171","#fef2f2"),
+              ("Fri","SS","#4ade80","#f0fdf4"),("Sat","HI","#f87171","#fef2f2"),
+              ("Sun","R","#94a3b8","#f8fafc")})
+            {
+            <div class="split-day" style="background:@bg2;color:@clr;border:1px solid @(clr)44;font-size:9px">@lbl</div>
+            }
+          </div>
+        </div>
+        <div class="split-card-body" id="split-hiit">
+          <ul class="split-benefits">
+            <li><span class="split-check">✓</span>@(ne?"क्यालोरी जलाउनमा सबैभन्दा प्रभावकारी":"Most effective for calorie burning & fat loss")</li>
+            <li><span class="split-check">✓</span>@(ne?"चयापचय घण्टौं उच्च रहन्छ (afterburn)":"Metabolism stays elevated for hours (afterburn)")</li>
+            <li><span class="split-check">✓</span>@(ne?"कम समयमा बढी फाइदा — २०–३० मिनेट काफी":"More results in less time — 20-30 min sessions")</li>
+            <li><span class="split-check">✓</span>@(ne?"हृदय स्वास्थ्य र सहनशीलता सुधार":"Improves cardiovascular health & endurance")</li>
+          </ul>
+          <div class="split-best-for" style="background:#ecfdf5;border:1px solid rgba(5,150,105,0.15)">
+            <div class="split-best-label" style="color:#059669">@(ne?"सबैभन्दा उपयुक्त:":"Best for:")</div>
+            <div style="font-size:12px;color:#374151">@(ne?"तौल घटाउन · हृदय स्वास्थ्य · समय कम छ":"Weight loss · Heart health · Short on time")</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Strength Powerlifting -->
+      <div class="split-card" onclick="toggleSplit('strength')">
+        <div class="split-card-header">
+          <div class="split-badge" style="background:#fef2f2;color:#dc2626;border:1px solid rgba(220,38,38,0.2)">🏆 @(ne?"शक्ति":"Strength") · @(ne?"मध्यम-उन्नत":"Int-Adv")</div>
+          <div class="split-name">@(ne?"शक्ति / Powerlifting":"Strength / Powerlifting")</div>
+          <div class="split-tagline">@(ne?"अधिकतम शक्ति र भार उठाउन":"Maximize raw strength and 1-rep max lifts")</div>
+          <div class="split-schedule" style="margin-top:14px">
+            @foreach (var (d,lbl,clr,bg2) in new[]{
+              ("Mon","SQ","#ef4444","#fef2f2"),("Tue","R","#94a3b8","#f8fafc"),
+              ("Wed","BP","#f97316","#fff7ed"),("Thu","R","#94a3b8","#f8fafc"),
+              ("Fri","DL","#a78bfa","#faf5ff"),("Sat","AC","#60a5fa","#eff6ff"),
+              ("Sun","R","#94a3b8","#f8fafc")})
+            {
+            <div class="split-day" style="background:@bg2;color:@clr;border:1px solid @(clr)44;font-size:9px">@lbl</div>
+            }
+          </div>
+        </div>
+        <div class="split-card-body" id="split-strength">
+          <ul class="split-benefits">
+            <li><span class="split-check">✓</span>@(ne?"Squat, Bench, Deadlift मा ध्यान":"Focus on the 3 big lifts: squat, bench, deadlift")</li>
+            <li><span class="split-check">✓</span>@(ne?"कम दोहोर्याइ, उच्च भार (१–५ rep)":"Low reps, heavy weight (1-5 rep range)")</li>
+            <li><span class="split-check">✓</span>@(ne?"CNS पुनःप्राप्तिको लागि बढी आराम":"More rest days for CNS recovery")</li>
+            <li><span class="split-check">✓</span>@(ne?"हड्डी घनत्व र जोर्नी शक्ति बढाउँछ":"Increases bone density and joint strength")</li>
+          </ul>
+          <div class="split-best-for" style="background:#fef2f2;border:1px solid rgba(220,38,38,0.15)">
+            <div class="split-best-label" style="color:#dc2626">@(ne?"सबैभन्दा उपयुक्त:":"Best for:")</div>
+            <div style="font-size:12px;color:#374151">@(ne?"शक्ति बढाउन · Powerlifting · Strength sport":"Strength goals · Powerlifting · Athletic sports performance")</div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /splits-grid -->
+
+    <!-- ── Weekly Frequency Guide ── -->
+    <div class="freq-guide">
+      <div class="freq-title">📅 @(ne?"हप्तामा कति दिन प्रशिक्षण गर्ने?":"How Many Days Per Week Should You Train?")</div>
+      <div class="freq-grid">
+        <div class="freq-item" style="background:#f0fdf4;border-radius:12px">
+          <div class="freq-days" style="color:#16a34a">2–3</div>
+          <div class="freq-label" style="color:#16a34a">@(ne?"सुरुवाती":"Beginner")</div>
+          <div class="freq-desc">@(ne?"Full body · पुनःप्राप्तिमा ध्यान":"Full body · Prioritize recovery")</div>
+        </div>
+        <div class="freq-item" style="background:#fefce8;border-radius:12px">
+          <div class="freq-days" style="color:#92400e">3–4</div>
+          <div class="freq-label" style="color:#92400e">@(ne?"मध्यम":"Intermediate")</div>
+          <div class="freq-desc">@(ne?"Upper/Lower · PPL सुरु गर्न":"Upper/Lower · Start PPL")</div>
+        </div>
+        <div class="freq-item" style="background:#fff7ed;border-radius:12px">
+          <div class="freq-days" style="color:#c2410c">4–5</div>
+          <div class="freq-label" style="color:#c2410c">@(ne?"अनुभवी":"Experienced")</div>
+          <div class="freq-desc">@(ne?"PPL · Bro Split · शक्ति":"PPL · Bro split · Strength")</div>
+        </div>
+        <div class="freq-item" style="background:#faf5ff;border-radius:12px">
+          <div class="freq-days" style="color:#7c3aed">5–6</div>
+          <div class="freq-label" style="color:#7c3aed">@(ne?"उन्नत":"Advanced")</div>
+          <div class="freq-desc">@(ne?"PPL × 2 · Specialization":"PPL ×2 · Specialization")</div>
+        </div>
+      </div>
+
+      <!-- Recovery note -->
+      <div style="margin-top:20px;padding:14px 18px;background:#f0fdf4;border-radius:12px;border:1px solid rgba(34,197,94,0.18);display:flex;align-items:flex-start;gap:12px">
+        <span style="font-size:20px;flex-shrink:0">💡</span>
+        <div>
+          <div style="font-size:13px;font-weight:700;color:#0f172a;margin-bottom:3px">@(ne?"महत्त्वपूर्ण — पुनःप्राप्ति नै प्रशिक्षण हो!":"Remember — Recovery IS Training!")</div>
+          <div style="font-size:12px;color:#475569;line-height:1.6">@(ne?"मांसपेशी जिममा होइन, जिम बाहिर बन्छ। ७–९ घण्टा सुत्नुहोस्, प्रोटिन खानुहोस् र आराम दिनहरूमा पनि सक्रिय रहनुहोस् (हिड्नु, स्ट्रेचिङ)।":"Muscles don't grow in the gym — they grow during rest. Sleep 7-9 hours, eat enough protein (1.6-2.2g/kg), and stay lightly active on rest days (walk, stretch).")</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CTA for guests -->
+    @if (!isAuth)
+    {
+    <div style="margin-top:24px;text-align:center;padding:40px 24px;background:linear-gradient(135deg,#0f1f0f,#1a3a1a,#16a34a);border-radius:20px;position:relative;overflow:hidden">
+      <div style="position:relative;z-index:1">
+        <div style="font-size:13px;font-weight:700;color:#86efac;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:10px">🚀 @(ne?"व्यक्तिगत योजना":"Personalized Plan")</div>
+        <div style="font-size:22px;font-weight:900;color:#f0fdf4;margin-bottom:8px;letter-spacing:-0.02em">@(ne?"आफ्नो कसरत योजना पाउनुहोस्":"Get Your Custom Workout Plan")</div>
+        <div style="font-size:14px;color:rgba(240,253,244,0.65);margin-bottom:24px">@(ne?"दर्ता गरेर आफ्नो लक्ष्य, स्तर र उपलब्ध समय अनुसार व्यक्तिगत योजना पाउनुहोस्।":"Register to get a plan matched to your goal, experience level, and available days.")</div>
+        <a href="/Account/Register" style="display:inline-flex;align-items:center;gap:8px;padding:13px 32px;background:#22c55e;color:#ffffff;font-weight:700;font-size:15px;border-radius:12px;text-decoration:none;box-shadow:0 4px 20px rgba(34,197,94,0.45)">
+          @(ne?"निःशुल्क दर्ता →":"Get Started Free →")
+        </a>
+      </div>
+    </div>
+    }
+
+  </div><!-- /splits-section -->
+
+</div>
+</div>
 
 @section Scripts {
 <script>
+// ── Category filter ──
 function filterEx(btn) {
-    document.querySelectorAll('.ex-filter').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    applyFilter();
+  document.querySelectorAll('.ex-filter').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  applyFilter();
 }
+// ── Difficulty filter ──
+let activeDiff = 'all';
+function filterDiff(d, btn) {
+  activeDiff = d;
+  document.querySelectorAll('.ex-diff-btn').forEach(b => {
+    b.style.background = ''; b.style.borderColor = ''; b.style.color = '';
+  });
+  btn.style.background = 'linear-gradient(135deg,#22c55e,#16a34a)';
+  btn.style.borderColor = 'transparent';
+  btn.style.color = '#fff';
+  applyFilter();
+}
+// ── Search ──
 const searchEl = document.getElementById('exSearch');
 if (searchEl) searchEl.addEventListener('input', applyFilter);
+
 function applyFilter() {
-    const cat = document.querySelector('.ex-filter.active')?.dataset.cat ?? 'all';
-    const q = (searchEl?.value ?? '').toLowerCase();
-    let count = 0;
-    document.querySelectorAll('.ex-card2').forEach(card => {
-        const matchCat = cat === 'all' || card.dataset.cat === cat;
-        const matchQ = !q || card.dataset.name.includes(q);
-        const show = matchCat && matchQ;
-        card.style.display = show ? '' : 'none';
-        if (show) count++;
-    });
-    document.getElementById('noResult').style.display = count === 0 ? 'block' : 'none';
+  const cat = document.querySelector('.ex-filter.active')?.dataset.cat ?? 'all';
+  const q   = (searchEl?.value ?? '').toLowerCase();
+  let count = 0;
+  document.querySelectorAll('.ex-card').forEach(card => {
+    const matchCat  = cat === 'all' || card.dataset.cat === cat;
+    const matchQ    = !q || card.dataset.name.includes(q);
+    const matchDiff = activeDiff === 'all' || card.dataset.diff === activeDiff;
+    const show = matchCat && matchQ && matchDiff;
+    card.style.display = show ? '' : 'none';
+    if (show) count++;
+  });
+  document.getElementById('noResult').style.display = count === 0 ? 'block' : 'none';
+}
+
+// ── Split card toggle ──
+function toggleSplit(id) {
+  // all splits are always visible — card click can expand detail if needed
+  // For now just a visual ripple / no-collapse behavior
 }
 </script>
 }
