@@ -61,8 +61,9 @@ public class WorkoutApiExercise
     public List<string> Instructions { get; set; } = new();
     public List<string> Images     { get; set; } = new();
 
-    // Direct image URL (first image from the GitHub repo)
+    // Direct image URLs (frame 0 and frame 1 for animation)
     public string? ImageUrl        { get; set; }
+    public string? ImageUrl2       { get; set; }
 }
 
 // ── Service ───────────────────────────────────────────────────────────────────
@@ -136,7 +137,8 @@ public class WorkoutApiService
             ? new List<WorkoutApiType> { new() { Code = "POLYARTICULAR", Name = "Compound" } }
             : new List<WorkoutApiType>();
 
-        var imageUrl = src.Images.Count > 0 ? ImgBase + src.Images[0] : null;
+        var imageUrl  = src.Images.Count > 0 ? ImgBase + src.Images[0] : null;
+        var imageUrl2 = src.Images.Count > 1 ? ImgBase + src.Images[1] : null;
 
         return new WorkoutApiExercise
         {
@@ -154,6 +156,7 @@ public class WorkoutApiService
             Instructions     = src.Instructions,
             Images           = src.Images,
             ImageUrl         = imageUrl,
+            ImageUrl2        = imageUrl2,
         };
     }
 
@@ -196,6 +199,7 @@ public class WorkoutApiService
             DefaultReps   = isCompound ? "6-10" : "10-15",
             RestSeconds   = isCompound ? 90 : 60,
             ImageUrl      = src.ImageUrl,
+            ImageUrl2     = src.ImageUrl2,
         };
     }
 

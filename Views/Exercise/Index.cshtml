@@ -266,13 +266,27 @@
       <div class="ex-card-top" style="background:@color"></div>
       @{
         bool hasImg = !string.IsNullOrEmpty(ex.ImageUrl);
+        bool hasImg2 = !string.IsNullOrEmpty(ex.ImageUrl2);
       }
       @if (hasImg)
       {
-      <div style="height:110px;background:linear-gradient(135deg,#f8faf8,#f0fdf4);display:flex;align-items:center;justify-content:center;overflow:hidden;border-radius:16px 16px 0 0;border-bottom:1px solid rgba(0,0,0,0.05)">
-        <img src="@ex.ImageUrl" alt="@ex.Name"
-             style="max-height:100px;max-width:100%;object-fit:contain;padding:6px;filter:drop-shadow(0 2px 6px rgba(0,0,0,0.1))"
+      <div class="ex-anim-wrap" style="height:130px;background:linear-gradient(135deg,#f8faf8,#f0fdf4);display:flex;align-items:center;justify-content:center;overflow:hidden;border-radius:16px 16px 0 0;border-bottom:1px solid rgba(0,0,0,0.05);position:relative">
+        @* Frame A (start position) *@
+        <img class="ex-frame ex-frame-a"
+             src="@ex.ImageUrl"
+             alt="@ex.Name"
+             data-frame-b="@ex.ImageUrl2"
+             style="max-height:120px;max-width:100%;object-fit:contain;padding:6px;position:absolute;transition:opacity 0.3s ease"
              onerror="this.parentElement.style.display='none'" />
+        @* Frame B (end position) — hidden initially *@
+        @if (hasImg2)
+        {
+        <img class="ex-frame ex-frame-b"
+             src="@ex.ImageUrl2"
+             alt="@ex.Name end"
+             style="max-height:120px;max-width:100%;object-fit:contain;padding:6px;position:absolute;opacity:0;transition:opacity 0.3s ease" />
+        }
+        <div style="position:absolute;bottom:4px;right:6px;background:rgba(22,163,74,0.85);color:#fff;font-size:9px;font-weight:700;padding:2px 6px;border-radius:999px">▶ DEMO</div>
       </div>
       }
       <div class="ex-card-body">
@@ -623,7 +637,60 @@ function applyFilter() {
 // ── Split card toggle ──
 function toggleSplit(id) {
   // all splits are always visible — card click can expand detail if needed
-  // For now just a visual ripple / no-collapse behavior
 }
+
+// ── Exercise animation: alternate between frame A and frame B ──
+(function() {
+  // Animate cards that are in the viewport (IntersectionObserver for performance)
+  const animCards = new Map(); // card → {a, b, timer, showing}
+
+  function startAnim(wrap) {
+    const a = wrap.querySelector('.ex-frame-a');
+    const b = wrap.querySelector('.ex-frame-b');
+    if (!a || !b) return;
+    if (animCards.has(wrap)) return; // already animating
+    let showingA = true;
+    const timer = setInterval(() => {
+      if (showingA) {
+        a.style.opacity = '0';
+        b.style.opacity = '1';
+      } else {
+        a.style.opacity = '1';
+        b.style.opacity = '0';
+      }
+      showingA = !showingA;
+    }, 700); // switch every 700ms
+    animCards.set(wrap, timer);
+  }
+
+  function stopAnim(wrap) {
+    const timer = animCards.get(wrap);
+    if (timer) { clearInterval(timer); animCards.delete(wrap); }
+    const a = wrap.querySelector('.ex-frame-a');
+    const b = wrap.querySelector('.ex-frame-b');
+    if (a) a.style.opacity = '1';
+    if (b) b.style.opacity = '0';
+  }
+
+  // Start on hover
+  document.querySelectorAll('.ex-anim-wrap').forEach(wrap => {
+    const card = wrap.closest('.ex-card');
+    if (!card) return;
+    card.addEventListener('mouseenter', () => startAnim(wrap));
+    card.addEventListener('mouseleave', () => stopAnim(wrap));
+  });
+
+  // Auto-animate visible cards (scroll into view triggers it)
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      const wrap = e.target.querySelector('.ex-anim-wrap');
+      if (!wrap) return;
+      if (e.isIntersecting) startAnim(wrap);
+      else stopAnim(wrap);
+    });
+  }, { threshold: 0.3 });
+
+  document.querySelectorAll('.ex-card').forEach(card => observer.observe(card));
+})();
 </script>
 }

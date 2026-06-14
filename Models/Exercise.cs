@@ -16,7 +16,8 @@ public class Exercise
     public int DefaultSets { get; set; } = 3;
     public string DefaultReps { get; set; } = "10-12";
     public int RestSeconds { get; set; } = 60;
-    public string ImageUrl { get; set; } = string.Empty;
+    public string ImageUrl  { get; set; } = string.Empty;
+    public string ImageUrl2 { get; set; } = string.Empty; // second frame for animation
     public string VideoUrl { get; set; } = string.Empty;
     public bool IsCompound { get; set; } = false;
     public List<string> Equipment { get; set; } = new();
