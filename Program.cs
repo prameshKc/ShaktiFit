@@ -9,18 +9,22 @@ builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
 builder.Services.AddControllersWithViews();
 builder.Services.AddHttpClient(); // for EmailService (Brevo API)
 
-// Google OAuth
+// Google OAuth — DefaultScheme only (no global DefaultChallengeScheme to avoid redirect loops)
 builder.Services.AddAuthentication(options =>
 {
-    options.DefaultScheme  = "Cookies";
-    options.DefaultChallengeScheme = "Google";
+    options.DefaultScheme = "Cookies";
 })
-.AddCookie("Cookies")
+.AddCookie("Cookies", o =>
+{
+    o.Cookie.Name = "ShaktiFit.OAuth";
+    o.ExpireTimeSpan = TimeSpan.FromMinutes(10); // short-lived, just for OAuth handshake
+})
 .AddGoogle("Google", options =>
 {
     options.ClientId     = builder.Configuration["Google:ClientId"]     ?? "";
     options.ClientSecret = builder.Configuration["Google:ClientSecret"] ?? "";
     options.CallbackPath = "/signin-google";
+    options.SignInScheme = "Cookies"; // store Google result in the temp cookie
     options.Scope.Add("email");
     options.Scope.Add("profile");
 });
