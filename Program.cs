@@ -57,14 +57,10 @@ builder.Services.AddScoped<ActivityService>();
 builder.Services.AddSingleton<EmailService>();
 builder.Services.AddHostedService<WorkoutReminderService>();
 
-// WorkoutAPI integration
-var workoutApiBase = builder.Configuration["WorkoutApi:BaseUrl"] ?? "https://api.workoutapi.com";
-var workoutApiKey  = builder.Configuration["WorkoutApi:ApiKey"] ?? "";
+// Free exercise DB (github.com/yuhonas/free-exercise-db) — no API key needed
 builder.Services.AddHttpClient<WorkoutApiService>(client =>
 {
-    client.BaseAddress = new Uri(workoutApiBase);
-    client.DefaultRequestHeaders.Add("x-api-key", workoutApiKey);
-    client.Timeout = TimeSpan.FromSeconds(15);
+    client.Timeout = TimeSpan.FromSeconds(30);
 });
 
 var app = builder.Build();

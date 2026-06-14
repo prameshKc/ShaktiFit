@@ -1,4 +1,3 @@
-using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using FitForgeAI.Models;
@@ -6,50 +5,82 @@ using Microsoft.Extensions.Caching.Memory;
 
 namespace FitForgeAI.Services;
 
-// ── API response models ──────────────────────────────────────────────────────
+// ── free-exercise-db models (github.com/yuhonas/free-exercise-db) ─────────────
 
 public class WorkoutApiMuscle
 {
-    [JsonPropertyName("id")]   public string Id   { get; set; } = "";
-    [JsonPropertyName("code")] public string Code { get; set; } = "";
-    [JsonPropertyName("name")] public string Name { get; set; } = "";
-    [JsonPropertyName("color")] public string Color { get; set; } = "";
+    public string Id   { get; set; } = "";
+    public string Code { get; set; } = "";
+    public string Name { get; set; } = "";
+    public string Color { get; set; } = "";
 }
 
 public class WorkoutApiType
 {
-    [JsonPropertyName("id")]   public string Id   { get; set; } = "";
-    [JsonPropertyName("code")] public string Code { get; set; } = "";
-    [JsonPropertyName("name")] public string Name { get; set; } = "";
+    public string Id   { get; set; } = "";
+    public string Code { get; set; } = "";
+    public string Name { get; set; } = "";
 }
 
 public class WorkoutApiCategory
 {
-    [JsonPropertyName("id")]   public string Id   { get; set; } = "";
-    [JsonPropertyName("code")] public string Code { get; set; } = "";
-    [JsonPropertyName("name")] public string Name { get; set; } = "";
+    public string Id   { get; set; } = "";
+    public string Code { get; set; } = "";
+    public string Name { get; set; } = "";
 }
 
-public class WorkoutApiExercise
+public class FreeExerciseDbEntry
 {
     [JsonPropertyName("id")]               public string Id               { get; set; } = "";
-    [JsonPropertyName("code")]             public string Code             { get; set; } = "";
     [JsonPropertyName("name")]             public string Name             { get; set; } = "";
-    [JsonPropertyName("description")]      public string Description      { get; set; } = "";
-    [JsonPropertyName("primaryMuscles")]   public List<WorkoutApiMuscle>   PrimaryMuscles   { get; set; } = new();
-    [JsonPropertyName("secondaryMuscles")] public List<WorkoutApiMuscle>   SecondaryMuscles { get; set; } = new();
-    [JsonPropertyName("types")]            public List<WorkoutApiType>     Types            { get; set; } = new();
-    [JsonPropertyName("categories")]       public List<WorkoutApiCategory> Categories       { get; set; } = new();
+    [JsonPropertyName("force")]            public string? Force           { get; set; }
+    [JsonPropertyName("level")]            public string Level            { get; set; } = "beginner";
+    [JsonPropertyName("mechanic")]         public string? Mechanic        { get; set; }
+    [JsonPropertyName("equipment")]        public string? Equipment       { get; set; }
+    [JsonPropertyName("primaryMuscles")]   public List<string> PrimaryMuscles   { get; set; } = new();
+    [JsonPropertyName("secondaryMuscles")] public List<string> SecondaryMuscles { get; set; } = new();
+    [JsonPropertyName("instructions")]     public List<string> Instructions     { get; set; } = new();
+    [JsonPropertyName("category")]         public string Category         { get; set; } = "";
+    [JsonPropertyName("images")]           public List<string> Images     { get; set; } = new();
 }
 
-// ── Service ──────────────────────────────────────────────────────────────────
+// Keep this so ExerciseController.Details can store it in ViewBag without changes
+public class WorkoutApiExercise
+{
+    public string Id               { get; set; } = "";
+    public string Code             { get; set; } = "";
+    public string Name             { get; set; } = "";
+    public string Description      { get; set; } = "";
+    public List<WorkoutApiMuscle>   PrimaryMuscles   { get; set; } = new();
+    public List<WorkoutApiMuscle>   SecondaryMuscles { get; set; } = new();
+    public List<WorkoutApiType>     Types            { get; set; } = new();
+    public List<WorkoutApiCategory> Categories       { get; set; } = new();
+    // Extended fields from free-exercise-db
+    public string Level            { get; set; } = "beginner";
+    public string? Equipment       { get; set; }
+    public List<string> Instructions { get; set; } = new();
+    public List<string> Images     { get; set; } = new();
+
+    // Direct image URL (first image from the GitHub repo)
+    public string? ImageUrl        { get; set; }
+}
+
+// ── Service ───────────────────────────────────────────────────────────────────
 
 public class WorkoutApiService
 {
     private readonly HttpClient _http;
     private readonly IMemoryCache _cache;
-    private const string CacheKeyAll = "workout_api_all";
-    private static readonly TimeSpan CacheDuration = TimeSpan.FromHours(24);
+    private const string CacheKeyAll = "free_exercise_db_all";
+    private static readonly TimeSpan CacheDuration = TimeSpan.FromHours(48);
+
+    // Raw JSON from the free exercise DB
+    private const string JsonUrl =
+        "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/dist/exercises.json";
+
+    // Base URL for images
+    private const string ImgBase =
+        "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/";
 
     private static readonly JsonSerializerOptions JsonOpts = new()
     {
@@ -62,7 +93,7 @@ public class WorkoutApiService
         _cache = cache;
     }
 
-    // ── Fetch all exercises (cached 24 h) ────────────────────────────────────
+    // ── Fetch all exercises (cached 48 h) ────────────────────────────────────
     public async Task<List<WorkoutApiExercise>> GetExercisesAsync()
     {
         if (_cache.TryGetValue(CacheKeyAll, out List<WorkoutApiExercise>? cached) && cached != null)
@@ -70,10 +101,11 @@ public class WorkoutApiService
 
         try
         {
-            var json = await _http.GetStringAsync("/exercises");
-            var list = JsonSerializer.Deserialize<List<WorkoutApiExercise>>(json, JsonOpts)
-                       ?? new List<WorkoutApiExercise>();
+            var json = await _http.GetStringAsync(JsonUrl);
+            var raw  = JsonSerializer.Deserialize<List<FreeExerciseDbEntry>>(json, JsonOpts)
+                       ?? new();
 
+            var list = raw.Select(ToApiExercise).ToList();
             _cache.Set(CacheKeyAll, list, CacheDuration);
             return list;
         }
@@ -83,131 +115,130 @@ public class WorkoutApiService
         }
     }
 
-    // ── Fetch single exercise by API id ──────────────────────────────────────
     public async Task<WorkoutApiExercise?> GetExerciseByIdAsync(string id)
     {
         var all = await GetExercisesAsync();
-        var fromCache = all.FirstOrDefault(e => e.Id == id);
-        if (fromCache != null) return fromCache;
-
-        try
-        {
-            var json = await _http.GetStringAsync($"/exercises/{id}");
-            return JsonSerializer.Deserialize<WorkoutApiExercise>(json, JsonOpts);
-        }
-        catch { return null; }
+        return all.FirstOrDefault(e => e.Id == id);
     }
 
-    // ── Fetch SVG image for an exercise (cached 24 h) ────────────────────────
-    public async Task<string?> GetExerciseImageAsync(string id)
+    // Kept for controller compatibility — images are now direct URLs, not proxied SVGs
+    public Task<string?> GetExerciseImageAsync(string id) =>
+        Task.FromResult<string?>(null);
+
+    // ── Map free-exercise-db entry → WorkoutApiExercise ──────────────────────
+    private static WorkoutApiExercise ToApiExercise(FreeExerciseDbEntry src)
     {
-        var cacheKey = $"exercise_img_{id}";
-        if (_cache.TryGetValue(cacheKey, out string? cached))
-            return cached;
+        var primaryMuscles = src.PrimaryMuscles.Select(m => new WorkoutApiMuscle { Name = m, Id = m, Code = m }).ToList();
+        var secondaryMuscles = src.SecondaryMuscles.Select(m => new WorkoutApiMuscle { Name = m, Id = m, Code = m }).ToList();
 
-        try
+        bool isCompound = src.Mechanic?.Equals("compound", StringComparison.OrdinalIgnoreCase) == true;
+        var types = isCompound
+            ? new List<WorkoutApiType> { new() { Code = "POLYARTICULAR", Name = "Compound" } }
+            : new List<WorkoutApiType>();
+
+        var imageUrl = src.Images.Count > 0 ? ImgBase + src.Images[0] : null;
+
+        return new WorkoutApiExercise
         {
-            var req = new HttpRequestMessage(HttpMethod.Get, $"/exercises/{id}/image");
-            req.Headers.Add("Accept", "image/svg+xml");
-            var resp = await _http.SendAsync(req);
-            if (!resp.IsSuccessStatusCode) return null;
-            var svg = await resp.Content.ReadAsStringAsync();
-            _cache.Set(cacheKey, svg, CacheDuration);
-            return svg;
-        }
-        catch { return null; }
+            Id               = src.Id,
+            Code             = src.Id,
+            Name             = src.Name,
+            Description      = string.Join(" ", src.Instructions),
+            PrimaryMuscles   = primaryMuscles,
+            SecondaryMuscles = secondaryMuscles,
+            Types            = types,
+            Categories       = new List<WorkoutApiCategory>
+                               { new() { Name = src.Category, Code = src.Category } },
+            Level            = src.Level,
+            Equipment        = src.Equipment,
+            Instructions     = src.Instructions,
+            Images           = src.Images,
+            ImageUrl         = imageUrl,
+        };
     }
 
-    // ── Map API exercise → app Exercise model ────────────────────────────────
+    // ── Map WorkoutApiExercise → app Exercise model ──────────────────────────
     public static Exercise ToExercise(WorkoutApiExercise src)
     {
-        // Derive a category from the primary muscle group (or equipment category)
-        string category = src.PrimaryMuscles.FirstOrDefault()?.Name
-                       ?? src.Categories.FirstOrDefault()?.Name
-                       ?? "Other";
+        string primaryMuscle = src.PrimaryMuscles.FirstOrDefault()?.Name ?? "Other";
+        string category = NormalizeCategory(
+            !string.IsNullOrEmpty(src.Categories.FirstOrDefault()?.Name)
+                ? src.Categories[0].Name
+                : primaryMuscle);
 
-        // Build target muscles list (primary + secondary)
         var muscles = src.PrimaryMuscles.Select(m => m.Name)
             .Concat(src.SecondaryMuscles.Select(m => m.Name))
-            .Distinct()
-            .ToList();
+            .Distinct().ToList();
 
-        // Equipment from the API categories
-        var equipment = src.Categories.Select(c => c.Name).ToList();
-
-        // Determine if compound (Polyarticular type = compound movement)
         bool isCompound = src.Types.Any(t =>
             t.Code.Equals("POLYARTICULAR", StringComparison.OrdinalIgnoreCase));
 
-        // Split the description into instruction sentences for step-by-step display
-        var instructions = SplitIntoSteps(src.Description);
+        string difficulty = src.Level?.ToLower() switch
+        {
+            "beginner"     => "Beginner",
+            "intermediate" => "Intermediate",
+            "expert"       => "Advanced",
+            _              => "Beginner"
+        };
 
         return new Exercise
         {
-            Id           = src.Id,
-            Name         = src.Name,
-            Category     = NormalizeCategory(category),
-            Difficulty   = isCompound ? "Intermediate" : "Beginner",
+            Id            = src.Id,
+            Name          = src.Name,
+            Category      = category,
+            Difficulty    = difficulty,
             TargetMuscles = muscles,
-            Description  = src.Description,
-            Instructions = instructions,
-            Equipment    = equipment,
-            IsCompound   = isCompound,
-            DefaultSets  = isCompound ? 4 : 3,
-            DefaultReps  = isCompound ? "6-10" : "10-15",
-            RestSeconds  = isCompound ? 90 : 60,
+            Description   = src.Description,
+            Instructions  = src.Instructions,
+            Equipment     = src.Equipment != null ? new List<string> { src.Equipment } : new(),
+            IsCompound    = isCompound,
+            DefaultSets   = isCompound ? 4 : 3,
+            DefaultReps   = isCompound ? "6-10" : "10-15",
+            RestSeconds   = isCompound ? 90 : 60,
+            ImageUrl      = src.ImageUrl,
         };
     }
 
-    // ── Helpers ──────────────────────────────────────────────────────────────
-
-    private static List<string> SplitIntoSteps(string description)
+    // ── Get direct image URL for an exercise id ───────────────────────────────
+    public async Task<string?> GetImageUrlAsync(string id)
     {
-        if (string.IsNullOrWhiteSpace(description))
-            return new List<string>();
-
-        // Split on sentences — ". " boundary, keeping reasonable length
-        var raw = description.Split(new[] { ". " }, StringSplitOptions.RemoveEmptyEntries);
-        var steps = new List<string>();
-        foreach (var part in raw)
-        {
-            var trimmed = part.Trim().TrimEnd('.');
-            if (!string.IsNullOrWhiteSpace(trimmed))
-                steps.Add(trimmed + ".");
-        }
-        return steps;
+        var ex = await GetExerciseByIdAsync(id);
+        return ex?.ImageUrl;
     }
 
-    private static string NormalizeCategory(string raw)
-    {
-        return raw.ToLower() switch
+    // ── Helpers ───────────────────────────────────────────────────────────────
+
+    private static string NormalizeCategory(string raw) =>
+        raw.ToLower() switch
         {
-            "trapezius"  => "Back",
-            "shoulders"  => "Shoulders",
-            "chest"      => "Chest",
-            "triceps"    => "Arms",
-            "biceps"     => "Arms",
-            "biceps brachii" => "Arms",
-            "forearms"   => "Arms",
-            "back"       => "Back",
-            "lats"       => "Back",
-            "rhomboids"  => "Back",
-            "lower back" => "Back",
-            "quads"      => "Legs",
-            "quadriceps" => "Legs",
-            "hamstrings" => "Legs",
-            "glutes"     => "Legs",
-            "calves"     => "Legs",
-            "abdominals" => "Core",
-            "abs"        => "Core",
-            "core"       => "Core",
-            "obliques"   => "Core",
-            "free weight" => "Other",
-            "machine"    => "Other",
-            "bodyweight" => "Other",
-            _            => TitleCase(raw)
+            "chest"          => "Chest",
+            "back"           => "Back",
+            "shoulders"      => "Shoulders",
+            "arms"           => "Arms",
+            "legs"           => "Legs",
+            "abdominals"     => "Core",
+            "core"           => "Core",
+            "cardio"         => "Cardio",
+            "olympic weightlifting" => "Olympic",
+            "powerlifting"   => "Powerlifting",
+            "strength"       => "Strength",
+            "stretching"     => "Flexibility",
+            "plyometrics"    => "Cardio",
+            "trapezius"      => "Back",
+            "triceps"        => "Arms",
+            "biceps"         => "Arms",
+            "forearms"       => "Arms",
+            "lats"           => "Back",
+            "lower back"     => "Back",
+            "quads"          => "Legs",
+            "quadriceps"     => "Legs",
+            "hamstrings"     => "Legs",
+            "glutes"         => "Legs",
+            "calves"         => "Legs",
+            "abs"            => "Core",
+            "obliques"       => "Core",
+            _                => TitleCase(raw)
         };
-    }
 
     private static string TitleCase(string s) =>
         string.IsNullOrEmpty(s) ? s : char.ToUpper(s[0]) + s[1..].ToLower();
