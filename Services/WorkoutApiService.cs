@@ -72,7 +72,7 @@ public class WorkoutApiService
 {
     private readonly HttpClient _http;
     private readonly IMemoryCache _cache;
-    private const string CacheKeyAll = "free_exercise_db_all";
+    private const string CacheKeyAll = "free_exercise_db_v3"; // bump version to bust stale cache
     private static readonly TimeSpan CacheDuration = TimeSpan.FromHours(48);
 
     // Raw JSON from the free exercise DB
@@ -163,11 +163,18 @@ public class WorkoutApiService
     // ── Map WorkoutApiExercise → app Exercise model ──────────────────────────
     public static Exercise ToExercise(WorkoutApiExercise src)
     {
-        string primaryMuscle = src.PrimaryMuscles.FirstOrDefault()?.Name ?? "Other";
-        string category = NormalizeCategory(
-            !string.IsNullOrEmpty(src.Categories.FirstOrDefault()?.Name)
-                ? src.Categories[0].Name
-                : primaryMuscle);
+        string primaryMuscle = src.PrimaryMuscles.FirstOrDefault()?.Name ?? "";
+        string dbCategory = src.Categories.FirstOrDefault()?.Name ?? "";
+
+        // Generic DB categories (strength, powerlifting, etc.) don't tell us the muscle group.
+        // Use primary muscle instead so exercises appear under Chest / Back / Legs etc.
+        bool isGenericCategory = dbCategory.ToLower() is
+            "strength" or "powerlifting" or "olympic weightlifting"
+            or "stretching" or "plyometrics" or "";
+
+        string category = isGenericCategory && !string.IsNullOrEmpty(primaryMuscle)
+            ? NormalizeCategory(primaryMuscle)
+            : NormalizeCategory(!string.IsNullOrEmpty(dbCategory) ? dbCategory : primaryMuscle);
 
         var muscles = src.PrimaryMuscles.Select(m => m.Name)
             .Concat(src.SecondaryMuscles.Select(m => m.Name))
@@ -215,33 +222,31 @@ public class WorkoutApiService
     private static string NormalizeCategory(string raw) =>
         raw.ToLower() switch
         {
-            "chest"          => "Chest",
-            "back"           => "Back",
-            "shoulders"      => "Shoulders",
-            "arms"           => "Arms",
-            "legs"           => "Legs",
-            "abdominals"     => "Core",
-            "core"           => "Core",
-            "cardio"         => "Cardio",
-            "olympic weightlifting" => "Olympic",
-            "powerlifting"   => "Powerlifting",
-            "strength"       => "Strength",
-            "stretching"     => "Flexibility",
-            "plyometrics"    => "Cardio",
-            "trapezius"      => "Back",
-            "triceps"        => "Arms",
-            "biceps"         => "Arms",
-            "forearms"       => "Arms",
-            "lats"           => "Back",
-            "lower back"     => "Back",
-            "quads"          => "Legs",
-            "quadriceps"     => "Legs",
-            "hamstrings"     => "Legs",
-            "glutes"         => "Legs",
-            "calves"         => "Legs",
-            "abs"            => "Core",
-            "obliques"       => "Core",
-            _                => TitleCase(raw)
+            // Chest
+            "chest" or "pectorals" or "pectoralis major"                       => "Chest",
+            // Back
+            "back" or "lats" or "latissimus dorsi" or "middle back"
+                or "lower back" or "trapezius" or "traps" or "rhomboids"       => "Back",
+            // Shoulders
+            "shoulders" or "deltoids" or "front deltoids"
+                or "side deltoids" or "rear deltoids"                          => "Shoulders",
+            // Arms
+            "arms" or "biceps" or "biceps brachii" or "triceps"
+                or "forearms" or "brachialis"                                  => "Arms",
+            // Legs
+            "legs" or "quads" or "quadriceps" or "hamstrings" or "glutes"
+                or "calves" or "adductors" or "abductors" or "hip flexors"
+                or "glute" or "gluteus maximus"                                => "Legs",
+            // Core
+            "core" or "abdominals" or "abs" or "obliques"
+                or "transverse abdominus"                                      => "Core",
+            // Cardio
+            "cardio" or "plyometrics"                                          => "Cardio",
+            // Flexibility
+            "stretching"                                                       => "Flexibility",
+            // Catch-all for generic categories — use "Other"
+            "strength" or "powerlifting" or "olympic weightlifting"            => "Other",
+            _                                                                  => TitleCase(raw)
         };
 
     private static string TitleCase(string s) =>
