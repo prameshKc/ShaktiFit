@@ -26,14 +26,20 @@ builder.Services.AddAuthentication(options =>
 .AddCookie("Cookies", o =>
 {
     o.Cookie.Name = "ShaktiFit.OAuth";
-    o.ExpireTimeSpan = TimeSpan.FromMinutes(10); // short-lived, just for OAuth handshake
+    o.Cookie.SameSite = SameSiteMode.None;       // needed for cross-site OAuth redirect
+    o.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+    o.ExpireTimeSpan = TimeSpan.FromMinutes(15);
 })
 .AddGoogle("Google", options =>
 {
     options.ClientId     = builder.Configuration["Google:ClientId"]     ?? "";
     options.ClientSecret = builder.Configuration["Google:ClientSecret"] ?? "";
     options.CallbackPath = "/signin-google";
-    options.SignInScheme = "Cookies"; // store Google result in the temp cookie
+    options.SignInScheme = "Cookies";
+    // Correlation cookie must be SameSite=None so browser sends it back after Google redirect
+    options.CorrelationCookie.SameSite = SameSiteMode.None;
+    options.CorrelationCookie.SecurePolicy = CookieSecurePolicy.Always;
+    options.CorrelationCookie.HttpOnly = true;
     options.Scope.Add("email");
     options.Scope.Add("profile");
 });
