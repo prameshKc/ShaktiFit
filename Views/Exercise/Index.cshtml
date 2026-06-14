@@ -9,24 +9,41 @@
     var exercises = Model ?? new List<FitForgeAI.Models.Exercise>();
     var categories = (IEnumerable<string>)(ViewBag.Categories ?? new List<string>());
 
+    // SVG icon per category (clean, consistent)
+    string CatSvg(string cat) => cat.ToLower() switch {
+        "chest"      => "<svg width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.2' stroke-linecap='round'><path d='M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z'/><polyline points='9 22 9 12 15 12 15 22'/></svg>",
+        "back"       => "<svg width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.2' stroke-linecap='round'><path d='M12 2a4 4 0 0 1 4 4v2H8V6a4 4 0 0 1 4-4z'/><rect x='8' y='8' width='8' height='10' rx='2'/><line x1='12' y1='18' x2='12' y2='22'/></svg>",
+        "legs"       => "<svg width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.2' stroke-linecap='round'><path d='M8 3h8v10l-2 8H10l-2-8V3z'/></svg>",
+        "shoulders"  => "<svg width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.2' stroke-linecap='round'><path d='M12 5a3 3 0 1 0 0-6 3 3 0 0 0 0 6z' fill='currentColor' stroke='none' opacity='.3'/><path d='M2 12c2-4 5-6 10-6s8 2 10 6'/><line x1='12' y1='6' x2='12' y2='18'/></svg>",
+        "arms"       => "<svg width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.2' stroke-linecap='round'><path d='M6 4c0 0 2 2 2 6s-2 6-2 6'/><path d='M18 4c0 0-2 2-2 6s2 6 2 6'/><line x1='6' y1='10' x2='18' y2='10'/></svg>",
+        "core"       => "<svg width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.2' stroke-linecap='round'><circle cx='12' cy='12' r='9'/><line x1='12' y1='3' x2='12' y2='21'/><line x1='3' y1='12' x2='21' y2='12'/></svg>",
+        "cardio"     => "<svg width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.2' stroke-linecap='round'><polyline points='22 12 18 12 15 21 9 3 6 12 2 12'/></svg>",
+        "neck"       => "<svg width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.2' stroke-linecap='round'><circle cx='12' cy='5' r='3'/><path d='M9 8v4a3 3 0 0 0 6 0V8'/></svg>",
+        "flexibility"=> "<svg width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.2' stroke-linecap='round'><path d='M4 4l16 16M4 20L20 4'/></svg>",
+        "strongman"  => "<svg width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.2' stroke-linecap='round'><circle cx='5' cy='12' r='3'/><circle cx='19' cy='12' r='3'/><line x1='8' y1='12' x2='16' y2='12'/><line x1='12' y1='6' x2='12' y2='18'/></svg>",
+        _            => "<svg width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.2' stroke-linecap='round'><circle cx='12' cy='12' r='9'/></svg>"
+    };
+    // Keep for card icons
     string CatIcon(string cat) => cat.ToLower() switch {
-        "chest"    => "🫸", "back" => "🔙", "legs" => "🦵",
-        "shoulders"=> "🤸", "arms" => "💪", "core" => "🧘",
-        "cardio"   => "🏃", "mobility" => "🙆",
-        "full body" or "fullbody" => "⚡", _ => "🏋️"
+        "chest" => "🫁", "back" => "🔙", "legs" => "🦵",
+        "shoulders" => "🏋️", "arms" => "💪", "core" => "🔥",
+        "cardio" => "🏃", "neck" => "🧠", "flexibility" => "🤸",
+        "strongman" => "🏆", _ => "🏋️"
     };
     string CatColor(string cat) => cat.ToLower() switch {
-        "chest"    => "#f87171", "back"     => "#60a5fa",
-        "legs"     => "#4ade80", "shoulders"=> "#a78bfa",
-        "arms"     => "#f5c542", "core"     => "#fb923c",
-        "cardio"   => "#34d399", "mobility" => "#f472b6",
-        _ => "#94a3b8"
+        "chest"       => "#ef4444", "back"        => "#3b82f6",
+        "legs"        => "#22c55e", "shoulders"   => "#8b5cf6",
+        "arms"        => "#f59e0b", "core"        => "#f97316",
+        "cardio"      => "#06b6d4", "neck"        => "#ec4899",
+        "flexibility" => "#14b8a6", "strongman"   => "#6366f1",
+        _ => "#64748b"
     };
     string CatBg(string cat) => cat.ToLower() switch {
-        "chest"    => "#fff1f1", "back"     => "#eff6ff",
-        "legs"     => "#f0fdf4", "shoulders"=> "#faf5ff",
-        "arms"     => "#fefce8", "core"     => "#fff7ed",
-        "cardio"   => "#ecfdf5", "mobility" => "#fdf2f8",
+        "chest"       => "#fef2f2", "back"        => "#eff6ff",
+        "legs"        => "#f0fdf4", "shoulders"   => "#f5f3ff",
+        "arms"        => "#fffbeb", "core"        => "#fff7ed",
+        "cardio"      => "#ecfeff", "neck"        => "#fdf2f8",
+        "flexibility" => "#f0fdfa", "strongman"   => "#eef2ff",
         _ => "#f8fafc"
     };
 }
@@ -69,18 +86,29 @@
 .ex-search::placeholder { color:#94a3b8; }
 
 /* ── Filter pills ── */
-.ex-filters { display:flex; gap:7px; flex-wrap:wrap; margin-bottom:28px; }
+.ex-filters { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:24px; }
 .ex-filter {
-  display:inline-flex; align-items:center; gap:5px;
-  padding:8px 16px; background:#ffffff; border:1.5px solid rgba(0,0,0,0.09);
-  border-radius:999px; color:#64748b; font-size:12px; font-weight:600;
+  display:inline-flex; align-items:center; gap:6px;
+  padding:7px 14px; background:#ffffff;
+  border:1.5px solid #e2e8f0;
+  border-radius:10px; color:#475569; font-size:12px; font-weight:700;
   cursor:pointer; transition:all .15s; white-space:nowrap;
-  box-shadow:0 1px 3px rgba(0,0,0,0.04);
+  box-shadow:0 1px 2px rgba(0,0,0,0.04);
 }
-.ex-filter:hover { border-color:rgba(34,197,94,0.4); color:#16a34a; background:#f0fdf4; }
-.ex-filter.active { background:linear-gradient(135deg,#22c55e,#16a34a) !important; border-color:transparent !important; color:#ffffff !important; box-shadow:0 3px 12px rgba(34,197,94,0.35) !important; }
-.ex-filter-count { background:rgba(255,255,255,0.25); border-radius:999px; padding:1px 7px; font-size:10px; font-weight:800; }
-.ex-filter:not(.active) .ex-filter-count { background:rgba(0,0,0,0.06); }
+.ex-filter .cat-icon { display:flex; align-items:center; opacity:.75; }
+.ex-filter:hover { border-color:rgba(34,197,94,0.5); color:#16a34a; background:#f0fdf4; }
+.ex-filter:hover .cat-icon { opacity:1; }
+.ex-filter.active {
+  background:linear-gradient(135deg,#22c55e,#16a34a) !important;
+  border-color:transparent !important; color:#ffffff !important;
+  box-shadow:0 4px 14px rgba(34,197,94,0.3) !important;
+}
+.ex-filter.active .cat-icon { opacity:1; }
+.ex-filter-count {
+  background:rgba(0,0,0,0.07); border-radius:6px;
+  padding:1px 6px; font-size:10px; font-weight:800; margin-left:2px;
+}
+.ex-filter.active .ex-filter-count { background:rgba(255,255,255,0.25); }
 
 /* ── Difficulty toggle ── */
 .ex-diff-wrap { display:flex; gap:6px; align-items:center; margin-left:auto; }
@@ -241,13 +269,16 @@
   <!-- ── Category Filters ── -->
   <div class="ex-filters">
     <button class="ex-filter active" data-cat="all" onclick="filterEx(this)">
+      <span class="cat-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></span>
       @(ne?"सबै":"All") <span class="ex-filter-count">@exercises.Count</span>
     </button>
     @foreach (var cat in categories)
     {
     var cnt = exercises.Count(e => e.Category == cat);
-    <button class="ex-filter" data-cat="@cat.ToLower()" onclick="filterEx(this)">
-      <span>@CatIcon(cat)</span> @cat <span class="ex-filter-count">@cnt</span>
+    <button class="ex-filter" data-cat="@cat.ToLower()" onclick="filterEx(this)"
+            style="--cat-color:@CatColor(cat)">
+      <span class="cat-icon" style="color:@CatColor(cat)">@Html.Raw(CatSvg(cat))</span>
+      @cat <span class="ex-filter-count">@cnt</span>
     </button>
     }
   </div>
