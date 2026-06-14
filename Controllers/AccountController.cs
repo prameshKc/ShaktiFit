@@ -76,7 +76,8 @@ public class AccountController : Controller
     [HttpGet]
     public async Task<IActionResult> GoogleCallback()
     {
-        // Read the result from Google
+        // After /signin-google middleware processes the OAuth code,
+        // it signs the user into the "Cookies" scheme and redirects here.
         var result = await HttpContext.AuthenticateAsync("Cookies");
         if (!result.Succeeded)
         {
@@ -87,8 +88,6 @@ public class AccountController : Controller
         var claims    = result.Principal?.Claims.ToList() ?? new List<Claim>();
         var email     = claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value ?? "";
         var name      = claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value ?? "User";
-        var googleId  = claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value ?? "";
-        var avatarUrl = claims.FirstOrDefault(c => c.Type == "urn:google:picture")?.Value ?? "";
 
         if (string.IsNullOrWhiteSpace(email))
         {
@@ -100,29 +99,26 @@ public class AccountController : Controller
         var user = await _users.GetByEmailAsync(email);
         if (user == null)
         {
-            // Auto-register with Google account
             user = new User
             {
-                Name     = name,
-                Email    = email,
-                Language = "en",
+                Name         = name,
+                Email        = email,
+                Language     = "en",
                 FitnessLevel = "Beginner",
-                HeightCm = 170,
-                WeightKg = 70,
-                Goals    = new List<string>(),
+                HeightCm     = 170,
+                WeightKg     = 70,
+                Goals        = new List<string>(),
             };
-            // Create without password (Google users won't use password login)
             await _users.CreateGoogleUserAsync(user);
         }
 
-        // Sign in: set our session exactly like normal login
         user.LastLoginAt = DateTime.UtcNow;
         await _users.UpdateAsync(user);
         HttpContext.Session.SetString("UserId",   user.Id);
         HttpContext.Session.SetString("UserName", user.Name);
         HttpContext.Session.SetString("Lang",     user.Language);
 
-        // Clean up the temp Google cookie
+        // Sign out the temp OAuth cookie — our session takes over
         await HttpContext.SignOutAsync("Cookies");
 
         return RedirectToAction("Index", "Dashboard");

@@ -20,7 +20,7 @@ builder.Services.AddAuthentication(options =>
 {
     options.ClientId     = builder.Configuration["Google:ClientId"]     ?? "";
     options.ClientSecret = builder.Configuration["Google:ClientSecret"] ?? "";
-    options.CallbackPath = "/Account/GoogleCallback";
+    options.CallbackPath = "/signin-google";
     options.Scope.Add("email");
     options.Scope.Add("profile");
 });
