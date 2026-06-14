@@ -304,9 +304,9 @@ html:not([data-accent]) { --accent:#22c55e; --accent-dark:#16a34a; --shadow-acce
 }
 .stat-card.sc-green::before { background: var(--grad-green); }
 .stat-card.sc-orange::before { background: var(--grad-warm); }
-.stat-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: #94a3b8; margin-bottom: 8px; }
+.stat-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: #475569; margin-bottom: 8px; }
 .stat-value { font-size: 30px; font-weight: 900; color: #0f172a; line-height: 1; }
-.stat-sub { font-size: 12px; color: #94a3b8; margin-top: 5px; }
+.stat-sub { font-size: 12px; color: #64748b; margin-top: 5px; }
 .stat-icon { position: absolute; top: 18px; right: 18px; font-size: 22px; opacity: 0.15; }
 
 /* ── Buttons ─────────────────────────────────────────────────── */

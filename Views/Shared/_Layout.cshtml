@@ -430,11 +430,12 @@ function setMode(mode) {
 // ── RESTORE SAVED THEME ──
 (function() {
   const accent = localStorage.getItem('sf-accent') || 'green';
-  // v2 migration: reset any old dark-mode preference → green+white is the default
-  if (!localStorage.getItem('sf-v2')) {
+  // v3 migration: force light mode as default for all users
+  if (!localStorage.getItem('sf-v3')) {
     localStorage.setItem('sf-mode', 'light');
-    localStorage.setItem('sf-accent', accent === 'yellow' ? 'green' : accent);
-    localStorage.setItem('sf-v2', '1');
+    localStorage.setItem('sf-accent', 'green');
+    localStorage.removeItem('sf-v2');
+    localStorage.setItem('sf-v3', '1');
   }
   const mode = localStorage.getItem('sf-mode') || 'light';
   document.documentElement.setAttribute('data-accent', localStorage.getItem('sf-accent') || 'green');
