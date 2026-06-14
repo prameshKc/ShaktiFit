@@ -15,6 +15,7 @@ public class JsonStorageService : IJsonStorageService
     public JsonStorageService(IWebHostEnvironment env)
     {
         _dataPath = Path.Combine(env.ContentRootPath, "Data", "Json");
+        Directory.CreateDirectory(_dataPath); // ensure directory exists on Railway
     }
 
     public async Task<List<T>> ReadAsync<T>(string fileName)
