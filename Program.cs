@@ -9,6 +9,13 @@ builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
 builder.Services.AddControllersWithViews();
 builder.Services.AddHttpClient(); // for EmailService (Brevo API)
 
+// Persist Data Protection keys so OAuth state survives Railway redeployments
+var keysDir = Path.Combine(builder.Environment.ContentRootPath, "Data", "Keys");
+Directory.CreateDirectory(keysDir);
+builder.Services.AddDataProtection()
+    .PersistKeysToFileSystem(new System.IO.DirectoryInfo(keysDir))
+    .SetApplicationName("ShaktiFit");
+
 // Google OAuth — DefaultScheme only (no global DefaultChallengeScheme to avoid redirect loops)
 builder.Services.AddAuthentication(options =>
 {
