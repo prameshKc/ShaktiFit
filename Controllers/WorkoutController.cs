@@ -110,17 +110,46 @@ public class WorkoutController : Controller
         var apiExercises = await _workoutApi.GetExercisesAsync();
 
         // Build a slim JSON-friendly list for the view
-        var slim = apiExercises.Select(e => new {
-            id       = e.Id,
-            name     = e.Name,
-            category = WorkoutApiService.ToExercise(e).Category,
-            muscles  = e.PrimaryMuscles.Select(m => m.Name).ToList(),
-            isCompound = e.Types.Any(t => t.Code.Equals("POLYARTICULAR", StringComparison.OrdinalIgnoreCase)),
-            level    = e.Types.Any(t => t.Code.Equals("POLYARTICULAR", StringComparison.OrdinalIgnoreCase)) ? "Intermediate" : "Beginner"
+        // Use muscle-based category so Builder day-filters work (Chest/Back/Legs etc.)
+        var slim = apiExercises.Select(e => {
+            var ex = WorkoutApiService.ToExercise(e);
+            // Prefer muscle-derived category over generic "Strength"/"Cardio"
+            string primaryMuscle = e.PrimaryMuscles.FirstOrDefault()?.Name ?? "";
+            string muscleCategory = MuscleToCategory(primaryMuscle);
+            string category = (muscleCategory != "Other" && muscleCategory != "")
+                ? muscleCategory
+                : ex.Category;
+            return new {
+                id         = e.Id,
+                name       = e.Name,
+                category,
+                muscles    = e.PrimaryMuscles.Select(m => m.Name).ToList(),
+                isCompound = ex.IsCompound,
+                level      = ex.Difficulty
+            };
         }).ToList();
 
         ViewBag.ExercisesJson = System.Text.Json.JsonSerializer.Serialize(slim);
         ViewBag.T = _translations.GetAll(Lang);
         return View();
     }
+
+    private static string MuscleToCategory(string muscle) =>
+        muscle.ToLower() switch
+        {
+            "chest" or "pectoralis major" or "pectorals"       => "Chest",
+            "lats" or "latissimus dorsi" or "middle back"
+                or "lower back" or "traps" or "trapezius"
+                or "rhomboids" or "back"                       => "Back",
+            "quads" or "quadriceps" or "hamstrings"
+                or "glutes" or "calves" or "adductors"
+                or "abductors" or "legs"                       => "Legs",
+            "shoulders" or "deltoids" or "front deltoids"
+                or "side deltoids" or "rear deltoids"          => "Shoulders",
+            "biceps" or "triceps" or "forearms" or "arms"
+                or "biceps brachii"                            => "Arms",
+            "abdominals" or "abs" or "core" or "obliques"
+                or "hip flexors"                               => "Core",
+            _                                                   => "Other"
+        };
 }
