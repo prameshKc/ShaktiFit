@@ -1,5 +1,6 @@
 using FitForgeAI.Services;
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.HttpOverrides;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -61,6 +62,13 @@ builder.Services.AddHttpClient<WorkoutApiService>(client =>
 });
 
 var app = builder.Build();
+
+// Tell ASP.NET Core it's behind Railway's HTTPS reverse proxy
+// Without this, OAuth correlation cookies are set for HTTP → state mismatch
+app.UseForwardedHeaders(new ForwardedHeadersOptions
+{
+    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+});
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
