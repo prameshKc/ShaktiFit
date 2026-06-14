@@ -81,7 +81,8 @@ public class AccountController : Controller
         var result = await HttpContext.AuthenticateAsync("Cookies");
         if (!result.Succeeded)
         {
-            TempData["Error"] = "Google login failed. Please try again.";
+            var reason = result.Failure?.Message ?? "unknown";
+            TempData["Error"] = $"Google login failed: {reason}";
             return RedirectToAction("Login");
         }
 
