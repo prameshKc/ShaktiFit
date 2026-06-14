@@ -66,7 +66,7 @@
 .cat-f { padding:5px 12px; border:1.5px solid rgba(0,0,0,.08); border-radius:999px; font-size:11px; font-weight:700; cursor:pointer; background:#fff; color:#374151; transition:all .15s; }
 .cat-f.active { background:linear-gradient(135deg,#22c55e,#16a34a); border-color:transparent; color:#fff; }
 .ex-pick-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:10px; max-height:420px; overflow-y:auto; padding-right:4px; }
-.ex-pick-card { padding:12px; border:1.5px solid rgba(0,0,0,.08); border-radius:12px; cursor:pointer; transition:all .15s; background:#fff; position:relative; }
+.ex-pick-card { padding:0; border:1.5px solid rgba(0,0,0,.08); border-radius:12px; cursor:pointer; transition:all .15s; background:#fff; position:relative; overflow:hidden; }
 .ex-pick-card:hover { border-color:rgba(34,197,94,.35); background:#f8faf8; }
 .ex-pick-card.picked { border-color:#22c55e; background:#f0fdf4; }
 .ex-pick-card.picked::after { content:'✓'; position:absolute; top:6px; right:10px; color:#22c55e; font-weight:900; font-size:13px; }
@@ -473,13 +473,61 @@ function renderPicker() {
   const color = d => CAT_COLORS[d] || '#94a3b8';
 
   document.getElementById('exPickGrid').innerHTML = exs.length
-    ? exs.map(e => `
-      <div class="ex-pick-card ${pickedIds.has(e.id)?'picked':''}" onclick="toggleEx('${e.id}','${e.name.replace(/'/g,"\\'")}','${e.category}',${e.isCompound})">
-        <div class="ex-pick-name">${e.name}</div>
-        <div class="ex-pick-meta">${e.muscles.slice(0,2).join(' · ') || e.category}</div>
-        <span class="ex-pick-badge" style="background:${color(e.category)}22;color:${color(e.category)}">${e.category}</span>
-      </div>`).join('')
+    ? exs.map(e => {
+        const picked = pickedIds.has(e.id);
+        const cl = color(e.category);
+        const hasImg = e.img && e.img.length > 0;
+        const hasImg2 = e.img2 && e.img2.length > 0;
+        const imgHtml = hasImg ? `
+          <div class="ex-pick-img-wrap" style="height:90px;background:linear-gradient(135deg,#f8faf8,#f0fdf4);border-radius:10px 10px 0 0;overflow:hidden;position:relative;border-bottom:1px solid rgba(0,0,0,0.06)">
+            <img class="ex-pick-fa" src="${e.img}" alt="${e.name}"
+                 style="max-height:84px;max-width:100%;object-fit:contain;position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);padding:4px;transition:opacity 0.35s ease" />
+            ${hasImg2 ? `<img class="ex-pick-fb" src="${e.img2}" alt="${e.name}"
+                 style="max-height:84px;max-width:100%;object-fit:contain;position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);padding:4px;opacity:0;transition:opacity 0.35s ease" />` : ''}
+            <div style="position:absolute;bottom:3px;right:5px;background:rgba(22,163,74,0.85);color:#fff;font-size:8px;font-weight:700;padding:1px 5px;border-radius:999px">▶</div>
+          </div>` : '';
+        return `
+        <div class="ex-pick-card ${picked?'picked':''}" onclick="toggleEx('${e.id}','${e.name.replace(/'/g,"\\'")}','${e.category}',${e.isCompound})"
+             data-img="${e.img}" data-img2="${e.img2}">
+          ${imgHtml}
+          <div style="padding:8px 10px 10px">
+            <div class="ex-pick-name" style="font-size:12px">${e.name}</div>
+            <div class="ex-pick-meta">${e.muscles.slice(0,2).join(' · ') || e.category}</div>
+            <span class="ex-pick-badge" style="background:${cl}22;color:${cl}">${e.category}</span>
+          </div>
+        </div>`;
+      }).join('')
     : '<div style="padding:40px;text-align:center;color:#94a3b8;grid-column:1/-1">No exercises match</div>';
+
+  // Animate picker cards: hover or intersection
+  initPickerAnim();
+}
+}
+
+// ── Animate exercise picker cards (hover = play, leave = reset) ──────────────
+const pickerTimers = new Map();
+function initPickerAnim() {
+  document.querySelectorAll('#exPickGrid .ex-pick-card').forEach(card => {
+    const fa = card.querySelector('.ex-pick-fa');
+    const fb = card.querySelector('.ex-pick-fb');
+    if (!fa || !fb) return;
+    card.addEventListener('mouseenter', () => {
+      if (pickerTimers.has(card)) return;
+      let showA = true;
+      const t = setInterval(() => {
+        showA = !showA;
+        fa.style.opacity = showA ? '1' : '0';
+        fb.style.opacity = showA ? '0' : '1';
+      }, 700);
+      pickerTimers.set(card, t);
+    });
+    card.addEventListener('mouseleave', () => {
+      clearInterval(pickerTimers.get(card));
+      pickerTimers.delete(card);
+      fa.style.opacity = '1';
+      fb.style.opacity = '0';
+    });
+  });
 }
 
 function toggleEx(id, name, category, isCompound) {

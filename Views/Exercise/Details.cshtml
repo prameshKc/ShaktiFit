@@ -14,47 +14,64 @@
     var primaryMuscles   = apiEx?.PrimaryMuscles   ?? new List<WorkoutApiMuscle>();
     var secondaryMuscles = apiEx?.SecondaryMuscles ?? new List<WorkoutApiMuscle>();
 
-    // Muscle → SVG path id map (matches the SVG below)
+    // Muscle name → SVG path id map (case-insensitive, matches free-exercise-db names)
     var muscleToSvg = new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase)
     {
-        ["TRAPEZIUS"]   = new[]{"svg-trapezius-f","svg-trapezius-b"},
-        ["SHOULDERS"]   = new[]{"svg-shoulders-l","svg-shoulders-r"},
-        ["CHEST"]       = new[]{"svg-chest"},
-        ["BACK"]        = new[]{"svg-back-upper","svg-back-lower"},
-        ["BICEPS"]      = new[]{"svg-biceps-l","svg-biceps-r"},
-        ["TRICEPS"]     = new[]{"svg-triceps-l","svg-triceps-r"},
-        ["FOREARMS"]    = new[]{"svg-forearms-l","svg-forearms-r"},
-        ["ABS"]         = new[]{"svg-abs"},
-        ["OBLIQUES"]    = new[]{"svg-obliques-l","svg-obliques-r"},
-        ["GLUTES"]      = new[]{"svg-glutes"},
-        ["QUADRICEPS"]  = new[]{"svg-quads-l","svg-quads-r"},
-        ["HAMSTRINGS"]  = new[]{"svg-hamstrings-l","svg-hamstrings-r"},
-        ["ABDUCTORS"]   = new[]{"svg-abductors-l","svg-abductors-r"},
-        ["ADDUCTORS"]   = new[]{"svg-adductors-l","svg-adductors-r"},
-        ["CALVES"]      = new[]{"svg-calves-l","svg-calves-r"},
+        ["trapezius"]        = new[]{"svg-trapezius-f","svg-trapezius-b"},
+        ["traps"]            = new[]{"svg-trapezius-f","svg-trapezius-b"},
+        ["shoulders"]        = new[]{"svg-shoulders-l","svg-shoulders-r"},
+        ["deltoids"]         = new[]{"svg-shoulders-l","svg-shoulders-r"},
+        ["front deltoids"]   = new[]{"svg-shoulders-l","svg-shoulders-r"},
+        ["chest"]            = new[]{"svg-chest"},
+        ["pectorals"]        = new[]{"svg-chest"},
+        ["pectoralis major"] = new[]{"svg-chest"},
+        ["back"]             = new[]{"svg-back-upper","svg-back-lower"},
+        ["lats"]             = new[]{"svg-back-upper","svg-back-lower"},
+        ["latissimus dorsi"] = new[]{"svg-back-upper","svg-back-lower"},
+        ["middle back"]      = new[]{"svg-back-upper","svg-back-lower"},
+        ["lower back"]       = new[]{"svg-back-lower"},
+        ["biceps"]           = new[]{"svg-biceps-l","svg-biceps-r"},
+        ["biceps brachii"]   = new[]{"svg-biceps-l","svg-biceps-r"},
+        ["triceps"]          = new[]{"svg-triceps-l","svg-triceps-r"},
+        ["forearms"]         = new[]{"svg-forearms-l","svg-forearms-r"},
+        ["abdominals"]       = new[]{"svg-abs"},
+        ["abs"]              = new[]{"svg-abs"},
+        ["obliques"]         = new[]{"svg-obliques-l","svg-obliques-r"},
+        ["glutes"]           = new[]{"svg-glutes"},
+        ["quadriceps"]       = new[]{"svg-quads-l","svg-quads-r"},
+        ["quads"]            = new[]{"svg-quads-l","svg-quads-r"},
+        ["hamstrings"]       = new[]{"svg-hamstrings-l","svg-hamstrings-r"},
+        ["abductors"]        = new[]{"svg-abductors-l","svg-abductors-r"},
+        ["adductors"]        = new[]{"svg-adductors-l","svg-adductors-r"},
+        ["calves"]           = new[]{"svg-calves-l","svg-calves-r"},
+        ["hip flexors"]      = new[]{"svg-adductors-l","svg-adductors-r"},
     };
 
-    // Build highlight map: svgId → color
+    // Primary = bright green, Secondary = orange
+    const string PrimaryColor   = "#22c55e";
+    const string SecondaryColor = "#f97316";
+
+    // Build highlight map: svgId → (color, isPrimary)
     var highlights = new Dictionary<string, (string color, bool isPrimary)>();
     foreach (var m in primaryMuscles)
     {
-        if (muscleToSvg.TryGetValue(m.Code, out var ids))
+        if (muscleToSvg.TryGetValue(m.Name, out var ids))
             foreach (var id in ids)
-                highlights[id] = (m.Color, true);
+                highlights[id] = (PrimaryColor, true);
     }
     foreach (var m in secondaryMuscles)
     {
-        if (muscleToSvg.TryGetValue(m.Code, out var ids))
+        if (muscleToSvg.TryGetValue(m.Name, out var ids))
             foreach (var id in ids)
                 if (!highlights.ContainsKey(id))
-                    highlights[id] = (m.Color, false);
+                    highlights[id] = (SecondaryColor, false);
     }
 
     string GetFill(string svgId, string def = "#e2e8f0") =>
         highlights.TryGetValue(svgId, out var h) ? h.color : def;
     string GetOpacity(string svgId) =>
         highlights.ContainsKey(svgId)
-            ? (highlights[svgId].isPrimary ? "1" : "0.5")
+            ? (highlights[svgId].isPrimary ? "1" : "0.75")
             : "0.18";
 
     // Steps
@@ -297,8 +314,8 @@
           <div style="margin-bottom:10px">
             @foreach (var m in primaryMuscles)
             {
-            <span class="exd-muscle-chip" style="background:@m.Color;color:#fff;box-shadow:0 2px 8px @(m.Color)55">
-              <span class="exd-dot" style="background:#ffffff55"></span>@m.Name
+            <span class="exd-muscle-chip" style="background:#22c55e;color:#fff;box-shadow:0 2px 8px rgba(34,197,94,0.35)">
+              <span class="exd-dot" style="background:rgba(255,255,255,0.5)"></span>@m.Name
             </span>
             }
           </div>
@@ -309,8 +326,8 @@
           <div>
             @foreach (var m in secondaryMuscles)
             {
-            <span class="exd-muscle-chip" style="background:@(m.Color)22;color:@m.Color;border:1px solid @(m.Color)44">
-              <span class="exd-dot" style="background:@m.Color"></span>@m.Name
+            <span class="exd-muscle-chip" style="background:rgba(249,115,22,0.12);color:#f97316;border:1px solid rgba(249,115,22,0.3)">
+              <span class="exd-dot" style="background:#f97316"></span>@m.Name
             </span>
             }
           </div>

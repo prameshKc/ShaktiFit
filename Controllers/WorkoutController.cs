@@ -125,7 +125,9 @@ public class WorkoutController : Controller
                 category,
                 muscles    = e.PrimaryMuscles.Select(m => m.Name).ToList(),
                 isCompound = ex.IsCompound,
-                level      = ex.Difficulty
+                level      = ex.Difficulty,
+                img        = ex.ImageUrl  ?? "",
+                img2       = ex.ImageUrl2 ?? ""
             };
         }).ToList();
 
