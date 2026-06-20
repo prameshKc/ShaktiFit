@@ -112,8 +112,87 @@ public class WorkoutApiService
         }
         catch
         {
-            return new List<WorkoutApiExercise>();
+            var fallback = GetFallbackExercises();
+            _cache.Set(CacheKeyAll, fallback, TimeSpan.FromMinutes(30));
+            return fallback;
         }
+    }
+
+    private static List<WorkoutApiExercise> GetFallbackExercises()
+    {
+        // Hardcoded fallback — used when GitHub API is unreachable on Railway
+        var data = new[]
+        {
+            // CHEST
+            ("bench-press",        "Barbell Bench Press",       "chest",      "intermediate", "barbell",   true,  new[]{"chest","triceps","shoulders"}),
+            ("incline-bench",      "Incline Bench Press",       "chest",      "intermediate", "barbell",   true,  new[]{"chest","shoulders"}),
+            ("decline-bench",      "Decline Bench Press",       "chest",      "intermediate", "barbell",   true,  new[]{"chest","triceps"}),
+            ("dumbbell-fly",       "Dumbbell Fly",              "chest",      "beginner",     "dumbbell",  false, new[]{"chest"}),
+            ("push-up",            "Push Up",                   "chest",      "beginner",     "body only", true,  new[]{"chest","triceps","shoulders"}),
+            ("cable-crossover",    "Cable Crossover",           "chest",      "intermediate", "cable",     false, new[]{"chest"}),
+            ("dips",               "Chest Dips",                "chest",      "intermediate", "body only", true,  new[]{"chest","triceps"}),
+            // BACK
+            ("pull-up",            "Pull Up",                   "back",       "intermediate", "body only", true,  new[]{"lats","biceps"}),
+            ("lat-pulldown",       "Lat Pulldown",              "back",       "beginner",     "cable",     true,  new[]{"lats","biceps"}),
+            ("barbell-row",        "Barbell Row",               "back",       "intermediate", "barbell",   true,  new[]{"lats","rhomboids","biceps"}),
+            ("seated-cable-row",   "Seated Cable Row",          "back",       "beginner",     "cable",     true,  new[]{"lats","rhomboids"}),
+            ("deadlift",           "Conventional Deadlift",     "back",       "expert",       "barbell",   true,  new[]{"lower back","glutes","hamstrings"}),
+            ("db-row",             "Dumbbell Single-Arm Row",   "back",       "beginner",     "dumbbell",  true,  new[]{"lats","rhomboids"}),
+            ("face-pull",          "Face Pull",                 "back",       "beginner",     "cable",     false, new[]{"rear deltoids","traps"}),
+            // LEGS
+            ("squat",              "Barbell Back Squat",        "legs",       "intermediate", "barbell",   true,  new[]{"quads","glutes","hamstrings"}),
+            ("leg-press",          "Leg Press",                 "legs",       "beginner",     "machine",   true,  new[]{"quads","glutes"}),
+            ("romanian-deadlift",  "Romanian Deadlift",         "legs",       "intermediate", "barbell",   true,  new[]{"hamstrings","glutes"}),
+            ("leg-curl",           "Lying Leg Curl",            "legs",       "beginner",     "machine",   false, new[]{"hamstrings"}),
+            ("leg-extension",      "Leg Extension",             "legs",       "beginner",     "machine",   false, new[]{"quads"}),
+            ("lunge",              "Dumbbell Lunge",            "legs",       "beginner",     "dumbbell",  true,  new[]{"quads","glutes"}),
+            ("calf-raise",         "Standing Calf Raise",       "legs",       "beginner",     "machine",   false, new[]{"calves"}),
+            ("goblet-squat",       "Goblet Squat",              "legs",       "beginner",     "dumbbell",  true,  new[]{"quads","glutes"}),
+            ("hip-thrust",         "Barbell Hip Thrust",        "legs",       "intermediate", "barbell",   true,  new[]{"glutes","hamstrings"}),
+            // SHOULDERS
+            ("ohp",                "Overhead Press",            "shoulders",  "intermediate", "barbell",   true,  new[]{"shoulders","triceps"}),
+            ("db-shoulder-press",  "Dumbbell Shoulder Press",   "shoulders",  "beginner",     "dumbbell",  true,  new[]{"shoulders","triceps"}),
+            ("lateral-raise",      "Lateral Raise",             "shoulders",  "beginner",     "dumbbell",  false, new[]{"side deltoids"}),
+            ("front-raise",        "Front Raise",               "shoulders",  "beginner",     "dumbbell",  false, new[]{"front deltoids"}),
+            ("arnold-press",       "Arnold Press",              "shoulders",  "intermediate", "dumbbell",  true,  new[]{"shoulders","triceps"}),
+            ("rear-delt-fly",      "Rear Delt Fly",             "shoulders",  "beginner",     "dumbbell",  false, new[]{"rear deltoids"}),
+            // ARMS
+            ("barbell-curl",       "Barbell Curl",              "arms",       "beginner",     "barbell",   false, new[]{"biceps"}),
+            ("db-curl",            "Dumbbell Curl",             "arms",       "beginner",     "dumbbell",  false, new[]{"biceps"}),
+            ("hammer-curl",        "Hammer Curl",               "arms",       "beginner",     "dumbbell",  false, new[]{"biceps","brachialis"}),
+            ("tricep-pushdown",    "Tricep Cable Pushdown",     "arms",       "beginner",     "cable",     false, new[]{"triceps"}),
+            ("skull-crusher",      "Skull Crusher",             "arms",       "intermediate", "barbell",   false, new[]{"triceps"}),
+            ("overhead-tricep",    "Overhead Tricep Extension", "arms",       "beginner",     "dumbbell",  false, new[]{"triceps"}),
+            ("cable-curl",         "Cable Curl",                "arms",       "beginner",     "cable",     false, new[]{"biceps"}),
+            ("preacher-curl",      "Preacher Curl",             "arms",       "beginner",     "machine",   false, new[]{"biceps"}),
+            // CORE
+            ("plank",              "Plank",                     "abdominals", "beginner",     "body only", false, new[]{"abdominals","core"}),
+            ("crunch",             "Crunch",                    "abdominals", "beginner",     "body only", false, new[]{"abdominals"}),
+            ("hanging-leg-raise",  "Hanging Leg Raise",         "abdominals", "intermediate", "body only", false, new[]{"abdominals","hip flexors"}),
+            ("russian-twist",      "Russian Twist",             "abdominals", "beginner",     "body only", false, new[]{"obliques"}),
+            ("ab-wheel",           "Ab Wheel Rollout",          "abdominals", "intermediate", "other",     false, new[]{"abdominals","core"}),
+            ("cable-crunch",       "Cable Crunch",              "abdominals", "beginner",     "cable",     false, new[]{"abdominals"}),
+            ("bicycle-crunch",     "Bicycle Crunch",            "abdominals", "beginner",     "body only", false, new[]{"abdominals","obliques"}),
+            // CARDIO
+            ("burpee",             "Burpee",                    "cardio",     "beginner",     "body only", true,  new[]{"full body"}),
+            ("jumping-jack",       "Jumping Jack",              "cardio",     "beginner",     "body only", false, new[]{"cardio"}),
+            ("mountain-climber",   "Mountain Climber",          "cardio",     "beginner",     "body only", false, new[]{"cardio","core"}),
+            ("box-jump",           "Box Jump",                  "cardio",     "intermediate", "other",     true,  new[]{"legs","cardio"}),
+            ("battle-rope",        "Battle Rope Waves",         "cardio",     "beginner",     "other",     false, new[]{"cardio","shoulders"}),
+            ("jump-rope",          "Jump Rope",                 "cardio",     "beginner",     "other",     false, new[]{"cardio","calves"}),
+        };
+
+        return data.Select(d => new WorkoutApiExercise
+        {
+            Id             = d.Item1,
+            Code           = d.Item1,
+            Name           = d.Item2,
+            Level          = d.Item4,
+            Equipment      = d.Item5,
+            PrimaryMuscles = d.Item7.Select(m => new WorkoutApiMuscle { Name = m, Id = m, Code = m }).ToList(),
+            Types          = d.Item6 ? new List<WorkoutApiType> { new() { Code = "POLYARTICULAR", Name = "Compound" } } : new(),
+            Categories     = new List<WorkoutApiCategory> { new() { Name = d.Item3, Code = d.Item3 } },
+        }).ToList();
     }
 
     public async Task<WorkoutApiExercise?> GetExerciseByIdAsync(string id)
