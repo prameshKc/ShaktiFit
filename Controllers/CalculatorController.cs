@@ -153,19 +153,14 @@ public class CalculatorController : Controller
     public IActionResult Pace() { SetGuest(); ViewBag.ActiveNav = "calculators"; return View(); }
 
     [HttpPost]
-    public IActionResult Pace(double distVal, string timeStr, string unit = "km")
+    public IActionResult Pace(double distVal, int hours, int minutes, int seconds, string unit = "km")
     {
         SetGuest();
-        // Parse hh:mm:ss or mm:ss
-        double totalSeconds = 0;
-        if (!string.IsNullOrWhiteSpace(timeStr))
-        {
-            var parts = timeStr.Trim().Split(':');
-            if (parts.Length == 3)
-                totalSeconds = int.Parse(parts[0]) * 3600 + int.Parse(parts[1]) * 60 + int.Parse(parts[2]);
-            else if (parts.Length == 2)
-                totalSeconds = int.Parse(parts[0]) * 60 + int.Parse(parts[1]);
-        }
+        double totalSeconds = hours * 3600 + minutes * 60 + seconds;
+        // Reconstruct timeStr for display (pre-fill the form on postback)
+        string timeStr = hours > 0
+            ? $"{hours:D2}:{minutes:D2}:{seconds:D2}"
+            : $"{minutes:D2}:{seconds:D2}";
         ViewBag.TimeStr = timeStr;
         if (totalSeconds <= 0 || distVal <= 0) return View();
 

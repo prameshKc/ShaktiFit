@@ -76,9 +76,27 @@
         <div class="bp-lbl" id="distLabel">Distance (@(unit=="mi"?"miles":"km"))</div>
         <input class="bp-inp" type="number" name="distVal" id="distInput" placeholder="@(unit=="mi"?"e.g. 3.1":"e.g. 5")" min="0.01" max="1000" step="any" value="@(distVal>0?distVal.ToString():"")" inputmode="decimal" required />
 
-        <div class="bp-lbl">Time <span style="font-weight:400;color:#a1a1aa">(hh:mm:ss)</span></div>
-        <input class="bp-inp" type="time" name="timeStr" id="timeStr" step="1"
-               value="@(ViewBag.TimeStr as string ?? "")" required />
+        <div class="bp-lbl">Time</div>
+        @{
+            var tsParts = (ViewBag.TimeStr as string ?? "").Split(':');
+            int tsH = tsParts.Length == 3 ? (int.TryParse(tsParts[0], out int ph2) ? ph2 : 0) : 0;
+            int tsM = tsParts.Length >= 2 ? (int.TryParse(tsParts[tsParts.Length - 2], out int pm2) ? pm2 : 0) : 0;
+            int tsS = tsParts.Length >= 1 ? (int.TryParse(tsParts[tsParts.Length - 1], out int ps2) ? ps2 : 0) : 0;
+        }
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+          <div>
+            <div style="font-size:10px;font-weight:700;color:#a1a1aa;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px">Hours</div>
+            <input class="bp-inp" type="number" name="hours" min="0" max="23" placeholder="0" value="@(tsH > 0 ? tsH.ToString() : "")" style="margin:0;text-align:center" />
+          </div>
+          <div>
+            <div style="font-size:10px;font-weight:700;color:#a1a1aa;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px">Minutes</div>
+            <input class="bp-inp" type="number" name="minutes" min="0" max="59" placeholder="25" value="@(tsM > 0 ? tsM.ToString() : "")" style="margin:0;text-align:center" required />
+          </div>
+          <div>
+            <div style="font-size:10px;font-weight:700;color:#a1a1aa;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px">Seconds</div>
+            <input class="bp-inp" type="number" name="seconds" min="0" max="59" placeholder="30" value="@tsS" style="margin:0;text-align:center" />
+          </div>
+        </div>
 
         <button class="bp-btn" type="submit" style="background:#ef4444">Calculate Pace</button>
       </form>
