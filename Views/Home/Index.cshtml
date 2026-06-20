@@ -59,7 +59,7 @@
 .app-hero h1 em { font-style:normal; color:#22c55e; }
 .app-hero-sub {
   font-size:clamp(15px,2vw,18px); color:#71717a;
-  max-width:520px; line-height:1.7; margin-bottom:40px;
+  max-width:560px; line-height:1.7; margin-bottom:40px;
 }
 .hero-actions { display:flex; gap:12px; justify-content:center; flex-wrap:wrap; margin-bottom:60px; }
 .hero-btn-primary {
@@ -136,6 +136,15 @@
 }
 .bento-bmi-val { font-size:36px; font-weight:900; color:#22c55e; line-height:1; }
 .bento-bmi-cat { font-size:12px; color:#71717a; margin-top:4px; }
+
+/* CALC BADGE GRID */
+.calc-badge-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; margin-top:16px; }
+.calc-badge {
+  display:flex; align-items:center; justify-content:center;
+  padding:7px 6px; border-radius:8px; font-size:11px; font-weight:700;
+  text-decoration:none; transition:all 0.15s; border:1px solid transparent;
+}
+.calc-badge:hover { transform:translateY(-1px); }
 
 /* FEATURE ROWS */
 .feature-rows { max-width:1100px; margin:0 auto; padding:0 24px 80px; display:flex; flex-direction:column; gap:1px; }
@@ -276,7 +285,7 @@
 <!-- NAV -->
 <nav class="app-nav">
     <div class="app-nav-logo">
-        <div class="app-nav-logo-icon">💪</div>
+        <div class="app-nav-logo-icon">SF</div>
         <span class="app-nav-logo-text">ShaktiFit</span>
     </div>
     <div class="app-nav-links">
@@ -285,25 +294,25 @@
         <a href="/Running" class="app-nav-link">@(ne?"दौड":"Running")</a>
         <div class="calc-dropdown" id="calcDropdownHome">
           <button class="calc-dropdown-btn" style="font-size:13px" onclick="toggleHomeCalc(event)">
-            🧮 @(ne?"क्याल्कुलेटर":"Calculators")
+            @(ne?"क्याल्कुलेटर":"Calculators")
             <svg class="cd-arrow" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
           </button>
           <div class="calc-dropdown-menu">
             <div class="calc-dropdown-menu-inner" style="min-width:260px;max-height:420px;overflow-y:auto">
-              <a href="/Bmi" class="calc-menu-item"><div class="calc-menu-icon" style="background:#f0fdf4">⚖️</div><div><div>BMI Calculator</div><div style="font-size:11px;color:#94a3b8;font-weight:500">Body Mass Index</div></div></a>
-              <a href="/Calorie" class="calc-menu-item"><div class="calc-menu-icon" style="background:#fff7ed">🔥</div><div><div>Calorie Calculator</div><div style="font-size:11px;color:#94a3b8;font-weight:500">TDEE & Macros</div></div></a>
+              <a href="/Bmi" class="calc-menu-item"><div class="calc-menu-icon" style="background:#f0fdf4">BMI</div><div><div>BMI Calculator</div><div style="font-size:11px;color:#94a3b8;font-weight:500">Body Mass Index</div></div></a>
+              <a href="/Calorie" class="calc-menu-item"><div class="calc-menu-icon" style="background:#fff7ed">CAL</div><div><div>Calorie Calculator</div><div style="font-size:11px;color:#94a3b8;font-weight:500">TDEE &amp; Macros</div></div></a>
               <div style="height:1px;background:rgba(0,0,0,0.07);margin:4px 0"></div>
-              <a href="/Calculator/BodyFat" class="calc-menu-item"><div class="calc-menu-icon" style="background:#eff6ff">🧮</div><div><div>Body Fat %</div><div style="font-size:11px;color:#94a3b8;font-weight:500">US Navy method</div></div></a>
-              <a href="/Calculator/IdealWeight" class="calc-menu-item"><div class="calc-menu-icon" style="background:#f0fdf4">⚖️</div><div><div>Ideal Weight</div><div style="font-size:11px;color:#94a3b8;font-weight:500">4 medical formulas</div></div></a>
-              <a href="/Calculator/Protein" class="calc-menu-item"><div class="calc-menu-icon" style="background:#f5f3ff">💪</div><div><div>Protein Intake</div><div style="font-size:11px;color:#94a3b8;font-weight:500">ISSN/ACSM guidelines</div></div></a>
-              <a href="/Calculator/Water" class="calc-menu-item"><div class="calc-menu-icon" style="background:#ecfeff">💧</div><div><div>Water Intake</div><div style="font-size:11px;color:#94a3b8;font-weight:500">Activity & climate</div></div></a>
-              <a href="/Calculator/OneRepMax" class="calc-menu-item"><div class="calc-menu-icon" style="background:#fff7ed">🏋️</div><div><div>1 Rep Max</div><div style="font-size:11px;color:#94a3b8;font-weight:500">4 formulas averaged</div></div></a>
-              <a href="/Calculator/Pace" class="calc-menu-item"><div class="calc-menu-icon" style="background:#fef2f2">🏃</div><div><div>Running Pace</div><div style="font-size:11px;color:#94a3b8;font-weight:500">Riegel race predictions</div></div></a>
-              <a href="/Calculator/HeartRate" class="calc-menu-item"><div class="calc-menu-icon" style="background:#fff1f2">❤️</div><div><div>Heart Rate Zones</div><div style="font-size:11px;color:#94a3b8;font-weight:500">Karvonen 5 zones</div></div></a>
-              <a href="/Calculator/Sleep" class="calc-menu-item"><div class="calc-menu-icon" style="background:#eef2ff">😴</div><div><div>Sleep Calculator</div><div style="font-size:11px;color:#94a3b8;font-weight:500">90-min cycles</div></div></a>
-              <a href="/Calculator/WaistHeight" class="calc-menu-item"><div class="calc-menu-icon" style="background:#fffbeb">📏</div><div><div>Waist-to-Height</div><div style="font-size:11px;color:#94a3b8;font-weight:500">Cardiovascular risk</div></div></a>
+              <a href="/Calculator/BodyFat" class="calc-menu-item"><div class="calc-menu-icon" style="background:#eff6ff">BF%</div><div><div>Body Fat %</div><div style="font-size:11px;color:#94a3b8;font-weight:500">US Navy method</div></div></a>
+              <a href="/Calculator/IdealWeight" class="calc-menu-item"><div class="calc-menu-icon" style="background:#f0fdf4">IW</div><div><div>Ideal Weight</div><div style="font-size:11px;color:#94a3b8;font-weight:500">4 medical formulas</div></div></a>
+              <a href="/Calculator/Protein" class="calc-menu-item"><div class="calc-menu-icon" style="background:#f5f3ff">PRO</div><div><div>Protein Intake</div><div style="font-size:11px;color:#94a3b8;font-weight:500">ISSN/ACSM guidelines</div></div></a>
+              <a href="/Calculator/Water" class="calc-menu-item"><div class="calc-menu-icon" style="background:#ecfeff">H2O</div><div><div>Water Intake</div><div style="font-size:11px;color:#94a3b8;font-weight:500">Activity &amp; climate</div></div></a>
+              <a href="/Calculator/OneRepMax" class="calc-menu-item"><div class="calc-menu-icon" style="background:#fff7ed">1RM</div><div><div>1 Rep Max</div><div style="font-size:11px;color:#94a3b8;font-weight:500">4 formulas averaged</div></div></a>
+              <a href="/Calculator/Pace" class="calc-menu-item"><div class="calc-menu-icon" style="background:#fef2f2">RUN</div><div><div>Running Pace</div><div style="font-size:11px;color:#94a3b8;font-weight:500">Riegel race predictions</div></div></a>
+              <a href="/Calculator/HeartRate" class="calc-menu-item"><div class="calc-menu-icon" style="background:#fff1f2">HR</div><div><div>Heart Rate Zones</div><div style="font-size:11px;color:#94a3b8;font-weight:500">Karvonen 5 zones</div></div></a>
+              <a href="/Calculator/Sleep" class="calc-menu-item"><div class="calc-menu-icon" style="background:#eef2ff">ZZZ</div><div><div>Sleep Calculator</div><div style="font-size:11px;color:#94a3b8;font-weight:500">90-min cycles</div></div></a>
+              <a href="/Calculator/WaistHeight" class="calc-menu-item"><div class="calc-menu-icon" style="background:#fffbeb">WHR</div><div><div>Waist-to-Height</div><div style="font-size:11px;color:#94a3b8;font-weight:500">Cardiovascular risk</div></div></a>
               <div style="height:1px;background:rgba(0,0,0,0.07);margin:4px 0"></div>
-              <a href="/Calculator" class="calc-menu-item" style="justify-content:center;color:#22c55e;font-weight:700;font-size:13px">🧮 View All →</a>
+              <a href="/Calculator" class="calc-menu-item" style="justify-content:center;color:#22c55e;font-weight:700;font-size:13px">View All Calculators →</a>
             </div>
           </div>
         </div>
@@ -322,31 +331,32 @@
 <section class="app-hero">
     <div class="hero-eyebrow">
         <span class="hero-eyebrow-dot"></span>
-        🇳🇵 @(ne ? "नेपालको #१ फिटनेस एप" : "Nepal's #1 Fitness App")
+        @(ne ? "नेपालको #१ फिटनेस एप" : "Nepal's #1 Fitness App — 11 Science-Based Calculators")
     </div>
     <h1>
         @if (ne) {
-            <text>बलियो बन्नुहोस्।<br/><em>स्वस्थ जीवन</em> जिउनुहोस्।</text>
+            <text>११ वैज्ञानिक<br/><em>क्याल्कुलेटर</em>हरू।</text>
         } else {
-            <text>Train Smarter.<br/>Live <em>Stronger.</em></text>
+            <text>Train Smarter with<br/><em>Science-Based</em> Tools.</text>
         }
     </h1>
     <p class="app-hero-sub">
         @(ne
-            ? "BMI, क्यालोरी क्याल्कुलेटर, व्यक्तिगत व्यायाम, दौड कोचिङ र स्वास्थ्य जानकारी — सबै एकै एपमा।"
-            : "Fitness calculators, personalized workouts, running coaching, and health info — one app, zero excuses.")
+            ? "११ फिटनेस क्याल्कुलेटर, व्यायाम लाइब्रेरी, दौड कोचिङ, स्वास्थ्य लेखहरू र प्रगति ट्र्याकिङ — सबै एकै एपमा। लगइन बिना पनि।"
+            : "11 fitness calculators, exercise library with muscle filters, running coaching, 20+ health articles in Nepali and English, and progress tracking — all in one app. No login required for calculators.")
     </p>
     <div class="hero-actions">
-        <a href="/Account/Register" class="hero-btn-primary">🚀 @(ne?"निःशुल्क सुरु गर्नुहोस्":"Start for Free")</a>
-        <a href="/Bmi" class="hero-btn-secondary">⚖️ @(ne?"BMI जाँच्नुहोस्":"Check My BMI")</a>
-        <a href="/Calorie" class="hero-btn-secondary">🔥 @(ne?"क्यालोरी जाँच्नुहोस्":"Calorie Calculator")</a>
+        <a href="/Account/Register" class="hero-btn-primary">@(ne?"निःशुल्क सुरु गर्नुहोस्":"Start Free — No Account Needed")</a>
+        <a href="/Calculator" class="hero-btn-secondary">@(ne?"सबै क्याल्कुलेटर":"Try All 11 Calculators")</a>
+        <a href="/Bmi" class="hero-btn-secondary">BMI @(ne?"जाँच्नुहोस्":"Check")</a>
+        <a href="/Calculator/Pace" class="hero-btn-secondary">@(ne?"दौड गति":"Running Pace")</a>
     </div>
     <div class="hero-pills">
-        <span class="hero-pill"><strong>5,000+</strong> @(ne?"सक्रिय प्रयोगकर्ता":"active users")</span>
-        <span class="hero-pill"><strong>50+</strong> @(ne?"व्यायाम":"exercises")</span>
-        <span class="hero-pill"><strong>20+</strong> @(ne?"स्वास्थ्य विषय":"health topics")</span>
-        <span class="hero-pill">✓ @(ne?"लगइन बिना पनि":"No login required")</span>
-        <span class="hero-pill">🇳🇵 @(ne?"नेपाली / अंग्रेजी":"Nepali + English")</span>
+        <span class="hero-pill"><strong>11</strong> @(ne?"फिटनेस क्याल्कुलेटर":"Fitness Calculators")</span>
+        <span class="hero-pill"><strong>50+</strong> @(ne?"व्यायाम":"Exercises")</span>
+        <span class="hero-pill"><strong>20+</strong> @(ne?"स्वास्थ्य विषय":"Health Topics")</span>
+        <span class="hero-pill">@(ne?"लगइन आवश्यक छैन":"No login required")</span>
+        <span class="hero-pill">@(ne?"नेपाली + अंग्रेजी":"Nepali + English")</span>
     </div>
 </section>
 
@@ -354,128 +364,122 @@
 <div class="bento-wrap">
     <div class="bento-grid">
 
-        <!-- Fitness Calculators — large card -->
+        <!-- 11 Calculators — large card with badge grid -->
         <div class="bento-card span2 tall" style="background:#ffffff;border:1.5px solid rgba(34,197,94,0.2);">
-            <div class="bento-tag">🧮 @(ne?"फिटनेस क्याल्कुलेटर":"Fitness Calculators")</div>
-            <div class="bento-title" style="color:#0f172a">@(ne?"निःशुल्क स्वास्थ्य उपकरणहरू":"Free Health Tools — No Account Needed")</div>
-            <div class="bento-desc" style="margin-bottom:20px;color:#64748b">@(ne?"आफ्नो BMI र दैनिक क्यालोरी आवश्यकता तुरुन्त थाहा पाउनुहोस्।":"Instantly know your BMI and daily calorie needs.")</div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-              <!-- BMI mini widget -->
-              <div style="background:#f8fafc;border-radius:14px;padding:16px;border:1px solid rgba(0,0,0,0.07)">
-                <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
-                  <span style="width:28px;height:28px;background:#eff6ff;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px">⚖️</span>
-                  <div style="font-size:12px;font-weight:700;color:#0f172a">BMI @(ne?"क्याल्कुलेटर":"Calculator")</div>
-                </div>
-                <div class="bento-bmi-inputs" style="margin-bottom:10px">
-                  <div>
-                    <div style="font-size:10px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px">@(ne?"उचाइ cm":"Height cm")</div>
-                    <input type="number" class="bento-bmi-input" id="bH" placeholder="172" min="100" max="250" oninput="calcBmi()" style="font-size:14px;padding:8px 10px" />
-                  </div>
-                  <div>
-                    <div style="font-size:10px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px">@(ne?"तौल kg":"Weight kg")</div>
-                    <input type="number" class="bento-bmi-input" id="bW" placeholder="70" min="30" max="300" oninput="calcBmi()" style="font-size:14px;padding:8px 10px" />
-                  </div>
-                </div>
-                <div class="bento-bmi-result" style="margin-bottom:10px;padding:10px">
-                  <div class="bento-bmi-val" id="bVal" style="font-size:28px">—</div>
-                  <div class="bento-bmi-cat" id="bCat" style="font-size:11px">@(ne?"उचाइ र तौल भर्नुहोस्":"Enter values above")</div>
-                </div>
-                <a href="/Bmi" style="display:flex;align-items:center;justify-content:center;gap:5px;background:#3b82f6;color:#fff;font-weight:700;font-size:12px;padding:9px;border-radius:8px;text-decoration:none">
-                  @(ne?"विस्तृत विश्लेषण →":"Full Analysis →")
-                </a>
-              </div>
-              <!-- Calorie card -->
-              <div style="background:#f8fafc;border-radius:14px;padding:16px;border:1px solid rgba(0,0,0,0.07);display:flex;flex-direction:column">
-                <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
-                  <span style="width:28px;height:28px;background:#fff7ed;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px">🔥</span>
-                  <div style="font-size:12px;font-weight:700;color:#0f172a">@(ne?"क्यालोरी क्याल्कुलेटर":"Calorie Calculator")</div>
-                </div>
-                <div style="flex:1;display:flex;flex-direction:column;gap:8px">
-                  @foreach (var row in new[]{
-                    ("BMR",               ne?"आराम क्यालोरी":"Calories at rest",  "1,650"),
-                    ("TDEE",              ne?"कुल दैनिक खर्च":"Total daily burn", "2,200"),
-                    (ne?"लक्ष्य":"Target",ne?"तौल घटाउने":"Weight loss",           "1,700")
-                  }) {
-                  <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:#fff;border-radius:8px;border:1px solid rgba(0,0,0,0.06)">
-                    <div>
-                      <div style="font-size:11px;font-weight:700;color:#0f172a">@row.Item1</div>
-                      <div style="font-size:10px;color:#94a3b8">@Html.Raw(row.Item2)</div>
-                    </div>
-                    <div style="font-size:14px;font-weight:800;color:#f97316">@row.Item3</div>
-                  </div>
-                  }
-                </div>
-                <a href="/Calorie" style="display:flex;align-items:center;justify-content:center;gap:5px;background:#f97316;color:#fff;font-weight:700;font-size:12px;padding:9px;border-radius:8px;text-decoration:none;margin-top:12px">
-                  @(ne?"आफ्नो क्यालोरी थाहा पाउनुहोस् →":"Calculate My Calories →")
-                </a>
-              </div>
+            <div class="bento-tag">@(ne?"फिटनेस क्याल्कुलेटर":"Fitness Calculators")</div>
+            <div class="bento-title" style="color:#0f172a">@(ne?"११ विज्ञान-आधारित क्याल्कुलेटर":"11 Science-Based Calculators — Free, No Login")</div>
+            <div class="bento-desc" style="margin-bottom:20px;color:#64748b">@(ne?"BMI देखि हृदय दर क्षेत्र सम्म — सबै वैज्ञानिक सूत्रहरूसहित।":"From BMI to heart rate zones — all backed by peer-reviewed formulas.")</div>
+            <div class="calc-badge-grid">
+                <a href="/Bmi" class="calc-badge" style="background:#f0fdf4;color:#16a34a;border-color:rgba(34,197,94,0.2)">BMI</a>
+                <a href="/Calorie" class="calc-badge" style="background:#fff7ed;color:#ea580c;border-color:rgba(249,115,22,0.2)">CAL</a>
+                <a href="/Calculator/BodyFat" class="calc-badge" style="background:#eff6ff;color:#2563eb;border-color:rgba(59,130,246,0.2)">BF%</a>
+                <a href="/Calculator/IdealWeight" class="calc-badge" style="background:#f0fdf4;color:#16a34a;border-color:rgba(34,197,94,0.2)">IW</a>
+                <a href="/Calculator/Protein" class="calc-badge" style="background:#f5f3ff;color:#7c3aed;border-color:rgba(124,58,237,0.2)">PRO</a>
+                <a href="/Calculator/Water" class="calc-badge" style="background:#ecfeff;color:#0891b2;border-color:rgba(8,145,178,0.2)">H2O</a>
+                <a href="/Calculator/OneRepMax" class="calc-badge" style="background:#fff7ed;color:#ea580c;border-color:rgba(249,115,22,0.2)">1RM</a>
+                <a href="/Calculator/Pace" class="calc-badge" style="background:#fef2f2;color:#dc2626;border-color:rgba(220,38,38,0.2)">RUN</a>
+                <a href="/Calculator/HeartRate" class="calc-badge" style="background:#fff1f2;color:#e11d48;border-color:rgba(225,29,72,0.2)">HR</a>
+                <a href="/Calculator/Sleep" class="calc-badge" style="background:#eef2ff;color:#4f46e5;border-color:rgba(79,70,229,0.2)">ZZZ</a>
+                <a href="/Calculator/WaistHeight" class="calc-badge" style="background:#fffbeb;color:#b45309;border-color:rgba(180,83,9,0.2)">WHR</a>
+                <a href="/Calculator" class="calc-badge" style="background:#22c55e;color:#ffffff;border-color:transparent;font-size:10px">All →</a>
             </div>
         </div>
 
-        <!-- Stat: Streak -->
+        <!-- Accent: 11 number stat -->
         <div class="bento-card accent">
-            <div class="bento-icon">🔥</div>
-            <div class="bento-num" style="color:#ffffff">21</div>
-            <div class="bento-num-label" style="color:rgba(255,255,255,0.7);margin-top:6px">@(ne?"दिनको लहर":"day streak avg")</div>
-            <div style="margin-top:16px;font-size:13px;font-weight:600;color:rgba(255,255,255,0.6)">@(ne?"सदस्यहरूको औसत streak":"average member streak")</div>
+            <div class="bento-num" style="color:#ffffff;font-size:68px">11</div>
+            <div class="bento-num-label" style="color:rgba(255,255,255,0.8);font-size:15px;font-weight:700;margin-top:8px">@(ne?"विज्ञान-आधारित क्याल्कुलेटर":"science-based calculators")</div>
+            <div style="margin-top:16px;font-size:12px;font-weight:600;color:rgba(255,255,255,0.6)">@(ne?"सबै निःशुल्क • लगइन छैन":"All free • No login needed")</div>
         </div>
 
-        <!-- Workout plans -->
+        <!-- Exercises — muscle group chips -->
         <div class="bento-card">
-            <div class="bento-tag">🏋️ @(ne?"व्यायाम":"Workouts")</div>
-            <div class="bento-title">@(ne?"व्यक्तिगत योजना":"Personalized Plans")</div>
-            <div class="bento-desc">@(ne?"तपाईंको लक्ष्य र स्तर अनुसार कस्टम व्यायाम योजना।":"Custom workout plans based on your goal and fitness level.")</div>
+            <div class="bento-tag">@(ne?"व्यायाम लाइब्रेरी":"Exercise Library")</div>
+            <div class="bento-title">@(ne?"५०+ व्यायाम":"50+ Exercises")</div>
+            <div class="bento-desc">@(ne?"मांसपेशी समूह अनुसार फिल्टर गर्नुहोस्।":"Filter by muscle group to find exactly what you need.")</div>
             <div class="mock-chips" style="margin-top:18px">
-                <span class="mock-chip">Beginner</span>
-                <span class="mock-chip">Strength</span>
-                <span class="mock-chip">Fat Loss</span>
-                <span class="mock-chip">Hybrid</span>
-                <span class="mock-chip">Running</span>
+                <span class="mock-chip">Chest</span>
+                <span class="mock-chip">Back</span>
+                <span class="mock-chip">Legs</span>
+                <span class="mock-chip">Arms</span>
+                <span class="mock-chip">Core</span>
+                <span class="mock-chip">Shoulders</span>
             </div>
+            <div style="margin-top:14px"><a href="/Exercise" style="font-size:12px;font-weight:700;color:#16a34a">@(ne?"सबै व्यायाम →":"Browse Exercises →")</a></div>
         </div>
 
-        <!-- Running -->
+        <!-- Running log mini mock -->
         <div class="bento-card dark2">
-            <div class="bento-icon">🏃</div>
-            <div class="bento-title">@(ne?"दौड कोचिङ":"Running Coach")</div>
-            <div class="bento-desc">@(ne?"5K र 10K योजना, गति क्यालकुलेटर।":"5K & 10K plans, pace calculator, weekly tracking.")</div>
-            <div style="margin-top:20px">
-                <div style="display:flex;justify-content:space-between;font-size:12px;color:#94a3b8;margin-bottom:6px"><span>@(ne?"साप्ताहिक किमी":"Weekly km")</span><span style="color:#22c55e;font-weight:700">32.4</span></div>
-                <div class="mock-bar"><div class="mock-bar-fill" style="width:65%"></div></div>
-                <div style="display:flex;justify-content:space-between;font-size:12px;color:rgba(255,255,255,0.55);margin-bottom:6px;margin-top:10px"><span>@(ne?"यस हप्ता":"This week")</span><span style="color:#4ade80;font-weight:700">4 @(ne?"दौड":"runs")</span></div>
-                <div class="mock-bar"><div class="mock-bar-fill" style="width:80%;background:linear-gradient(90deg,#4ade80,#16a34a)"></div></div>
+            <div style="font-size:11px;font-weight:700;color:#4ade80;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px">@(ne?"दौड लग":"Running Log")</div>
+            <div class="bento-title" style="color:#f0fdf4;font-size:17px;margin-bottom:14px">@(ne?"यस हप्ता":"This Week")</div>
+            @foreach (var r in new[]{("Mon","5.2 km","28:30"),("Wed","8.0 km","44:10"),("Sat","3.1 km","17:45")})
+            {
+            <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,0.07)">
+                <span style="color:#94a3b8;width:32px">@r.Item1</span>
+                <span style="color:#f0fdf4;font-weight:700">@r.Item2</span>
+                <span style="color:#4ade80;font-weight:600">@r.Item3</span>
             </div>
+            }
+            <div style="margin-top:12px;font-size:11px;color:#64748b">@(ne?"कुल":"Total") <strong style="color:#4ade80">16.3 km</strong></div>
         </div>
 
-        <!-- Progress -->
+        <!-- Progress tracking -->
         <div class="bento-card">
-            <div class="bento-tag">📈 @(ne?"प्रगति":"Progress")</div>
+            <div class="bento-tag">@(ne?"प्रगति":"Progress")</div>
             <div class="bento-title">@(ne?"ट्र्याक गर्नुहोस्":"Track Everything")</div>
-            <div class="bento-desc">@(ne?"तौल, मापन, र व्यायाम इतिहास — सबै एकै ठाउँमा।":"Weight, measurements, and workout history in one place.")</div>
+            <div class="bento-desc">@(ne?"तौल, मापन र व्यायाम इतिहास।":"Weight, measurements, and workout history in one place.")</div>
             <div class="mock-card" style="margin-top:16px;width:100%;padding:14px">
                 <div class="mock-stat-row">
-                    <div><div class="mock-label">@(ne?"तौल":"Weight")</div><div class="mock-val">72 <span style="font-size:12px;color:#4ade80">↓2kg</span></div></div>
+                    <div><div class="mock-label">@(ne?"तौल":"Weight")</div><div class="mock-val">72 kg <span style="font-size:12px;color:#4ade80">↓2</span></div></div>
                     <div><div class="mock-label">BMI</div><div class="mock-val mock-accent">22.4</div></div>
                 </div>
+                <div class="mock-bar"><div class="mock-bar-fill" style="width:72%"></div></div>
+                <div style="font-size:11px;color:#94a3b8;margin-top:4px">@(ne?"लक्ष्य: ७० किग्रा":"Goal: 70 kg — 72% there")</div>
             </div>
         </div>
 
-        <!-- Health topics -->
+        <!-- Health Topics — span2 with topic chips -->
         <div class="bento-card span2">
-            <div class="bento-tag">🏥 @(ne?"स्वास्थ्य":"Health")</div>
-            <div class="bento-title">@(ne?"२०+ स्वास्थ्य विषयहरू":"20+ Health Topics in Nepali")</div>
-            <div class="bento-desc" style="margin-bottom:20px">@(ne?"मधुमेह, हृदय, रक्तचाप, पोषण — नेपाली भाषामा।":"Diabetes, heart health, blood pressure, nutrition — in your language.")</div>
+            <div class="bento-tag">@(ne?"स्वास्थ्य":"Health Topics")</div>
+            <div class="bento-title">@(ne?"२०+ स्वास्थ्य विषयहरू नेपालीमा":"20+ Health Topics in Nepali &amp; English")</div>
+            <div class="bento-desc" style="margin-bottom:20px">@(ne?"मधुमेह, हृदय, रक्तचाप, पोषण, मानसिक स्वास्थ्य — आफ्नै भाषामा पढ्नुहोस्।":"Diabetes, heart health, blood pressure, nutrition, mental health, sleep and more — read in your language.")</div>
             <div style="display:flex;flex-wrap:wrap;gap:7px">
-                @foreach (var h in new[]{"🩺 Diabetes","❤️ Heart","💊 Blood Pressure","🥗 Nutrition","🧘 Mental Health","😴 Sleep","🦴 Bone","🫁 Respiratory"})
+                @foreach (var h in new[]{"Diabetes","Heart","Blood Pressure","Nutrition","Mental Health","Sleep","Bone Health","Respiratory"})
                 {<span style="padding:5px 12px;background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.18);border-radius:999px;font-size:12px;color:#16a34a;font-weight:600;">@h</span>}
             </div>
+            <div style="margin-top:16px"><a href="/Health" style="font-size:12px;font-weight:700;color:#16a34a">@(ne?"सबै विषयहरू →":"Read All Articles →")</a></div>
         </div>
 
-        <!-- Language -->
+        <!-- Nepali language card -->
         <div class="bento-card" style="background:linear-gradient(135deg,rgba(34,197,94,0.08),rgba(34,197,94,0.03));border-color:rgba(34,197,94,0.15)">
-            <div style="font-size:32px;margin-bottom:14px">🇳🇵</div>
+            <div style="font-size:36px;margin-bottom:14px;line-height:1">NP</div>
             <div class="bento-title">@(ne?"नेपाली भाषा":"नेपाली / English")</div>
-            <div class="bento-desc">@(ne?"सम्पूर्ण नेपाली भाषा समर्थन — आफ्नै भाषामा तालिम लिनुहोस्।":"Full Nepali language support. Switch anytime.")</div>
+            <div class="bento-desc">@(ne?"सम्पूर्ण नेपाली भाषा समर्थन — जुनसुकै बेला स्विच गर्नुहोस्।":"Full Nepali language support across all calculators, articles and workouts. Switch anytime.")</div>
+        </div>
+
+        <!-- Inline BMI widget -->
+        <div class="bento-card span2" style="background:#ffffff;border:1.5px solid rgba(59,130,246,0.2);">
+            <div class="bento-tag" style="background:rgba(59,130,246,0.08);border-color:rgba(59,130,246,0.2);color:#2563eb">BMI @(ne?"क्याल्कुलेटर":"Calculator")</div>
+            <div class="bento-title" style="color:#0f172a">@(ne?"अहिले नै BMI जाँच्नुहोस्":"Check Your BMI Right Now")</div>
+            <div class="bento-bmi">
+                <div class="bento-bmi-inputs">
+                    <div>
+                        <div style="font-size:10px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px">@(ne?"उचाइ (cm)":"Height (cm)")</div>
+                        <input type="number" class="bento-bmi-input" id="bH" placeholder="172" min="100" max="250" oninput="calcBmi()" />
+                    </div>
+                    <div>
+                        <div style="font-size:10px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px">@(ne?"तौल (kg)":"Weight (kg)")</div>
+                        <input type="number" class="bento-bmi-input" id="bW" placeholder="70" min="30" max="300" oninput="calcBmi()" />
+                    </div>
+                </div>
+                <div class="bento-bmi-result">
+                    <div class="bento-bmi-val" id="bVal">—</div>
+                    <div class="bento-bmi-cat" id="bCat">@(ne?"उचाइ र तौल भर्नुहोस्":"Enter height and weight above")</div>
+                </div>
+                <a href="/Bmi" style="display:flex;align-items:center;justify-content:center;gap:6px;background:#2563eb;color:#fff;font-weight:700;font-size:13px;padding:11px;border-radius:10px;text-decoration:none">
+                    @(ne?"विस्तृत BMI विश्लेषण →":"Full BMI Analysis with History →")
+                </a>
+            </div>
         </div>
 
     </div>
@@ -485,13 +489,13 @@
 <div class="social-strip">
     <div class="social-strip-inner">
         @foreach (var r in new[]{
-            ("#22c55e","P","Pramesh KC", ne?"BMI र व्यायाम दुवै एकै ठाउँमा! 🔥":"BMI + workouts in one app!"),
+            ("#22c55e","P","Pramesh KC", ne?"BMI र व्यायाम दुवै एकै ठाउँमा!":"BMI + workouts in one app — amazing!"),
             ("#4ade80","S","Sunita T.", ne?"नेपाली भाषामा पाएर खुसी लाग्यो।":"Love the Nepali language support."),
-            ("#60a5fa","R","Rajesh S.", ne?"5K मा 24 मिनेट पुगें! धन्यवाद 🏃":"Hit 24min 5K after 8 weeks!")
+            ("#60a5fa","R","Rajesh S.", ne?"5K मा 24 मिनेट पुगें, धन्यवाद!":"Hit 24min 5K after 8 weeks of plans!")
         }) {
         <div class="social-item">
             <div class="social-avatar" style="background:@r.Item1">@r.Item2</div>
-            <div class="social-quote">"<strong>@r.Item4</strong>" — @r.Item3 ⭐⭐⭐⭐⭐</div>
+            <div class="social-quote">"<strong>@r.Item4</strong>" — @r.Item3</div>
         </div>
         }
     </div>
@@ -500,68 +504,97 @@
 <!-- FEATURE DEEP DIVES -->
 <div class="feature-rows" style="margin-top:60px">
 
+    <!-- Row 1: 11 Science-Based Calculators -->
     <div class="feature-row">
         <div class="feature-row-text">
-            <div class="feature-row-tag">🧮 @(ne?"फिटनेस क्याल्कुलेटर":"Fitness Calculators")</div>
-            <div class="feature-row-title">@(ne?"BMI र क्यालोरी — लगइन बिना":"BMI & Calorie Tools, No Login")</div>
-            <div class="feature-row-desc">@(ne?"आफ्नो BMI थाहा पाउनुहोस् र Mifflin-St Jeor सूत्रले दैनिक TDEE, BMR र म्याक्रो लक्ष्य गणना गर्नुहोस्। सम्पूर्ण निःशुल्क।":"Know your BMI and calculate your daily TDEE, BMR, and macro targets using the Mifflin-St Jeor formula. Completely free, no account needed.")</div>
+            <div class="feature-row-tag">@(ne?"फिटनेस क्याल्कुलेटर":"11 Fitness Calculators")</div>
+            <div class="feature-row-title">@(ne?"११ विज्ञान-आधारित क्याल्कुलेटर":"11 Science-Based Calculators")</div>
+            <div class="feature-row-desc">
+                @(ne
+                    ? "Mifflin-St Jeor सूत्रले TDEE र BMR, US Navy विधिले शरीर चर्बी %, Riegel सूत्रले दौड गति भविष्यवाणी, Karvonen र Tanaka ले हृदय दर क्षेत्र, ISSN/ACSM गाइडलाइनमा प्रोटिन — सबै वैज्ञानिक तरिकाले।"
+                    : "Mifflin-St Jeor for TDEE and macros. US Navy method for body fat %. Riegel formula for race pace predictions. Karvonen and Tanaka for heart rate zones. ISSN/ACSM guidelines for protein intake. 4 averaged formulas for 1 rep max. All 11 calculators are free — no account required.")
+            </div>
             <div style="display:flex;gap:10px;flex-wrap:wrap">
-              <a href="/Bmi" class="feature-row-link">@(ne?"BMI जाँच्नुहोस्":"BMI Calculator") →</a>
-              <a href="/Calorie" class="feature-row-link" style="color:#f97316;border-color:rgba(249,115,22,0.3)">@(ne?"क्यालोरी गणना":"Calorie Calculator") →</a>
+                <a href="/Calculator" class="feature-row-link">@(ne?"सबै क्याल्कुलेटर":"View All 11 Calculators") →</a>
+                <a href="/Bmi" class="feature-row-link" style="color:#2563eb;border-color:rgba(37,99,235,0.3)">BMI →</a>
+                <a href="/Calorie" class="feature-row-link" style="color:#ea580c;border-color:rgba(234,88,12,0.3)">@(ne?"क्यालोरी":"Calories") →</a>
             </div>
         </div>
-        <div class="feature-row-visual" style="flex-direction:column;gap:10px;padding:20px">
-            <div class="mock-card" style="width:210px">
-                <div style="font-size:10px;color:#94a3b8;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px">⚖️ BMI Result</div>
-                <div style="font-size:40px;font-weight:900;color:#16a34a;line-height:1">22.4</div>
-                <div style="color:#16a34a;font-weight:700;font-size:12px;margin:5px 0 8px">✅ Normal Weight</div>
-                <div style="font-size:11px;color:#64748b">172cm · 66kg</div>
+        <div class="feature-row-visual" style="flex-direction:column;gap:10px;padding:24px">
+            <div class="mock-card" style="width:220px">
+                <div style="font-size:10px;color:#94a3b8;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px">BMI Result</div>
+                <div style="font-size:42px;font-weight:900;color:#16a34a;line-height:1">22.4</div>
+                <div style="color:#16a34a;font-weight:700;font-size:12px;margin:5px 0 8px">Normal Weight</div>
+                <div style="font-size:11px;color:#64748b">172 cm · 66 kg</div>
             </div>
-            <div class="mock-card" style="width:210px">
-                <div style="font-size:10px;color:#94a3b8;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px">🔥 Daily Calories</div>
-                <div style="font-size:40px;font-weight:900;color:#f97316;line-height:1">1,700</div>
-                <div style="font-size:11px;color:#64748b;margin-top:5px">TDEE 2,200 · Goal: Lose</div>
+            <div class="mock-card" style="width:220px">
+                <div style="font-size:10px;color:#94a3b8;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px">Daily Calories (Mifflin-St Jeor)</div>
+                <div style="font-size:36px;font-weight:900;color:#ea580c;line-height:1">1,700</div>
+                <div style="font-size:11px;color:#64748b;margin-top:6px">TDEE 2,200 · Goal: Lose weight</div>
             </div>
         </div>
     </div>
 
+    <!-- Row 2 (rev): Personalized Workouts -->
     <div class="feature-row rev">
         <div class="feature-row-text">
-            <div class="feature-row-tag">🏋️ @(ne?"व्यायाम":"Workouts")</div>
-            <div class="feature-row-title">@(ne?"तपाईंको लागि बनाइएको योजना":"Your Personal Workout Plan")</div>
-            <div class="feature-row-desc">@(ne?"Beginner देखि Advanced सम्म — शक्ति, दौड, हाइब्रिड सबै।":"From beginner to advanced — strength, cardio, hybrid. AI-matched to your goals and available equipment.")</div>
-            <a href="/Workout" class="feature-row-link">@(ne?"योजनाहरू हेर्नुहोस्":"Browse Plans") →</a>
+            <div class="feature-row-tag">@(ne?"व्यायाम":"Workouts")</div>
+            <div class="feature-row-title">@(ne?"व्यक्तिगत व्यायाम र व्यायाम लाइब्रेरी":"Personalized Workouts &amp; Exercise Library")</div>
+            <div class="feature-row-desc">
+                @(ne
+                    ? "छाती, पिठ्यूँ, खुट्टा, हात, कोर र काँध — मांसपेशी समूह अनुसार फिल्टर गर्नुहोस्। Beginner देखि Advanced सम्म 5K र 10K प्रशिक्षण योजना। आफ्नो व्यायाम इतिहास र प्रगति ट्र्याक गर्नुहोस्।"
+                    : "Browse 50+ exercises filtered by muscle group — Chest, Back, Legs, Arms, Core, Shoulders. Structured beginner-to-advanced workout plans built around your goals and available equipment. Log your workout history and track personal records over time.")
+            </div>
+            <div style="display:flex;gap:10px;flex-wrap:wrap">
+                <a href="/Exercise" class="feature-row-link">@(ne?"व्यायाम लाइब्रेरी":"Exercise Library") →</a>
+                <a href="/Workout" class="feature-row-link" style="color:#7c3aed;border-color:rgba(124,58,237,0.3)">@(ne?"योजनाहरू":"Training Plans") →</a>
+            </div>
         </div>
         <div class="feature-row-visual">
             <div class="mock-card" style="width:220px">
                 <div style="font-size:10px;color:#94a3b8;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px">Today's Workout</div>
                 <div style="font-size:15px;font-weight:800;color:#0f172a;margin-bottom:4px">Upper Body Power</div>
-                <div style="font-size:12px;color:#64748b;margin-bottom:12px">⏱ 45min · 🔥 420 kcal</div>
-                @foreach (var ex in new[]{"Bench Press","Pull-Ups","OHP"})
-                {<div style="display:flex;justify-content:space-between;font-size:12px;padding:6px 0;border-bottom:1px solid rgba(0,0,0,0.06)"><span style="color:#374151">@ex</span><span style="color:#16a34a;font-weight:700">4×8</span></div>}
+                <div style="font-size:12px;color:#64748b;margin-bottom:12px">45 min · 420 kcal</div>
+                @foreach (var ex in new[]{"Bench Press","Pull-Ups","Overhead Press"})
+                {<div style="display:flex;justify-content:space-between;font-size:12px;padding:6px 0;border-bottom:1px solid rgba(0,0,0,0.06)"><span style="color:#374151">@ex</span><span style="color:#16a34a;font-weight:700">4 x 8</span></div>}
+                <div style="margin-top:10px">
+                    <div class="mock-chips">
+                        <span class="mock-chip">Chest</span>
+                        <span class="mock-chip">Back</span>
+                        <span class="mock-chip">Shoulders</span>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
+    <!-- Row 3: Running Coach + Pace Calculator -->
     <div class="feature-row">
         <div class="feature-row-text">
-            <div class="feature-row-tag">🏃 @(ne?"दौड":"Running")</div>
-            <div class="feature-row-title">@(ne?"दौड ट्रेकर र कोच":"Run Tracker & Coach")</div>
-            <div class="feature-row-desc">@(ne?"5K र 10K प्रशिक्षण योजना, गति क्यालकुलेटर, र साप्ताहिक किमी ट्र्याकिङ।":"Structured 5K & 10K training plans, pace calculator, and weekly mileage tracking with personal bests.")</div>
-            <a href="/Running" class="feature-row-link">@(ne?"दौड लग गर्नुहोस्":"Log a Run") →</a>
+            <div class="feature-row-tag">@(ne?"दौड":"Running")</div>
+            <div class="feature-row-title">@(ne?"दौड कोच र गति क्याल्कुलेटर":"Running Coach + Pace Calculator")</div>
+            <div class="feature-row-desc">
+                @(ne
+                    ? "Riegel सूत्रले 5K, 10K, हाफ म्याराथन र म्याराथनको गति भविष्यवाणी गर्नुहोस्। km र miles दुवैमा काम गर्छ। दौड लग राख्नुहोस् र साप्ताहिक किमी ट्र्याक गर्नुहोस्। संरचित 5K र 10K प्रशिक्षण योजना।"
+                    : "Use the Riegel formula to predict your race finish times across 5K, 10K, half marathon, and marathon from a single reference run. Supports both km and miles. Log every run, track weekly mileage, view personal bests, and follow structured 5K and 10K training plans designed to help you get faster.")
+            </div>
+            <div style="display:flex;gap:10px;flex-wrap:wrap">
+                <a href="/Calculator/Pace" class="feature-row-link">@(ne?"गति क्याल्कुलेटर":"Pace Calculator") →</a>
+                <a href="/Running" class="feature-row-link" style="color:#dc2626;border-color:rgba(220,38,38,0.3)">@(ne?"दौड लग":"Running Log") →</a>
+            </div>
         </div>
         <div class="feature-row-visual">
             <div class="mock-card" style="width:220px">
-                <div style="font-size:10px;color:#94a3b8;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px">This Week</div>
-                @foreach (var r in new[]{("Mon","5.2km","28:30"),("Wed","8.0km","44:10"),("Sat","3.1km","17:45")})
+                <div style="font-size:10px;color:#94a3b8;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px">Riegel Race Predictions</div>
+                <div style="font-size:12px;font-weight:700;color:#0f172a;margin-bottom:10px">Based on: 5K in 25:00</div>
+                @foreach (var race in new[]{("5K","25:00"),("10K","52:06"),("Half","1:55:40"),("Full","3:59:35")})
                 {
                 <div style="display:flex;justify-content:space-between;font-size:12px;padding:6px 0;border-bottom:1px solid rgba(0,0,0,0.06)">
-                    <span style="color:#64748b">@r.Item1</span>
-                    <span style="color:#0f172a;font-weight:700">@r.Item2</span>
-                    <span style="color:#16a34a">@r.Item3</span>
+                    <span style="color:#64748b;font-weight:600">@race.Item1</span>
+                    <span style="color:#dc2626;font-weight:700">@race.Item2</span>
                 </div>
                 }
-                <div style="margin-top:10px;font-size:11px;color:#94a3b8">Total · <strong style="color:#16a34a">16.3km</strong></div>
+                <div style="margin-top:10px;font-size:11px;color:#94a3b8">km / miles · Riegel formula</div>
             </div>
         </div>
     </div>
@@ -570,11 +603,11 @@
 
 <!-- CTA -->
 <div class="app-cta" style="max-width:1100px;margin:0 auto 80px">
-    <h2>@(ne?"आजै सुरु गर्नुहोस्!":"Ready to Get Fit?")</h2>
-    <p>@(ne?"निःशुल्क खाता बनाउनुहोस् र आफ्नो यात्रा सुरु गर्नुहोस्।":"Create your free account and start your fitness journey today.")</p>
+    <h2>@(ne?"आफ्नो फिटनेस यात्रा सुरु गर्नुहोस्!":"Start Your Fitness Journey — Free Forever for Calculators")</h2>
+    <p>@(ne?"क्याल्कुलेटरहरू सधैँ निःशुल्क। खाता बनाएर प्रगति ट्र्याक गर्नुहोस्।":"All 11 calculators are free with no login required. Create a free account to unlock progress tracking, workout history, and personalized plans.")</p>
     <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
-        <a href="/Account/Register" class="cta-btn-dark">🚀 @(ne?"निःशुल्क दर्ता":"Register Free")</a>
-        <a href="/Home/GuestSuggest?goal=general&level=beginner" class="cta-btn-ghost">@(ne?"पहिले सुझाव हेर्नुहोस्":"Explore First")</a>
+        <a href="/Account/Register" class="cta-btn-dark">@(ne?"निःशुल्क दर्ता":"Register Free")</a>
+        <a href="/Calculator" class="cta-btn-ghost">@(ne?"क्याल्कुलेटर प्रयास गर्नुहोस्":"Try Calculators Now")</a>
     </div>
 </div>
 
@@ -583,28 +616,40 @@
     <div class="app-footer-grid">
         <div>
             <div class="app-footer-brand">
-                <div class="app-nav-logo-icon" style="width:26px;height:26px;font-size:13px">💪</div>
+                <div class="app-nav-logo-icon" style="width:26px;height:26px;font-size:11px;font-weight:900">SF</div>
                 ShaktiFit
             </div>
-            <div class="app-footer-brand-sub">@(ne?"नेपालको स्वास्थ्य र फिटनेस एप। व्यायाम, BMI ट्र्याकिङ र स्वास्थ्य जानकारी।":"Nepal's fitness app. Workouts, BMI tracking, and health info all in one place.")</div>
+            <div class="app-footer-brand-sub">@(ne?"नेपालको स्वास्थ्य र फिटनेस एप। ११ क्याल्कुलेटर, व्यायाम लाइब्रेरी, दौड कोचिङ र स्वास्थ्य लेखहरू।":"Nepal's fitness app. 11 science-based calculators, exercise library, running coaching, and health articles in Nepali and English.")</div>
         </div>
         <div class="app-footer-col">
             <h4>App</h4>
             <a href="/Exercise">@(ne?"व्यायाम":"Exercises")</a>
             <a href="/Workout">@(ne?"योजनाहरू":"Plans")</a>
             <a href="/Running">@(ne?"दौड":"Running")</a>
+            <a href="/Health">@(ne?"स्वास्थ्य":"Health")</a>
         </div>
         <div class="app-footer-col">
             <h4>@(ne?"क्याल्कुलेटर":"Calculators")</h4>
-            <a href="/Bmi">⚖️ BMI</a>
-            <a href="/Calorie">🔥 @(ne?"क्यालोरी":"Calories")</a>
+            <a href="/Bmi">BMI</a>
+            <a href="/Calorie">@(ne?"क्यालोरी":"Calories")</a>
+            <a href="/Calculator/BodyFat">@(ne?"शरीर चर्बी":"Body Fat")</a>
+            <a href="/Calculator/IdealWeight">@(ne?"आदर्श तौल":"Ideal Weight")</a>
+            <a href="/Calculator/Protein">@(ne?"प्रोटिन":"Protein")</a>
+            <a href="/Calculator/Water">@(ne?"पानी":"Water")</a>
+            <a href="/Calculator/OneRepMax">1 Rep Max</a>
+            <a href="/Calculator/Pace">@(ne?"दौड गति":"Running Pace")</a>
+            <a href="/Calculator/HeartRate">@(ne?"हृदय दर":"Heart Rate")</a>
+            <a href="/Calculator/Sleep">@(ne?"निन्द्रा":"Sleep")</a>
+            <a href="/Calculator/WaistHeight">@(ne?"कम्मर-उचाइ":"Waist-to-Height")</a>
         </div>
         <div class="app-footer-col">
             <h4>@(ne?"स्वास्थ्य":"Health")</h4>
             <a href="/Health">@(ne?"मधुमेह":"Diabetes")</a>
             <a href="/Health">@(ne?"हृदय":"Heart")</a>
+            <a href="/Health">@(ne?"रक्तचाप":"Blood Pressure")</a>
             <a href="/Health">@(ne?"पोषण":"Nutrition")</a>
-            <a href="/Health">@(ne?"मानसिक":"Mental")</a>
+            <a href="/Health">@(ne?"मानसिक":"Mental Health")</a>
+            <a href="/Health">@(ne?"निन्द्रा":"Sleep")</a>
         </div>
         <div class="app-footer-col">
             <h4>@(ne?"खाता":"Account")</h4>
@@ -615,7 +660,7 @@
     </div>
     <div class="app-footer-bottom">
         <span>© 2026 ShaktiFit | स्वास्थ्य फिट</span>
-        <span>Made with ❤️ for Nepal 🇳🇵</span>
+        <span>Made with care for Nepal</span>
     </div>
 </footer>
 
@@ -633,15 +678,15 @@ document.addEventListener('click', function() {
 const bmiData = {
   en: [
     {max:18.5,label:'Underweight',color:'#60a5fa'},
-    {max:25,label:'Normal Weight ✅',color:'#4ade80'},
-    {max:30,label:'Overweight ⚡',color:'#fbbf24'},
-    {max:999,label:'Obese 🩺',color:'#f87171'}
+    {max:25,label:'Normal Weight',color:'#4ade80'},
+    {max:30,label:'Overweight',color:'#fbbf24'},
+    {max:999,label:'Obese',color:'#f87171'}
   ],
   ne: [
     {max:18.5,label:'कम तौल',color:'#60a5fa'},
-    {max:25,label:'सामान्य तौल ✅',color:'#4ade80'},
-    {max:30,label:'अधिक तौल ⚡',color:'#fbbf24'},
-    {max:999,label:'मोटोपन 🩺',color:'#f87171'}
+    {max:25,label:'सामान्य तौल',color:'#4ade80'},
+    {max:30,label:'अधिक तौल',color:'#fbbf24'},
+    {max:999,label:'मोटोपन',color:'#f87171'}
   ]
 };
 const pageLang = '@lang';
@@ -653,7 +698,7 @@ function calcBmi() {
   if (!h || !w || h < 100 || w < 20) {
     valEl.textContent = '—'; valEl.style.color = '#22c55e';
     catEl.textContent = pageLang === 'ne' ? 'उचाइ र तौल भर्नुहोस्' : 'Enter height & weight above';
-    catEl.style.color = 'rgba(245,240,232,0.45)'; return;
+    catEl.style.color = '#94a3b8'; return;
   }
   const bmi = Math.round(w / Math.pow(h/100,2) * 10) / 10;
   const cats = bmiData[pageLang === 'ne' ? 'ne' : 'en'];
