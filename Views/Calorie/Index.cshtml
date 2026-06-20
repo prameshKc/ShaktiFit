@@ -23,12 +23,12 @@
     bool hasResult = bmr.HasValue;
 
     string goalLabel = goal switch {
-        "lose_fast" => ne ? "छिटो तौल घटाउने"  : "Lose weight fast",
+        "lose_fast" => ne ? "छिटो तौल घटाउने"  : "Lose fast",
         "lose"      => ne ? "तौल घटाउने"        : "Lose weight",
-        "maintain"  => ne ? "तौल कायम राख्ने"   : "Maintain weight",
+        "maintain"  => ne ? "तौल कायम राख्ने"   : "Maintain",
         "gain"      => ne ? "मांसपेशी बनाउने"   : "Build muscle",
-        "gain_fast" => ne ? "छिटो मांसपेशी बनाउने" : "Bulk up fast",
-        _ => "Maintain weight"
+        "gain_fast" => ne ? "छिटो बल्क"         : "Bulk up",
+        _ => "Maintain"
     };
     string goalColor = goal switch {
         "lose_fast" or "lose" => "#ef4444",
@@ -37,329 +37,288 @@
         _ => "#22c55e"
     };
 
-    int protCal = prot.HasValue ? prot.Value * 4 : 0;
-    int carbCal = carb.HasValue ? carb.Value * 4 : 0;
-    int fatCal  = fat.HasValue  ? fat.Value  * 9 : 0;
+    int protCal  = prot.HasValue ? prot.Value * 4 : 0;
+    int carbCal  = carb.HasValue ? carb.Value * 4 : 0;
+    int fatCal   = fat.HasValue  ? fat.Value  * 9 : 0;
     int totalCal = protCal + carbCal + fatCal;
-    double protPct = totalCal > 0 ? Math.Round((double)protCal / totalCal * 100) : 0;
-    double carbPct = totalCal > 0 ? Math.Round((double)carbCal / totalCal * 100) : 0;
-    double fatPct  = totalCal > 0 ? Math.Round((double)fatCal  / totalCal * 100) : 0;
+    int protPct  = totalCal > 0 ? (int)Math.Round((double)protCal / totalCal * 100) : 0;
+    int carbPct  = totalCal > 0 ? (int)Math.Round((double)carbCal / totalCal * 100) : 0;
+    int fatPct   = totalCal > 0 ? (int)Math.Round((double)fatCal  / totalCal * 100) : 0;
+
+    // Meal split
+    int mealB = hasResult ? (int)Math.Round(target!.Value * 0.25) : 0;
+    int mealL = hasResult ? (int)Math.Round(target!.Value * 0.35) : 0;
+    int mealD = hasResult ? (int)Math.Round(target!.Value * 0.30) : 0;
+    int mealS = hasResult ? target!.Value - mealB - mealL - mealD : 0;
+
+    var tips = goal switch {
+        "lose_fast" or "lose" => ne
+          ? new[]{"प्रोटिन धेरै खानुहोस् — यसले भोक कम गर्छ","मीठो पेय बन्द गर्नुहोस्","सब्जी र फलफूल भरपूर खानुहोस्","पर्याप्त पानी पिउनुहोस् (३+ लिटर)","खाना बिस्तारै चपाउनुहोस्"}
+          : new[]{"High protein keeps you full and preserves muscle","Eliminate liquid calories (soda, juice, alcohol)","Fill half your plate with vegetables","Drink 3+ liters of water daily","Eat slowly — it takes 20 min to feel full"},
+        "gain" or "gain_fast" => ne
+          ? new[]{"खाना नछोड्नुहोस् — नियमित खानुहोस्","नट्स, एभोकाडो जस्ता क्यालोरी-घना खाना खानुहोस्","व्यायामपछि प्रोटिन + कार्ब खानुहोस्","राम्रो सुत्नुहोस् — मांसपेशी सुतेको बेला बन्छ","हप्तामा ३-४ पटक शक्ति व्यायाम गर्नुहोस्"}
+          : new[]{"Never skip meals — eat consistently throughout the day","Include calorie-dense foods: nuts, avocado, olive oil","Post-workout: 30-40g protein + carbs within 45 min","Sleep 8 hours — muscles grow during recovery","Strength train 3-4x per week"},
+        _ => ne
+          ? new[]{"सन्तुलित म्याक्रो खानुहोस्","नियमित व्यायाम जारी राख्नुहोस्","प्रशोधित खाना कम गर्नुहोस्","पर्याप्त पानी पिउनुहोस्","तनाव कम गर्नुहोस्"}
+          : new[]{"Keep macros balanced — don't cut any food group","Stay consistent with exercise","Minimize processed foods","Stay hydrated — 2.5-3L water daily","Manage stress — cortisol raises appetite"}
+    };
+
+    // Build select HTML to avoid Razor tag-helper conflict
+    var actOpts = new[]{
+        ("sedentary",  "🪑", ne?"बस्ने काम (व्यायाम छैन)":"Sedentary (no exercise)"),
+        ("light",      "🚶", ne?"हल्का (हप्तामा १-३ दिन)":"Lightly active (1-3 days/week)"),
+        ("moderate",   "🏃", ne?"मध्यम (हप्तामा ३-५ दिन)":"Moderately active (3-5 days/week)"),
+        ("active",     "💪", ne?"सक्रिय (हप्तामा ६-७ दिन)":"Very active (6-7 days/week)"),
+        ("very_active","🔥", ne?"अत्यन्त सक्रिय (दिनमा दुई पटक)":"Extra active (2x/day)"),
+    };
+    var goalOpts = new[]{
+        ("lose_fast","📉", ne?"छिटो तौल घटाउने (-750 cal)":"Lose fast (-750 cal/day)"),
+        ("lose",     "⬇️", ne?"तौल घटाउने (-500 cal)":"Lose weight (-500 cal/day)"),
+        ("maintain", "⚖️", ne?"तौल कायम राख्ने":"Maintain weight"),
+        ("gain",     "⬆️", ne?"मांसपेशी बनाउने (+400 cal)":"Build muscle (+400 cal/day)"),
+        ("gain_fast","📈", ne?"छिटो बल्क (+700 cal)":"Bulk up fast (+700 cal/day)"),
+    };
+    var actSb  = new System.Text.StringBuilder("<select class=\"bp-sel\" name=\"activity\">");
+    foreach (var o in actOpts)
+        actSb.Append($"<option value=\"{o.Item1}\"{(activity==o.Item1?" selected":"")}>{o.Item2} {o.Item3}</option>");
+    actSb.Append("</select>");
+    var goalSb = new System.Text.StringBuilder("<select class=\"bp-sel\" name=\"goal\">");
+    foreach (var o in goalOpts)
+        goalSb.Append($"<option value=\"{o.Item1}\"{(goal==o.Item1?" selected":"")}>{o.Item2} {o.Item3}</option>");
+    goalSb.Append("</select>");
 }
 
 <style>
-.cal-page { max-width:900px; margin:0 auto; padding:20px 16px 80px; }
-.cal-header { margin-bottom:20px; }
-.cal-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; align-items:start; }
-@@media(max-width:640px) { .cal-grid { grid-template-columns:1fr; } }
-.cal-card {
-  background:var(--card-bg,#ffffff); border-radius:14px; padding:20px;
-  border:1px solid var(--border-color,rgba(0,0,0,0.07));
-  box-shadow:0 2px 8px rgba(0,0,0,0.04);
-}
-.cal-label { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:#94a3b8; margin-bottom:10px; }
-.form-group { margin-bottom:12px; }
-.form-group label { display:block; font-size:12px; font-weight:600; color:#94a3b8; margin-bottom:4px; }
-.form-input {
-  width:100%; padding:9px 12px; border:1.5px solid var(--border-color,#e2e8f0); border-radius:8px;
-  font-size:13px; font-weight:600; color:#374151; background:var(--input-bg,#fafafa);
-  box-sizing:border-box; outline:none; transition:border-color .15s;
-}
-.form-input:focus { border-color:#22c55e; }
-.form-input::placeholder { color:#94a3b8; }
-.gender-row { display:grid; grid-template-columns:1fr 1fr; gap:6px; }
-.gender-btn {
-  padding:8px; border:1.5px solid var(--border-color,#e2e8f0); border-radius:8px;
-  background:var(--input-bg,#fff); font-size:12px; font-weight:700; color:#64748b;
-  cursor:pointer; transition:all .15s; text-align:center;
-}
-.gender-btn.active { border-color:#22c55e; background:#f0fdf4; color:#16a34a; }
-.activity-select, .goal-select {
-  width:100%; padding:9px 12px; border:1.5px solid var(--border-color,#e2e8f0); border-radius:8px;
-  font-size:12px; font-weight:600; color:#374151; background:var(--input-bg,#fafafa);
-  box-sizing:border-box; outline:none; cursor:pointer;
-}
-.calc-btn {
-  width:100%; padding:11px; background:linear-gradient(135deg,#22c55e,#16a34a);
-  border:none; border-radius:10px; color:#fff; font-size:14px; font-weight:800;
-  cursor:pointer; box-shadow:0 4px 14px rgba(34,197,94,0.3); transition:opacity .15s; margin-top:4px;
-}
-.calc-btn:hover { opacity:.9; }
-/* Result cards */
-.stat-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:16px; }
-.stat-box { background:var(--bg-secondary,#f8fafc); border-radius:10px; padding:12px; text-align:center; border:1px solid var(--border-color,#e2e8f0); }
-.stat-val { font-size:20px; font-weight:900; color:var(--text-primary,#0f172a); }
-.stat-lbl { font-size:10px; font-weight:700; color:#94a3b8; text-transform:uppercase; letter-spacing:0.06em; margin-top:3px; }
-/* Macro bar */
-.macro-bar { height:12px; border-radius:999px; display:flex; overflow:hidden; margin:8px 0 6px; }
-.macro-seg-p { background:#3b82f6; }
-.macro-seg-c { background:#f59e0b; }
-.macro-seg-f { background:#ef4444; }
-.macro-legend { display:flex; gap:12px; flex-wrap:wrap; font-size:12px; color:var(--text-secondary,#475569); }
-.macro-dot { width:8px; height:8px; border-radius:50%; display:inline-block; margin-right:3px; }
-.macro-row { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:12px; }
-.macro-box { border-radius:10px; padding:12px; text-align:center; }
-.macro-box-p { background:#eff6ff; }
-.macro-box-c { background:#fffbeb; }
-.macro-box-f { background:#fef2f2; }
-/* Meal plan */
-.meal-row { display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid var(--border-color,#f1f5f9); }
-.meal-row:last-child { border-bottom:none; }
-/* Tips */
-.tip-item { display:flex; align-items:flex-start; gap:8px; padding:7px 0; border-bottom:1px solid var(--border-color,#f1f5f9); font-size:12px; color:var(--text-secondary,#475569); }
-.tip-item:last-child { border-bottom:none; }
-.tip-dot { width:5px; height:5px; border-radius:50%; background:#22c55e; margin-top:5px; flex-shrink:0; }
+  /* ── mirrors BMI page design ── */
+  .bp { background:#f8faf8; min-height:100vh; padding:20px 16px 40px; }
+  .bp-inner { max-width:880px; margin:0 auto; }
+  .bp-title { font-size:24px; font-weight:900; color:#0f172a; letter-spacing:-0.02em; margin-bottom:4px; }
+  .bp-sub { font-size:13px; color:#64748b; margin-bottom:24px; }
+  .bp-tag { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; color:var(--accent,#22c55e); margin-bottom:6px; }
+
+  /* form card */
+  .bp-form { background:#ffffff; border:1px solid rgba(0,0,0,0.08); border-radius:18px; padding:20px; margin-bottom:20px; }
+  .bp-form-title { font-size:15px; font-weight:800; color:#18181b; margin-bottom:18px; padding-bottom:12px; border-bottom:1px solid rgba(0,0,0,0.07); }
+  .bp-lbl { font-size:12px; font-weight:700; color:#71717a; margin-bottom:6px; letter-spacing:0.03em; }
+  .bp-inp { width:100%; background:#f9f9f8; border:1.5px solid rgba(0,0,0,0.1); border-radius:12px; color:#18181b; padding:13px 16px; font-size:18px; font-family:inherit; outline:none; margin-bottom:14px; transition:border-color .15s; -webkit-appearance:none; box-sizing:border-box; }
+  .bp-inp:focus { border-color:var(--accent,#22c55e); }
+  .bp-inp::placeholder { color:#a1a1aa; font-size:15px; }
+  .bp-sel { width:100%; background:#f9f9f8; border:1.5px solid rgba(0,0,0,0.1); border-radius:12px; color:#18181b; padding:12px 14px; font-size:14px; font-family:inherit; outline:none; margin-bottom:14px; cursor:pointer; box-sizing:border-box; }
+  .bp-btn { width:100%; padding:15px; background:var(--accent,#22c55e); color:#ffffff; font-weight:800; font-size:15px; border:none; border-radius:12px; cursor:pointer; font-family:inherit; letter-spacing:0.01em; }
+
+  /* gender toggle */
+  .bp-gender { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:14px; }
+  .bp-gender-btn { padding:12px; border:1.5px solid rgba(0,0,0,0.1); border-radius:12px; background:#f9f9f8; font-size:13px; font-weight:700; color:#71717a; cursor:pointer; transition:all .15s; font-family:inherit; }
+  .bp-gender-btn.active { border-color:var(--accent,#22c55e); background:rgba(34,197,94,0.07); color:#16a34a; }
+
+  /* result card */
+  .bp-result { background:#ffffff; border-radius:18px; padding:24px 20px; text-align:center; margin-bottom:16px; border-width:1.5px; border-style:solid; }
+  .bp-result-label { font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; margin-bottom:6px; }
+  .bp-result-num { font-size:64px; font-weight:900; letter-spacing:-0.04em; line-height:1; margin-bottom:4px; }
+  .bp-result-sub { font-size:12px; color:#a1a1aa; margin-bottom:18px; }
+  .bp-stats { display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; }
+  .bp-stat { background:#f9f9f8; border-radius:12px; padding:14px; text-align:center; }
+  .bp-stat-val { font-size:20px; font-weight:800; color:#18181b; }
+  .bp-stat-lbl { font-size:10px; color:#a1a1aa; margin-top:2px; text-transform:uppercase; letter-spacing:0.06em; }
+
+  /* info cards */
+  .bp-card { background:#ffffff; border:1px solid rgba(0,0,0,0.08); border-radius:18px; margin-bottom:16px; overflow:hidden; }
+  .bp-card-head { padding:14px 18px; border-bottom:1px solid rgba(0,0,0,0.07); font-size:14px; font-weight:800; color:#18181b; }
+  .bp-card-body { padding:4px 18px 16px; }
+  .bp-item { display:flex; align-items:flex-start; gap:10px; padding:10px 0; border-bottom:1px solid rgba(0,0,0,0.06); font-size:13px; color:#52525b; line-height:1.5; }
+  .bp-item:last-child { border-bottom:none; }
+  .bp-item-dot { width:6px; height:6px; border-radius:50%; background:var(--accent,#22c55e); margin-top:5px; flex-shrink:0; }
+
+  /* macro bar */
+  .macro-bar { height:10px; border-radius:999px; display:flex; overflow:hidden; margin:10px 0 8px; }
+  .macro-row { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-top:14px; }
+  .macro-box { border-radius:12px; padding:14px; text-align:center; }
+
+  /* meal row */
+  .meal-row { display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid rgba(0,0,0,0.06); font-size:13px; color:#52525b; }
+  .meal-row:last-child { border-bottom:none; }
+
+  /* empty state */
+  .bp-empty { background:#f9f9f8; border:1px solid rgba(0,0,0,0.07); border-radius:18px; padding:60px 20px; text-align:center; }
+
+  /* two-col layout */
+  @@media (min-width:680px) {
+    .bp { padding:28px 24px 60px; }
+    .bp-layout { display:grid; grid-template-columns:320px 1fr; gap:20px; align-items:start; }
+    .bp-form { position:sticky; top:80px; margin-bottom:0; }
+  }
 </style>
 
-<div class="cal-page">
-  <!-- Header -->
-  <div class="cal-header">
-    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#16a34a;margin-bottom:6px">
-      @(ne?"पोषण":"Nutrition")
-    </div>
-    <h1 style="font-size:24px;font-weight:900;margin:0 0 4px;color:var(--text-primary,#0f172a)">
-      🔥 @(ne?"क्यालोरी क्याल्कुलेटर":"Calorie Calculator")
-    </h1>
-    <p style="font-size:13px;color:var(--text-secondary,#64748b);margin:0">
-      @(ne?"तपाईंको दैनिक क्यालोरी र म्याक्रो आवश्यकता पत्ता लगाउनुहोस्":"Find your daily calorie needs and macro targets using Mifflin-St Jeor formula")
-    </p>
-  </div>
+<div class="bp">
+<div class="bp-inner">
 
-  <div class="cal-grid">
-    <!-- INPUT FORM -->
-    <div class="cal-card">
-      <div class="cal-label">@(ne?"तपाईंको जानकारी":"Your Details")</div>
+  <div class="bp-tag">🔥 @(ne?"पोषण उपकरण":"Nutrition Tool")</div>
+  <div class="bp-title">@(ne?"क्यालोरी क्याल्कुलेटर":"Calorie Calculator")</div>
+  <div class="bp-sub">@(ne?"Mifflin-St Jeor सूत्रले तपाईंको दैनिक TDEE, BMR र म्याक्रो लक्ष्य गणना गर्नुहोस्।":"Calculate your daily TDEE, BMR, and macro targets using the Mifflin-St Jeor formula.")</div>
+
+  <div class="bp-layout">
+
+    <!-- FORM -->
+    <div class="bp-form">
+      <div class="bp-form-title">📋 @(ne?"तपाईंको जानकारी":"Your Details")</div>
       <form method="post" action="/Calorie/Calculate">
         @Html.AntiForgeryToken()
+        <input type="hidden" name="gender" id="genderInput" value="@gender" />
 
-        <!-- Gender -->
-        <div class="form-group">
-          <label>@(ne?"लिंग":"Gender")</label>
-          <div class="gender-row">
-            <button type="button" class="gender-btn @(gender=="male"?"active":"")" onclick="setGender('male',this)">
-              ♂ @(ne?"पुरुष":"Male")
-            </button>
-            <button type="button" class="gender-btn @(gender=="female"?"active":"")" onclick="setGender('female',this)">
-              ♀ @(ne?"महिला":"Female")
-            </button>
-          </div>
-          <input type="hidden" name="gender" id="genderInput" value="@gender" />
+        <div class="bp-lbl">@(ne?"लिंग":"Gender")</div>
+        <div class="bp-gender">
+          <button type="button" class="bp-gender-btn @(gender=="male"?"active":"")" onclick="setGender('male',this)">♂ @(ne?"पुरुष":"Male")</button>
+          <button type="button" class="bp-gender-btn @(gender=="female"?"active":"")" onclick="setGender('female',this)">♀ @(ne?"महिला":"Female")</button>
         </div>
 
-        <!-- Age -->
-        <div class="form-group">
-          <label>@(ne?"उमेर (वर्ष)":"Age (years)")</label>
-          <input class="form-input" type="number" name="age" min="10" max="100" placeholder="25"
-                 value="@(age > 0 ? age.ToString() : "")" required />
-        </div>
+        <div class="bp-lbl">@(ne?"उमेर (वर्ष)":"Age (years)")</div>
+        <input class="bp-inp" type="number" name="age" min="10" max="100" placeholder="e.g. 25"
+               value="@(age > 0 ? age.ToString() : "")" inputmode="numeric" required />
 
-        <!-- Height -->
-        <div class="form-group">
-          <label>@(ne?"उचाइ (cm)":"Height (cm)")</label>
-          <input class="form-input" type="number" name="height" min="100" max="250" placeholder="170"
-                 value="@(height > 0 ? height.ToString() : "")" required />
-        </div>
+        <div class="bp-lbl">@(ne?"उचाइ (cm)":"Height (cm)")</div>
+        <input class="bp-inp" type="number" name="height" min="100" max="250" placeholder="e.g. 170"
+               value="@(height > 0 ? height.ToString() : "")" inputmode="decimal" required />
 
-        <!-- Weight -->
-        <div class="form-group">
-          <label>@(ne?"तौल (kg)":"Weight (kg)")</label>
-          <input class="form-input" type="number" name="weight" min="30" max="300" step="0.1" placeholder="70"
-                 value="@(weight > 0 ? weight.ToString() : "")" required />
-        </div>
+        <div class="bp-lbl">@(ne?"तौल (kg)":"Weight (kg)")</div>
+        <input class="bp-inp" type="number" name="weight" min="30" max="300" step="0.1" placeholder="e.g. 70"
+               value="@(weight > 0 ? weight.ToString() : "")" inputmode="decimal" required />
 
-        <!-- Activity Level -->
-        @{
-          var actOpts = new[]{
-            ("sedentary",  "🪑", ne?"बस्ने काम (व्यायाम छैन)":"Sedentary (desk job, no exercise)"),
-            ("light",      "🚶", ne?"हल्का (हप्तामा १-३ दिन)":"Lightly active (1-3 days/week)"),
-            ("moderate",   "🏃", ne?"मध्यम (हप्तामा ३-५ दिन)":"Moderately active (3-5 days/week)"),
-            ("active",     "💪", ne?"सक्रिय (हप्तामा ६-७ दिन)":"Very active (6-7 days/week)"),
-            ("very_active","🔥", ne?"अत्यन्त सक्रिय (दिनमा दुई पटक)":"Extra active (2x/day training)"),
-          };
-          var goalOpts = new[]{
-            ("lose_fast","📉", ne?"छिटो तौल घटाउने (-750 cal)":"Lose weight fast (-750 cal/day)"),
-            ("lose",     "⬇️", ne?"तौल घटाउने (-500 cal)":"Lose weight (-500 cal/day)"),
-            ("maintain", "⚖️", ne?"तौल कायम राख्ने":"Maintain weight"),
-            ("gain",     "⬆️", ne?"मांसपेशी बनाउने (+400 cal)":"Build muscle (+400 cal/day)"),
-            ("gain_fast","📈", ne?"छिटो बल्क (+700 cal)":"Bulk up fast (+700 cal/day)"),
-          };
-          var actSb  = new System.Text.StringBuilder("<select class=\"activity-select\" name=\"activity\">");
-          foreach (var o in actOpts)
-              actSb.Append($"<option value=\"{o.Item1}\"{(activity==o.Item1?" selected":"")}>{o.Item2} {o.Item3}</option>");
-          actSb.Append("</select>");
-          var goalSb = new System.Text.StringBuilder("<select class=\"goal-select\" name=\"goal\">");
-          foreach (var o in goalOpts)
-              goalSb.Append($"<option value=\"{o.Item1}\"{(goal==o.Item1?" selected":"")}>{o.Item2} {o.Item3}</option>");
-          goalSb.Append("</select>");
-        }
-        <div class="form-group">
-          <label>@(ne?"गतिविधि स्तर":"Activity Level")</label>
-          @Html.Raw(actSb.ToString())
-        </div>
+        <div class="bp-lbl">@(ne?"गतिविधि स्तर":"Activity Level")</div>
+        @Html.Raw(actSb.ToString())
 
-        <!-- Goal -->
-        <div class="form-group">
-          <label>@(ne?"लक्ष्य":"Your Goal")</label>
-          @Html.Raw(goalSb.ToString())
-        </div>
+        <div class="bp-lbl">@(ne?"लक्ष्य":"Your Goal")</div>
+        @Html.Raw(goalSb.ToString())
 
-        <button class="calc-btn" type="submit">
-          🔥 @(ne?"क्यालोरी गणना गर्नुहोस्":"Calculate My Calories")
-        </button>
+        <button class="bp-btn" type="submit">🔥 @(ne?"क्यालोरी गणना गर्नुहोस्":"Calculate My Calories")</button>
       </form>
     </div>
 
-    <!-- RESULTS PANEL -->
+    <!-- RESULTS -->
     <div>
       @if (hasResult)
       {
-      <!-- Calorie Summary -->
-      <div class="cal-card" style="margin-bottom:16px">
-        <div class="cal-label">@(ne?"दैनिक क्यालोरी":"Daily Calories")</div>
-
-        <!-- Big number -->
-        <div style="text-align:center;padding:16px 0 20px">
-          <div style="font-size:11px;font-weight:700;color:@goalColor;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">@goalLabel</div>
-          <div style="font-size:56px;font-weight:900;color:@goalColor;line-height:1">@target</div>
-          <div style="font-size:13px;color:#94a3b8;margin-top:4px">@(ne?"क्यालोरी / दिन":"calories / day")</div>
-        </div>
-
-        <!-- BMR / TDEE / Target -->
-        <div class="stat-grid">
-          <div class="stat-box">
-            <div class="stat-val" style="font-size:18px">@bmr</div>
-            <div class="stat-lbl">BMR</div>
+      <!-- Big number -->
+      <div class="bp-result" style="border-color:@goalColor">
+        <div class="bp-result-label" style="color:@goalColor">@goalLabel</div>
+        <div class="bp-result-num" style="color:@goalColor">@target</div>
+        <div class="bp-result-sub">@(ne?"क्यालोरी / दिन":"calories per day")</div>
+        <div class="bp-stats">
+          <div class="bp-stat">
+            <div class="bp-stat-val">@bmr</div>
+            <div class="bp-stat-lbl">BMR</div>
           </div>
-          <div class="stat-box">
-            <div class="stat-val" style="font-size:18px">@tdee</div>
-            <div class="stat-lbl">TDEE</div>
+          <div class="bp-stat">
+            <div class="bp-stat-val">@tdee</div>
+            <div class="bp-stat-lbl">TDEE</div>
           </div>
-          <div class="stat-box" style="background:#f0fdf4;border-color:#bbf7d0">
-            <div class="stat-val" style="font-size:18px;color:@goalColor">@target</div>
-            <div class="stat-lbl">@(ne?"लक्ष्य":"Target")</div>
+          <div class="bp-stat" style="background:rgba(34,197,94,0.07)">
+            <div class="bp-stat-val" style="color:@goalColor">@target</div>
+            <div class="bp-stat-lbl">@(ne?"लक्ष्य":"Target")</div>
           </div>
         </div>
-
-        <div style="font-size:11px;color:#94a3b8;text-align:center;margin-top:8px">
-          BMR = @(ne?"आराम क्यालोरी":"calories at rest") · TDEE = @(ne?"कुल दैनिक खर्च":"total daily expenditure")
+        <div style="font-size:11px;color:#a1a1aa;margin-top:10px">
+          BMR = @(ne?"आराम क्यालोरी":"calories at rest") · TDEE = @(ne?"कुल दैनिक खर्च":"total daily burn")
         </div>
       </div>
 
       <!-- Macros -->
-      <div class="cal-card" style="margin-bottom:16px">
-        <div class="cal-label">@(ne?"म्याक्रोन्युट्रिएन्ट":"Macronutrients")</div>
-
-        <!-- Bar -->
-        <div class="macro-bar">
-          <div class="macro-seg-p" style="width:@protPct%"></div>
-          <div class="macro-seg-c" style="width:@carbPct%"></div>
-          <div class="macro-seg-f" style="width:@fatPct%"></div>
-        </div>
-        <div class="macro-legend">
-          <span><span class="macro-dot" style="background:#3b82f6"></span>@(ne?"प्रोटिन":"Protein") @protPct%</span>
-          <span><span class="macro-dot" style="background:#f59e0b"></span>@(ne?"कार्ब":"Carbs") @carbPct%</span>
-          <span><span class="macro-dot" style="background:#ef4444"></span>@(ne?"फ्याट":"Fat") @fatPct%</span>
-        </div>
-
-        <div class="macro-row">
-          <div class="macro-box macro-box-p" style="text-align:center">
-            <div style="font-size:22px;font-weight:900;color:#3b82f6">@prot<span style="font-size:12px">g</span></div>
-            <div style="font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;margin-top:2px">@(ne?"प्रोटिन":"Protein")</div>
-            <div style="font-size:11px;color:#3b82f6;margin-top:2px">@protCal @(ne?"cal":"")</div>
+      <div class="bp-card">
+        <div class="bp-card-head">💊 @(ne?"म्याक्रोन्युट्रिएन्ट":"Macronutrients")</div>
+        <div class="bp-card-body">
+          <div class="macro-bar">
+            <div style="width:@protPct%;background:#3b82f6"></div>
+            <div style="width:@carbPct%;background:#f59e0b"></div>
+            <div style="width:@fatPct%;background:#ef4444"></div>
           </div>
-          <div class="macro-box macro-box-c" style="text-align:center">
-            <div style="font-size:22px;font-weight:900;color:#f59e0b">@carb<span style="font-size:12px">g</span></div>
-            <div style="font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;margin-top:2px">@(ne?"कार्ब":"Carbs")</div>
-            <div style="font-size:11px;color:#f59e0b;margin-top:2px">@carbCal @(ne?"cal":"")</div>
+          <div style="display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:#71717a;margin-bottom:4px">
+            <span><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#3b82f6;margin-right:4px"></span>@(ne?"प्रोटिन":"Protein") @protPct%</span>
+            <span><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#f59e0b;margin-right:4px"></span>@(ne?"कार्ब":"Carbs") @carbPct%</span>
+            <span><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#ef4444;margin-right:4px"></span>@(ne?"फ्याट":"Fat") @fatPct%</span>
           </div>
-          <div class="macro-box macro-box-f" style="text-align:center">
-            <div style="font-size:22px;font-weight:900;color:#ef4444">@fat<span style="font-size:12px">g</span></div>
-            <div style="font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;margin-top:2px">@(ne?"फ्याट":"Fat")</div>
-            <div style="font-size:11px;color:#ef4444;margin-top:2px">@fatCal @(ne?"cal":"")</div>
+          <div class="macro-row">
+            <div class="macro-box" style="background:#eff6ff;text-align:center">
+              <div style="font-size:22px;font-weight:900;color:#3b82f6">@prot<span style="font-size:12px">g</span></div>
+              <div style="font-size:10px;font-weight:700;color:#a1a1aa;text-transform:uppercase;margin-top:2px">@(ne?"प्रोटिन":"Protein")</div>
+              <div style="font-size:11px;color:#3b82f6;margin-top:2px">@protCal cal</div>
+            </div>
+            <div class="macro-box" style="background:#fffbeb;text-align:center">
+              <div style="font-size:22px;font-weight:900;color:#f59e0b">@carb<span style="font-size:12px">g</span></div>
+              <div style="font-size:10px;font-weight:700;color:#a1a1aa;text-transform:uppercase;margin-top:2px">@(ne?"कार्ब":"Carbs")</div>
+              <div style="font-size:11px;color:#f59e0b;margin-top:2px">@carbCal cal</div>
+            </div>
+            <div class="macro-box" style="background:#fef2f2;text-align:center">
+              <div style="font-size:22px;font-weight:900;color:#ef4444">@fat<span style="font-size:12px">g</span></div>
+              <div style="font-size:10px;font-weight:700;color:#a1a1aa;text-transform:uppercase;margin-top:2px">@(ne?"फ्याट":"Fat")</div>
+              <div style="font-size:11px;color:#ef4444;margin-top:2px">@fatCal cal</div>
+            </div>
           </div>
         </div>
       </div>
 
       <!-- Meal split -->
-      <div class="cal-card" style="margin-bottom:16px">
-        <div class="cal-label">@(ne?"खानाको बाँडफाँड":"Meal Distribution")</div>
-        @{
-          int b = (int)Math.Round(target!.Value * 0.25);
-          int l = (int)Math.Round(target.Value * 0.35);
-          int d = (int)Math.Round(target.Value * 0.30);
-          int s = target.Value - b - l - d;
-        }
-        <div class="meal-row">
-          <div><span style="font-size:16px">🌅</span> <strong style="font-size:13px">@(ne?"बिहानको खाना":"Breakfast")</strong></div>
-          <div style="font-weight:800;color:var(--text-primary,#0f172a)">@b <span style="font-size:11px;color:#94a3b8">cal</span></div>
-        </div>
-        <div class="meal-row">
-          <div><span style="font-size:16px">☀️</span> <strong style="font-size:13px">@(ne?"दिउँसोको खाना":"Lunch")</strong></div>
-          <div style="font-weight:800;color:var(--text-primary,#0f172a)">@l <span style="font-size:11px;color:#94a3b8">cal</span></div>
-        </div>
-        <div class="meal-row">
-          <div><span style="font-size:16px">🌙</span> <strong style="font-size:13px">@(ne?"बेलुकाको खाना":"Dinner")</strong></div>
-          <div style="font-weight:800;color:var(--text-primary,#0f172a)">@d <span style="font-size:11px;color:#94a3b8">cal</span></div>
-        </div>
-        <div class="meal-row">
-          <div><span style="font-size:16px">🍎</span> <strong style="font-size:13px">@(ne?"खाजा":"Snacks")</strong></div>
-          <div style="font-weight:800;color:var(--text-primary,#0f172a)">@s <span style="font-size:11px;color:#94a3b8">cal</span></div>
+      <div class="bp-card">
+        <div class="bp-card-head">🍽️ @(ne?"खानाको बाँडफाँड":"Meal Distribution")</div>
+        <div class="bp-card-body">
+          @foreach (var row in new[]{
+            ("🌅", ne?"बिहानको खाना":"Breakfast", mealB),
+            ("☀️", ne?"दिउँसोको खाना":"Lunch",     mealL),
+            ("🌙", ne?"बेलुकाको खाना":"Dinner",    mealD),
+            ("🍎", ne?"खाजा":"Snacks",              mealS)
+          }) {
+          <div class="meal-row">
+            <div style="display:flex;align-items:center;gap:8px">
+              <span style="font-size:18px">@row.Item1</span>
+              <strong>@row.Item2</strong>
+            </div>
+            <div style="font-weight:800;color:#18181b">@row.Item3 <span style="font-size:11px;color:#a1a1aa;font-weight:400">cal</span></div>
+          </div>
+          }
         </div>
       </div>
 
       <!-- Tips -->
-      <div class="cal-card">
-        <div class="cal-label">@(ne?"सुझावहरू":"Nutrition Tips")</div>
-        @{
-          var tips = goal switch {
-            "lose_fast" or "lose" => ne
-              ? new[]{"प्रोटिन धेरै खानुहोस् — यसले भोक कम गर्छ","मीठो पेय बन्द गर्नुहोस्","सब्जी र फलफूल भरपूर खानुहोस्","खाना बिस्तारै चपाउनुहोस्","पर्याप्त पानी पिउनुहोस् (३+ लिटर)"}
-              : new[]{"High protein keeps you full and preserves muscle","Eliminate liquid calories (soda, juice, alcohol)","Fill half your plate with vegetables","Eat slowly — it takes 20 min for fullness to register","Drink 3+ liters of water daily"},
-            "gain" or "gain_fast" => ne
-              ? new[]{"खाना नछोड्नुहोस् — नियमित खानुहोस्","नट्स, एभोकाडो जस्ता क्यालोरी-घना खाना खानुहोस्","व्यायामपछि प्रोटिन + कार्ब खानुहोस्","राम्रो सुत्नुहोस् — मांसपेशी सुतेको बेला बन्छ","हप्तामा ३-४ पटक शक्ति व्यायाम गर्नुहोस्"}
-              : new[]{"Never skip meals — eat consistently throughout the day","Include calorie-dense foods: nuts, avocado, olive oil","Post-workout: 30-40g protein + carbs within 45 min","Sleep 8 hours — muscles grow during recovery","Strength train 3-4x per week to direct surplus to muscle"},
-            _ => ne
-              ? new[]{"सन्तुलित म्याक्रो खानुहोस्","नियमित व्यायाम जारी राख्नुहोस्","प्रशोधित खाना कम गर्नुहोस्","पर्याप्त पानी पिउनुहोस्","तनाव कम गर्नुहोस्"}
-              : new[]{"Keep macros balanced — don't cut any food group","Stay consistent with exercise","Minimize processed and ultra-processed foods","Stay hydrated — 2.5-3L water daily","Manage stress — cortisol raises appetite"}
-          };
-        }
-        @foreach (var t in tips)
-        {
-        <div class="tip-item">
-          <div class="tip-dot"></div>
-          <div>@t</div>
-        </div>
-        }
-      </div>
-      }
-      else
-      {
-      <!-- Placeholder -->
-      <div class="cal-card" style="text-align:center;padding:48px 24px;border:2px dashed #e2e8f0">
-        <div style="font-size:48px;margin-bottom:16px">🔥</div>
-        <div style="font-size:16px;font-weight:700;color:var(--text-primary,#0f172a);margin-bottom:8px">
-          @(ne?"आफ्नो क्यालोरी थाहा पाउनुहोस्":"Discover your calorie needs")
-        </div>
-        <div style="font-size:13px;color:#94a3b8">
-          @(ne?"फारम भर्नुहोस् र तपाईंको TDEE, BMR र म्याक्रो लक्ष्य पत्ता लगाउनुहोस्":"Fill in the form to get your personalized TDEE, BMR, and macro targets")
-        </div>
-        <div style="margin-top:24px;display:flex;flex-direction:column;gap:10px;text-align:left;max-width:260px;margin-left:auto;margin-right:auto">
-          @foreach (var item in new[]{("🔥","BMR – calories your body burns at rest"),("⚡","TDEE – total daily calorie burn"),("🎯","Target calories for your goal"),("🥗","Protein, carb & fat breakdown"),("🍽️","Meal split suggestion")})
-          {
-          <div style="display:flex;align-items:center;gap:10px;font-size:12px;color:#475569">
-            <span>@item.Item1</span><span>@item.Item2</span>
+      <div class="bp-card">
+        <div class="bp-card-head">💡 @(ne?"पोषण सुझावहरू":"Nutrition Tips")</div>
+        <div class="bp-card-body">
+          @foreach (var t in tips) {
+          <div class="bp-item">
+            <div class="bp-item-dot"></div>
+            <div>@t</div>
           </div>
           }
         </div>
       </div>
       }
+      else
+      {
+      <!-- Empty state -->
+      <div class="bp-empty">
+        <div style="font-size:52px;margin-bottom:16px">🔥</div>
+        <div style="font-size:17px;font-weight:800;color:#18181b;margin-bottom:8px">@(ne?"आफ्नो क्यालोरी थाहा पाउनुहोस्":"Discover your calorie needs")</div>
+        <div style="font-size:13px;color:#71717a;margin-bottom:28px">@(ne?"फारम भर्नुहोस् र तपाईंको TDEE, BMR र म्याक्रो लक्ष्य पत्ता लगाउनुहोस्":"Fill in the form to get your personalized TDEE, BMR, and macro targets")</div>
+        @foreach (var item in new[]{
+          ("🔥","BMR – calories your body burns at rest"),
+          ("⚡","TDEE – your total daily calorie burn"),
+          ("🎯","Target calories adjusted for your goal"),
+          ("💊","Protein, carb & fat breakdown"),
+          ("🍽️","Meal split across breakfast, lunch & dinner")
+        }) {
+        <div style="display:flex;align-items:center;gap:10px;font-size:13px;color:#52525b;padding:8px 0;border-bottom:1px solid rgba(0,0,0,0.06);max-width:320px;margin:0 auto">
+          <span style="font-size:18px">@item.Item1</span><span>@item.Item2</span>
+        </div>
+        }
+      </div>
+      }
     </div>
+
   </div>
+</div>
 </div>
 
 <script>
 function setGender(val, btn) {
   document.getElementById('genderInput').value = val;
-  document.querySelectorAll('.gender-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.bp-gender-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
 }
 </script>
