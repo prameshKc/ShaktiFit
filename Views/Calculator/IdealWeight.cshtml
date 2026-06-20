@@ -1,0 +1,74 @@
+@{
+    ViewBag.Title = "Ideal Weight Calculator – ShaktiFit";
+    var isAuth = Context.Session.GetString("UserId") != null;
+    if (!isAuth) { ViewBag.IsLanding = true; }
+    ViewBag.ActiveNav = "calculators";
+    var lang = Context.Session.GetString("Lang") ?? "en";
+    bool ne = lang == "ne";
+    bool has = ViewBag.Avg != null;
+    double avg = has ? (double)ViewBag.Avg : 0;
+    double devine = has ? (double)ViewBag.Devine : 0;
+    double robinson = has ? (double)ViewBag.Robinson : 0;
+    double miller = has ? (double)ViewBag.Miller : 0;
+    double hamwi = has ? (double)ViewBag.Hamwi : 0;
+    string gender = ViewBag.Gender as string ?? "male";
+    double height = ViewBag.Height is double h ? h : 0;
+}
+@await Html.PartialAsync("_CalcStyle")
+<div class="bp"><div class="bp-inner">
+  <a href="/Calculator" class="bp-back">← @(ne?"सबै क्याल्कुलेटर":"All Calculators")</a>
+  <div class="bp-tag">⚖️ @(ne?"फिटनेस":"Fitness")</div>
+  <div class="bp-title">@(ne?"आदर्श तौल क्याल्कुलेटर":"Ideal Weight Calculator")</div>
+  <div class="bp-sub">@(ne?"Devine, Robinson, Miller र Hamwi — ४ चिकित्सा सूत्रहरूको औसत":"Average of 4 medical formulas: Devine (1974), Robinson (1983), Miller (1983), Hamwi")</div>
+  <div class="bp-layout">
+    <div class="bp-form">
+      <div class="bp-form-title">📐 @(ne?"तपाईंको जानकारी":"Your Details")</div>
+      <form method="post" action="/Calculator/IdealWeight">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="gender" id="genderInput" value="@gender" />
+        <div class="bp-lbl">@(ne?"लिंग":"Gender")</div>
+        <div class="bp-gender">
+          <button type="button" class="bp-gender-btn @(gender=="male"?"active":"")" onclick="setG('male',this)">♂ @(ne?"पुरुष":"Male")</button>
+          <button type="button" class="bp-gender-btn @(gender=="female"?"active":"")" onclick="setG('female',this)">♀ @(ne?"महिला":"Female")</button>
+        </div>
+        <div class="bp-lbl">@(ne?"उचाइ (cm)":"Height (cm)")</div>
+        <input class="bp-inp" type="number" name="height" placeholder="e.g. 170" min="130" max="230" step="0.1" value="@(height>0?height.ToString():"")" inputmode="decimal" required />
+        <button class="bp-btn" type="submit">⚖️ @(ne?"आदर्श तौल गणना गर्नुहोस्":"Calculate Ideal Weight")</button>
+      </form>
+      <div style="margin-top:16px;padding-top:14px;border-top:1px solid rgba(0,0,0,0.07)">
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#a1a1aa;margin-bottom:8px">@(ne?"सूत्रहरू बारे":"About Formulas")</div>
+        @foreach (var f in new[]{("Devine","1974","±2.3 kg/inch over 5ft"),("Robinson","1983","±1.9 kg/inch (male)"),("Miller","1983","±1.41 kg/inch (male)"),("Hamwi","1964","±2.7 kg/inch (male)")}) {
+        <div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid rgba(0,0,0,0.05);font-size:11px">
+          <span style="font-weight:700;color:#52525b">@f.Item1 (@f.Item2)</span>
+          <span style="color:#a1a1aa">@f.Item3</span>
+        </div>
+        }
+      </div>
+    </div>
+    <div>
+      @if (has) {
+      <div class="bp-result" style="border-color:#22c55e">
+        <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#22c55e;margin-bottom:6px">@(ne?"औसत आदर्श तौल":"Average Ideal Weight")</div>
+        <div class="bp-result-num" style="color:#22c55e">@avg<span style="font-size:24px"> kg</span></div>
+        <div style="font-size:12px;color:#a1a1aa;margin-top:4px">@(ne?"४ सूत्रहरूको औसत":"average of 4 formulas")</div>
+        <div class="bp-stats">
+          @foreach (var f in new[]{("Devine",devine),("Robinson",robinson),("Miller",miller),("Hamwi",hamwi)}) {
+          <div class="bp-stat"><div class="bp-stat-val">@f.Item2 kg</div><div class="bp-stat-lbl">@f.Item1</div></div>
+          }
+        </div>
+      </div>
+      <div class="bp-card">
+        <div class="bp-card-head">💡 @(ne?"ध्यान दिनुहोस्":"Important Notes")</div>
+        <div class="bp-card-body">
+          @foreach (var n in (ne ? new[]{"यो सूत्रहरू मुख्यतः वयस्कहरूको लागि हो","मांसपेशीमय व्यक्तिको 'आदर्श' तौल बढी हुन सक्छ","BMI भन्दा यो अनुमानित मात्र हो — डाक्टरसँग परामर्श लिनुहोस्","शरीरको बनावट तौल भन्दा महत्त्वपूर्ण हुन सक्छ"} : new[]{"These formulas are designed for adults (18+)","Muscular individuals may have a healthy 'excess' weight","All formulas are estimates — consult your doctor for clinical decisions","Body composition matters more than the number on a scale"})) {
+          <div class="bp-item"><div style="width:6px;height:6px;border-radius:50%;background:#22c55e;margin-top:5px;flex-shrink:0"></div><div>@n</div></div>
+          }
+        </div>
+      </div>
+      } else {
+      <div class="bp-empty"><div style="font-size:52px;margin-bottom:16px">⚖️</div><div style="font-size:17px;font-weight:800;color:#18181b;margin-bottom:8px">@(ne?"आदर्श तौल थाहा पाउनुहोस्":"Find Your Ideal Weight")</div><div style="font-size:13px;color:#71717a">@(ne?"४ वैज्ञानिक सूत्रहरूले तुलना गर्नुहोस्":"Compare results from 4 medical formulas")</div></div>
+      }
+    </div>
+  </div>
+</div></div>
+<script>function setG(v,btn){document.getElementById('genderInput').value=v;document.querySelectorAll('.bp-gender-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');}</script>

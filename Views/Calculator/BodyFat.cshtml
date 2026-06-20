@@ -1,0 +1,130 @@
+@{
+    ViewBag.Title = "Body Fat Calculator – ShaktiFit";
+    var isAuth = Context.Session.GetString("UserId") != null;
+    if (!isAuth) { ViewBag.IsLanding = true; }
+    ViewBag.ActiveNav = "calculators";
+    var lang = Context.Session.GetString("Lang") ?? "en";
+    bool ne = lang == "ne";
+    double? bf = ViewBag.Bf as double?;
+    string cat = ViewBag.Cat as string ?? "";
+    string catColor = ViewBag.CatColor as string ?? "#22c55e";
+    string gender = ViewBag.Gender as string ?? "male";
+    double height = ViewBag.Height is double h ? h : 0;
+    double neck   = ViewBag.Neck   is double n ? n : 0;
+    double waist  = ViewBag.Waist  is double w ? w : 0;
+    double hip    = ViewBag.Hip    is double p ? p : 0;
+    bool hasResult = bf.HasValue;
+}
+<style>
+  .bp { background:#f8faf8; min-height:100vh; padding:20px 16px 40px; }
+  .bp-inner { max-width:880px; margin:0 auto; }
+  .bp-tag { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; color:var(--accent,#22c55e); margin-bottom:6px; }
+  .bp-title { font-size:24px; font-weight:900; color:#0f172a; letter-spacing:-0.02em; margin-bottom:4px; }
+  .bp-sub { font-size:13px; color:#64748b; margin-bottom:24px; }
+  .bp-form { background:#ffffff; border:1px solid rgba(0,0,0,0.08); border-radius:18px; padding:20px; margin-bottom:20px; }
+  .bp-form-title { font-size:15px; font-weight:800; color:#18181b; margin-bottom:18px; padding-bottom:12px; border-bottom:1px solid rgba(0,0,0,0.07); }
+  .bp-lbl { font-size:12px; font-weight:700; color:#71717a; margin-bottom:6px; letter-spacing:0.03em; }
+  .bp-inp { width:100%; background:#f9f9f8; border:1.5px solid rgba(0,0,0,0.1); border-radius:12px; color:#18181b; padding:13px 16px; font-size:18px; font-family:inherit; outline:none; margin-bottom:14px; transition:border-color .15s; -webkit-appearance:none; box-sizing:border-box; }
+  .bp-inp:focus { border-color:var(--accent,#22c55e); }
+  .bp-inp::placeholder { color:#a1a1aa; font-size:15px; }
+  .bp-btn { width:100%; padding:15px; background:var(--accent,#22c55e); color:#ffffff; font-weight:800; font-size:15px; border:none; border-radius:12px; cursor:pointer; font-family:inherit; }
+  .bp-gender { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:14px; }
+  .bp-gender-btn { padding:12px; border:1.5px solid rgba(0,0,0,0.1); border-radius:12px; background:#f9f9f8; font-size:13px; font-weight:700; color:#71717a; cursor:pointer; transition:all .15s; font-family:inherit; }
+  .bp-gender-btn.active { border-color:var(--accent,#22c55e); background:rgba(34,197,94,0.07); color:#16a34a; }
+  .bp-result { background:#ffffff; border-radius:18px; padding:24px 20px; text-align:center; margin-bottom:16px; border-width:1.5px; border-style:solid; }
+  .bp-result-num { font-size:72px; font-weight:900; letter-spacing:-0.04em; line-height:1; margin-bottom:4px; }
+  .bp-card { background:#ffffff; border:1px solid rgba(0,0,0,0.08); border-radius:18px; margin-bottom:16px; overflow:hidden; }
+  .bp-card-head { padding:14px 18px; border-bottom:1px solid rgba(0,0,0,0.07); font-size:14px; font-weight:800; color:#18181b; }
+  .bp-card-body { padding:4px 18px 16px; }
+  .bp-item { display:flex; align-items:flex-start; gap:10px; padding:10px 0; border-bottom:1px solid rgba(0,0,0,0.06); font-size:13px; color:#52525b; line-height:1.5; }
+  .bp-item:last-child { border-bottom:none; }
+  .bp-empty { background:#f9f9f8; border:1px solid rgba(0,0,0,0.07); border-radius:18px; padding:60px 20px; text-align:center; }
+  .bp-back { font-size:12px; color:#71717a; margin-bottom:16px; display:inline-flex; align-items:center; gap:5px; }
+  @@media (min-width:680px) {
+    .bp { padding:28px 24px 60px; }
+    .bp-layout { display:grid; grid-template-columns:300px 1fr; gap:20px; align-items:start; }
+    .bp-form { position:sticky; top:80px; margin-bottom:0; }
+  }
+</style>
+<div class="bp"><div class="bp-inner">
+  <a href="/Calculator" class="bp-back">← @(ne?"सबै क्याल्कुलेटर":"All Calculators")</a>
+  <div class="bp-tag">🧮 @(ne?"फिटनेस":"Fitness")</div>
+  <div class="bp-title">@(ne?"शरीरको बोसो % क्याल्कुलेटर":"Body Fat % Calculator")</div>
+  <div class="bp-sub">@(ne?"US Navy विधि — गर्दन, कम्मर र कूल्हेको मापनमा आधारित सटीक बोसो %":"US Navy method using neck, waist & hip measurements — clinically validated formula")</div>
+
+  <div class="bp-layout">
+    <div class="bp-form">
+      <div class="bp-form-title">📏 @(ne?"तपाईंको मापन":"Your Measurements")</div>
+      <form method="post" action="/Calculator/BodyFat">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="gender" id="genderInput" value="@gender" />
+        <div class="bp-lbl">@(ne?"लिंग":"Gender")</div>
+        <div class="bp-gender">
+          <button type="button" class="bp-gender-btn @(gender=="male"?"active":"")" onclick="setG('male',this)">♂ @(ne?"पुरुष":"Male")</button>
+          <button type="button" class="bp-gender-btn @(gender=="female"?"active":"")" onclick="setG('female',this)">♀ @(ne?"महिला":"Female")</button>
+        </div>
+        <div class="bp-lbl">@(ne?"उचाइ (cm)":"Height (cm)")</div>
+        <input class="bp-inp" type="number" name="height" placeholder="e.g. 175" min="100" max="250" step="0.1" value="@(height>0?height.ToString():"")" inputmode="decimal" required />
+        <div class="bp-lbl">@(ne?"गर्दन (cm)":"Neck circumference (cm)")</div>
+        <input class="bp-inp" type="number" name="neck" placeholder="e.g. 37" min="20" max="60" step="0.1" value="@(neck>0?neck.ToString():"")" inputmode="decimal" required />
+        <div class="bp-lbl">@(ne?"कम्मर (cm) — नाभिमा नाप्नुहोस्":"Waist (cm) — measure at navel")</div>
+        <input class="bp-inp" type="number" name="waist" placeholder="e.g. 80" min="40" max="200" step="0.1" value="@(waist>0?waist.ToString():"")" inputmode="decimal" required />
+        <div id="hipGroup" style="@(gender=="female"?"":"display:none")">
+          <div class="bp-lbl">@(ne?"कूल्हे (cm) — महिलाको लागि":"Hip (cm) — women only")</div>
+          <input class="bp-inp" type="number" name="hip" id="hipInput" placeholder="e.g. 96" min="50" max="200" step="0.1" value="@(hip>0?hip.ToString():"")" inputmode="decimal" />
+        </div>
+        <button class="bp-btn" type="submit">🧮 @(ne?"बोसो % गणना गर्नुहोस्":"Calculate Body Fat %")</button>
+      </form>
+      <!-- Reference table -->
+      <div style="margin-top:18px;padding-top:14px;border-top:1px solid rgba(0,0,0,0.07)">
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#a1a1aa;margin-bottom:8px">@(ne?"सन्दर्भ दायरा (ACE)":"Reference Ranges (ACE)")</div>
+        @{
+          var refs = gender == "female"
+            ? new[]{("#94a3b8","< 14%","Essential Fat"),("#3b82f6","14–20%","Athletic"),("#22c55e","21–24%","Fit"),("#f59e0b","25–31%","Acceptable"),("#ef4444","≥ 32%","Obese")}
+            : new[]{("#94a3b8","< 6%","Essential Fat"),("#3b82f6","6–13%","Athletic"),("#22c55e","14–17%","Fit"),("#f59e0b","18–24%","Acceptable"),("#ef4444","≥ 25%","Obese")};
+        }
+        @foreach (var r in refs) {
+        <div style="display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid rgba(0,0,0,0.06)">
+          <div style="width:10px;height:10px;border-radius:50%;background:@r.Item1;flex-shrink:0"></div>
+          <span style="font-size:12px;color:#71717a;flex:1">@r.Item2</span>
+          <span style="font-size:12px;font-weight:700;color:@r.Item1">@r.Item3</span>
+        </div>
+        }
+      </div>
+    </div>
+
+    <div>
+      @if (hasResult) {
+      <div class="bp-result" style="border-color:@catColor">
+        <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:@catColor;margin-bottom:6px">@cat</div>
+        <div class="bp-result-num" style="color:@catColor">@bf<span style="font-size:28px">%</span></div>
+        <div style="font-size:12px;color:#a1a1aa;margin-top:4px">@(ne?"शरीरको बोसो प्रतिशत":"body fat percentage")</div>
+      </div>
+      <div class="bp-card">
+        <div class="bp-card-head">💡 @(ne?"के बुझाउँछ":"What This Means")</div>
+        <div class="bp-card-body">
+          @{ var advice = cat switch {
+            "Athletic"   => ne ? new[]{"तपाईं एथलेटिक स्तरमा हुनुहुन्छ — उत्कृष्ट!","उच्च प्रोटिन र कार्ब सेवन कायम राख्नुहोस्","शक्ति र सहनशीलता प्रशिक्षण जारी राख्नुहोस्"} : new[]{"You're at athletic body fat — excellent conditioning","Maintain high protein intake (1.8-2.2g/kg)","Continue strength + endurance training"},
+            "Fit"        => ne ? new[]{"स्वस्थ र फिट बोसो स्तर","सन्तुलित पोषण र नियमित व्यायाम जारी राख्नुहोस्","मांसपेशी बनाउन शक्ति प्रशिक्षण थप्नुहोस्"} : new[]{"Healthy, fit body fat level — well done","Maintain balanced nutrition and regular exercise","Add strength training to build more muscle"},
+            "Acceptable" => ne ? new[]{"स्वीकार्य दायरामा हुनुहुन्छ, तर सुधार गर्न सकिन्छ","प्रतिदिन ३०+ मिनेट व्यायाम गर्नुहोस्","प्रशोधित खाना र मीठो पेय घटाउनुहोस्"} : new[]{"Acceptable range, but there's room to improve","Aim for 30+ minutes of exercise daily","Reduce processed foods and sugary drinks"},
+            "Obese"      => ne ? new[]{"स्वास्थ्य जोखिम बढेको छ — ध्यान दिनुहोस्","डाक्टर वा पोषण विशेषज्ञसँग परामर्श लिनुहोस्","हिड्नबाट सुरु गर्नुहोस् र क्यालोरी घाटा बनाउनुहोस्"} : new[]{"Elevated health risk — action is advised","Consult a doctor or registered dietitian","Start with walking and create a calorie deficit"},
+            _            => new[]{"Essential fat is required for body function","This level may impact hormonal health","Consider consulting a healthcare professional"}
+          }; }
+          @foreach (var a in advice) {
+          <div class="bp-item"><div style="width:6px;height:6px;border-radius:50%;background:@catColor;margin-top:5px;flex-shrink:0"></div><div>@a</div></div>
+          }
+        </div>
+      </div>
+      } else {
+      <div class="bp-empty">
+        <div style="font-size:52px;margin-bottom:16px">🧮</div>
+        <div style="font-size:17px;font-weight:800;color:#18181b;margin-bottom:8px">@(ne?"आफ्नो बोसो % थाहा पाउनुहोस्":"Find your Body Fat %")</div>
+        <div style="font-size:13px;color:#71717a">@(ne?"US Navy विधिले BMI भन्दा सटीक नतिजा दिन्छ":"The US Navy method gives more accurate results than BMI alone")</div>
+      </div>
+      }
+    </div>
+  </div>
+</div></div>
+<script>
+function setG(v,btn){document.getElementById('genderInput').value=v;document.querySelectorAll('.bp-gender-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');document.getElementById('hipGroup').style.display=v==='female'?'':'none';}
+</script>

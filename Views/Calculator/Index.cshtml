@@ -1,0 +1,83 @@
+@{
+    ViewBag.Title = "Fitness Calculators – ShaktiFit";
+    var isAuth = Context.Session.GetString("UserId") != null;
+    if (!isAuth) { ViewBag.IsLanding = true; }
+    ViewBag.ActiveNav = "calculators";
+    var lang = Context.Session.GetString("Lang") ?? "en";
+    bool ne = lang == "ne";
+
+    var calcs = new[]{
+        ("/Calculator/BodyFat",    "🧮", "#3b82f6", "#eff6ff",  ne?"शरीरको बोसो %":"Body Fat %",          ne?"US Navy विधिले सटीक शरीरको बोसो मापन":"Accurate body fat using US Navy method"),
+        ("/Calculator/IdealWeight","⚖️","#22c55e", "#f0fdf4",  ne?"आदर्श तौल":"Ideal Weight",             ne?"४ वैज्ञानिक सूत्रहरूले आदर्श तौल":"Ideal weight from 4 medical formulas"),
+        ("/Calculator/Protein",    "💪", "#8b5cf6", "#f5f3ff",  ne?"प्रोटिन सेवन":"Protein Intake",        ne?"ISSN/ACSM दिशानिर्देश अनुसार दैनिक प्रोटिन":"Daily protein per ISSN/ACSM guidelines"),
+        ("/Calculator/Water",      "💧", "#06b6d4", "#ecfeff",  ne?"पानी सेवन":"Water Intake",             ne?"तौल, गतिविधि र हावापानी अनुसार":"Based on weight, activity & climate"),
+        ("/Calculator/OneRepMax",  "🏋️","#f97316", "#fff7ed",  ne?"१ रेप म्याक्स":"1 Rep Max (1RM)",      ne?"४ सूत्रहरूको औसतले सटीक 1RM अनुमान":"Average of 4 formulas for accurate 1RM"),
+        ("/Calculator/Pace",       "🏃", "#ef4444", "#fef2f2",  ne?"दौड गति":"Running Pace",              ne?"Riegel सूत्रले दौड गति र दौड अनुमान":"Pace calculator + race time predictions"),
+        ("/Calculator/HeartRate",  "❤️", "#e11d48", "#fff1f2",  ne?"हृदय गति क्षेत्र":"Heart Rate Zones", ne?"Karvonen विधिले ५ प्रशिक्षण क्षेत्र":"5 training zones via Karvonen method"),
+        ("/Calculator/Sleep",      "😴", "#6366f1", "#eef2ff",  ne?"निद्रा क्याल्कुलेटर":"Sleep Calculator",ne?"९०-मिनेट साइकलमा उत्तम निद्रा समय":"Optimal sleep times based on 90-min cycles"),
+        ("/Calculator/WaistHeight","📏", "#f59e0b", "#fffbeb",  ne?"कम्मर-उचाइ अनुपात":"Waist-to-Height", ne?"हृदय जोखिम मूल्यांकन":"Cardiovascular risk assessment"),
+    };
+}
+
+<style>
+  .bp { background:#f8faf8; min-height:100vh; padding:20px 16px 60px; }
+  .bp-inner { max-width:880px; margin:0 auto; }
+  .bp-tag { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; color:var(--accent,#22c55e); margin-bottom:6px; }
+  .bp-title { font-size:24px; font-weight:900; color:#0f172a; letter-spacing:-0.02em; margin-bottom:4px; }
+  .bp-sub { font-size:13px; color:#64748b; margin-bottom:28px; }
+  .calc-hub { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
+  @@media(max-width:640px) { .calc-hub { grid-template-columns:1fr 1fr; } }
+  @@media(max-width:400px) { .calc-hub { grid-template-columns:1fr; } }
+  .calc-hub-card {
+    display:flex; flex-direction:column; gap:10px;
+    background:#ffffff; border:1px solid rgba(0,0,0,0.08);
+    border-radius:16px; padding:18px; text-decoration:none;
+    transition:all .15s; box-shadow:0 1px 3px rgba(0,0,0,0.04);
+  }
+  .calc-hub-card:hover { border-color:var(--accent,#22c55e); transform:translateY(-2px); box-shadow:0 6px 20px rgba(0,0,0,0.08); }
+  .calc-hub-icon { width:40px; height:40px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:20px; }
+  .calc-hub-name { font-size:14px; font-weight:800; color:#18181b; }
+  .calc-hub-desc { font-size:12px; color:#71717a; line-height:1.5; }
+  .calc-hub-arrow { font-size:12px; color:var(--accent,#22c55e); font-weight:700; margin-top:auto; }
+
+  /* Also link BMI and Calorie */
+  .calc-existing { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:20px; }
+</style>
+
+<div class="bp">
+<div class="bp-inner">
+  <div class="bp-tag">🧮 @(ne?"उपकरणहरू":"Tools")</div>
+  <div class="bp-title">@(ne?"फिटनेस क्याल्कुलेटरहरू":"Fitness Calculators")</div>
+  <div class="bp-sub">@(ne?"सटीक वैज्ञानिक सूत्रहरूमा आधारित — कुनै लगइन आवश्यक छैन":"Accurate science-based calculators — no login required")</div>
+
+  <!-- BMI + Calorie (existing) -->
+  <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#94a3b8;margin-bottom:10px">@(ne?"मुख्य क्याल्कुलेटर":"Core Calculators")</div>
+  <div class="calc-existing">
+    <a href="/Bmi" class="calc-hub-card" style="border-color:rgba(34,197,94,0.3)">
+      <div class="calc-hub-icon" style="background:#f0fdf4">⚖️</div>
+      <div class="calc-hub-name">@(ne?"BMI क्याल्कुलेटर":"BMI Calculator")</div>
+      <div class="calc-hub-desc">@(ne?"Body Mass Index र स्वास्थ्य सुझाव":"Body Mass Index with health advice")</div>
+      <div class="calc-hub-arrow">@(ne?"खोल्नुहोस्":"Open") →</div>
+    </a>
+    <a href="/Calorie" class="calc-hub-card" style="border-color:rgba(249,115,22,0.3)">
+      <div class="calc-hub-icon" style="background:#fff7ed">🔥</div>
+      <div class="calc-hub-name">@(ne?"क्यालोरी क्याल्कुलेटर":"Calorie Calculator")</div>
+      <div class="calc-hub-desc">@(ne?"TDEE, BMR र म्याक्रो लक्ष्य":"TDEE, BMR and macro targets")</div>
+      <div class="calc-hub-arrow">@(ne?"खोल्नुहोस्":"Open") →</div>
+    </a>
+  </div>
+
+  <!-- All new calculators -->
+  <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#94a3b8;margin-bottom:10px;margin-top:8px">@(ne?"सबै क्याल्कुलेटर":"All Calculators")</div>
+  <div class="calc-hub">
+    @foreach (var c in calcs) {
+    <a href="@c.Item1" class="calc-hub-card">
+      <div class="calc-hub-icon" style="background:@c.Item4">@c.Item3</div>
+      <div class="calc-hub-name">@c.Item5</div>
+      <div class="calc-hub-desc">@c.Item6</div>
+      <div class="calc-hub-arrow" style="color:@c.Item3">@(ne?"खोल्नुहोस्":"Open") →</div>
+    </a>
+    }
+  </div>
+</div>
+</div>
