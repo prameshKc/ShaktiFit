@@ -153,25 +153,38 @@ public class CalculatorController : Controller
     public IActionResult Pace() { SetGuest(); ViewBag.ActiveNav = "calculators"; return View(); }
 
     [HttpPost]
-    public IActionResult Pace(double distKm, int totalMin, int totalSec)
+    public IActionResult Pace(double distVal, int totalMin, int totalSec, string unit = "km")
     {
         SetGuest();
         double totalSeconds = totalMin * 60 + totalSec;
-        if (totalSeconds <= 0 || distKm <= 0) return View();
+        if (totalSeconds <= 0 || distVal <= 0) return View();
 
+        // Normalise to km for all calculations
+        double distKm = unit == "mi" ? distVal * 1.60934 : distVal;
+
+        // Pace per km
         double paceSecPerKm = totalSeconds / distKm;
-        int paceMin = (int)(paceSecPerKm / 60);
-        int paceSec = (int)(paceSecPerKm % 60);
-        double speedKph = Math.Round(distKm / (totalSeconds / 3600), 2);
+        // Pace per mile
+        double paceSecPerMi = paceSecPerKm * 1.60934;
 
-        // Riegel race predictions: T2 = T1 × (D2/D1)^1.06
+        int paceMinKm = (int)(paceSecPerKm / 60), paceSecKm = (int)(paceSecPerKm % 60);
+        int paceMinMi = (int)(paceSecPerMi / 60), paceSecMi = (int)(paceSecPerMi % 60);
+
+        double speedKph = Math.Round(distKm / (totalSeconds / 3600), 2);
+        double speedMph = Math.Round(speedKph / 1.60934, 2);
+
+        // Riegel: T2 = T1 × (D2/D1)^1.06
         string Fmt(double sec) { int fh=(int)(sec/3600),fm=(int)((sec%3600)/60),fs=(int)(sec%60); return fh>0?$"{fh}:{fm:D2}:{fs:D2}":$"{fm}:{fs:D2}"; }
-        ViewBag.PaceMin = paceMin; ViewBag.PaceSec = paceSec; ViewBag.SpeedKph = speedKph;
-        ViewBag.Pred5k        = Fmt(totalSeconds * Math.Pow(5.0      / distKm, 1.06));
-        ViewBag.Pred10k       = Fmt(totalSeconds * Math.Pow(10.0     / distKm, 1.06));
-        ViewBag.PredHalf      = Fmt(totalSeconds * Math.Pow(21.0975  / distKm, 1.06));
-        ViewBag.PredMarathon  = Fmt(totalSeconds * Math.Pow(42.195   / distKm, 1.06));
-        ViewBag.DistKm = distKm; ViewBag.TotalMin = totalMin; ViewBag.TotalSec = totalSec;
+
+        ViewBag.PaceMinKm = paceMinKm; ViewBag.PaceSecKm = paceSecKm;
+        ViewBag.PaceMinMi = paceMinMi; ViewBag.PaceSecMi = paceSecMi;
+        ViewBag.SpeedKph = speedKph;   ViewBag.SpeedMph = speedMph;
+        ViewBag.Pred5k       = Fmt(totalSeconds * Math.Pow(5.0     / distKm, 1.06));
+        ViewBag.Pred10k      = Fmt(totalSeconds * Math.Pow(10.0    / distKm, 1.06));
+        ViewBag.PredHalf     = Fmt(totalSeconds * Math.Pow(21.0975 / distKm, 1.06));
+        ViewBag.PredMarathon = Fmt(totalSeconds * Math.Pow(42.195  / distKm, 1.06));
+        ViewBag.DistVal = distVal; ViewBag.TotalMin = totalMin;
+        ViewBag.TotalSec = totalSec; ViewBag.Unit = unit;
         ViewBag.ActiveNav = "calculators";
         return View();
     }

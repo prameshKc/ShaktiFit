@@ -5,74 +5,124 @@
     ViewBag.ActiveNav = "calculators";
     var lang = Context.Session.GetString("Lang") ?? "en";
     bool ne = lang == "ne";
-    bool has = ViewBag.PaceMin != null;
-    int paceMin = has ? (int)ViewBag.PaceMin : 0;
-    int paceSec = has ? (int)ViewBag.PaceSec : 0;
-    double speedKph = has ? (double)ViewBag.SpeedKph : 0;
-    double distKm = ViewBag.DistKm is double d ? d : 0;
-    int totalMin = ViewBag.TotalMin is int tm ? tm : 0;
-    int totalSec = ViewBag.TotalSec is int ts ? ts : 0;
+    bool has = ViewBag.PaceMinKm != null;
 
-    // Riegel predictions from ViewBag
+    // Results
+    int paceMinKm  = has ? (int)ViewBag.PaceMinKm  : 0;
+    int paceSecKm  = has ? (int)ViewBag.PaceSecKm  : 0;
+    int paceMinMi  = has ? (int)ViewBag.PaceMinMi  : 0;
+    int paceSecMi  = has ? (int)ViewBag.PaceSecMi  : 0;
+    double speedKph = has ? (double)ViewBag.SpeedKph : 0;
+    double speedMph = has ? (double)ViewBag.SpeedMph : 0;
+
+    // Form state
+    double distVal  = ViewBag.DistVal  is double dv ? dv : 0;
+    int    totalMin = ViewBag.TotalMin is int tm ? tm : 0;
+    int    totalSec = ViewBag.TotalSec is int ts ? ts : 0;
+    string unit     = ViewBag.Unit as string ?? "km";
+
     bool hasPred = ViewBag.Pred5k != null;
 }
 @await Html.PartialAsync("_CalcStyle")
 <style>
-  .pace-pred { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .pace-pred { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:4px; }
+  .unit-toggle { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:14px; }
+  .unit-btn { padding:10px; border:1.5px solid rgba(0,0,0,0.1); border-radius:12px; background:#f9f9f8; font-size:13px; font-weight:700; color:#71717a; cursor:pointer; font-family:inherit; transition:all .15s; }
+  .unit-btn.active { border-color:#ef4444; background:rgba(239,68,68,0.07); color:#ef4444; }
+  .pace-dual { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:16px; }
+  .pace-box { background:#f9f9f8; border-radius:12px; padding:14px; text-align:center; }
+  .pace-box-val { font-size:26px; font-weight:900; letter-spacing:-0.02em; color:#ef4444; }
+  .pace-box-lbl { font-size:10px; color:#a1a1aa; margin-top:3px; text-transform:uppercase; letter-spacing:0.05em; }
 </style>
 <div class="bp"><div class="bp-inner">
   <a href="/Calculator" class="bp-back">← @(ne?"सबै क्याल्कुलेटर":"All Calculators")</a>
-  <div class="bp-tag">🏃 @(ne?"दौड":"Running")</div>
+  <div class="bp-tag">RUN · @(ne?"दौड":"Running")</div>
   <div class="bp-title">@(ne?"दौड गति क्याल्कुलेटर":"Running Pace Calculator")</div>
-  <div class="bp-sub">@(ne?"गति, समय र दूरी गणना + Riegel सूत्रले दौड समय अनुमान":"Calculate pace/speed/time + race time predictions using the Riegel formula (T2 = T1 × (D2/D1)^1.06)")</div>
+  <div class="bp-sub">@(ne?"km वा miles — गति, गति र Riegel दौड अनुमान":"Supports km & miles — pace, speed + Riegel race predictions (T2 = T1 × (D2/D1)^1.06)")</div>
   <div class="bp-layout">
     <div class="bp-form">
-      <div class="bp-form-title">🏃 @(ne?"तपाईंको दौड":"Your Run")</div>
+      <div class="bp-form-title">Your Run</div>
       <form method="post" action="/Calculator/Pace">
         @Html.AntiForgeryToken()
-        <div class="bp-lbl">@(ne?"दूरी (km)":"Distance (km)")</div>
-        <input class="bp-inp" type="number" name="distKm" placeholder="e.g. 5" min="0.1" max="1000" step="0.1" value="@(distKm>0?distKm.ToString():"")" inputmode="decimal" required />
-        <div class="bp-lbl">@(ne?"समय — मिनेट":"Time — Minutes")</div>
+        <input type="hidden" name="unit" id="unitInput" value="@unit" />
+
+        <div class="bp-lbl">Distance Unit</div>
+        <div class="unit-toggle">
+          <button type="button" class="unit-btn @(unit=="km"?"active":"")" onclick="setUnit('km',this)">km</button>
+          <button type="button" class="unit-btn @(unit=="mi"?"active":"")" onclick="setUnit('mi',this)">miles</button>
+        </div>
+
+        <div class="bp-lbl" id="distLabel">Distance (@(unit=="mi"?"miles":"km"))</div>
+        <input class="bp-inp" type="number" name="distVal" id="distInput" placeholder="@(unit=="mi"?"e.g. 3.1":"e.g. 5")" min="0.1" max="1000" step="0.01" value="@(distVal>0?distVal.ToString():"")" inputmode="decimal" required />
+
+        <div class="bp-lbl">Time — Minutes</div>
         <input class="bp-inp" type="number" name="totalMin" placeholder="e.g. 25" min="0" max="9999" value="@(totalMin>0?totalMin.ToString():"")" inputmode="numeric" required />
-        <div class="bp-lbl">@(ne?"समय — सेकेन्ड":"Time — Seconds")</div>
+
+        <div class="bp-lbl">Time — Seconds</div>
         <input class="bp-inp" type="number" name="totalSec" placeholder="e.g. 30" min="0" max="59" value="@(totalSec>0?totalSec.ToString():"")" inputmode="numeric" />
-        <button class="bp-btn" type="submit">🏃 @(ne?"गति गणना गर्नुहोस्":"Calculate Pace")</button>
+
+        <button class="bp-btn" type="submit" style="background:#ef4444">Calculate Pace</button>
       </form>
     </div>
     <div>
       @if (has) {
       <div class="bp-result" style="border-color:#ef4444">
-        <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#ef4444;margin-bottom:6px">@(ne?"तपाईंको गति":"Your Pace")</div>
-        <div class="bp-result-num" style="color:#ef4444">@paceMin<span style="font-size:28px">:</span>@paceSec.ToString("D2")<span style="font-size:20px"> /km</span></div>
-        <div style="font-size:14px;color:#a1a1aa;margin-top:4px">@speedKph km/h</div>
+        <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#ef4444;margin-bottom:6px">Your Pace</div>
+        <div class="pace-dual">
+          <div class="pace-box">
+            <div class="pace-box-val">@paceMinKm:@paceSecKm.ToString("D2")</div>
+            <div class="pace-box-lbl">min / km</div>
+          </div>
+          <div class="pace-box">
+            <div class="pace-box-val">@paceMinMi:@paceSecMi.ToString("D2")</div>
+            <div class="pace-box-lbl">min / mile</div>
+          </div>
+        </div>
+        <div class="bp-stats" style="margin-top:10px">
+          <div class="bp-stat"><div class="bp-stat-val">@speedKph</div><div class="bp-stat-lbl">km/h</div></div>
+          <div class="bp-stat"><div class="bp-stat-val">@speedMph</div><div class="bp-stat-lbl">mph</div></div>
+        </div>
       </div>
+
       @if (hasPred) {
       <div class="bp-card">
-        <div class="bp-card-head">🏁 @(ne?"Riegel दौड अनुमान":"Riegel Race Predictions")</div>
+        <div class="bp-card-head">Race Predictions (Riegel)</div>
         <div class="bp-card-body">
-          <div style="font-size:11px;color:#a1a1aa;padding:8px 0;margin-bottom:4px">T2 = T1 × (D2/D1)^1.06</div>
+          <div style="font-size:11px;color:#a1a1aa;padding:8px 0">T2 = T1 × (D2/D1)^1.06</div>
           <div class="pace-pred">
-            @{
-              var races = new[]{("5K",ViewBag.Pred5k),("10K",ViewBag.Pred10k),("Half Marathon",ViewBag.PredHalf),("Marathon",ViewBag.PredMarathon)};
-            }
-            @foreach (var r in races) {
+            @foreach (var r in new[]{("5K",ViewBag.Pred5k),("10K",ViewBag.Pred10k),("Half",ViewBag.PredHalf),("Marathon",ViewBag.PredMarathon)}) {
             <div class="bp-stat"><div class="bp-stat-val" style="font-size:15px;color:#ef4444">@r.Item2</div><div class="bp-stat-lbl">@r.Item1</div></div>
             }
           </div>
         </div>
       </div>
       }
+
       <div class="bp-card">
-        <div class="bp-card-head">🎯 @(ne?"गति क्षेत्रहरू":"Pace Zones (approx)")</div>
+        <div class="bp-card-head">Pace Zones (effort guide)</div>
         <div class="bp-card-body">
-          @foreach (var z in new[]{("Easy","60–70% MHR","Conversation pace"),("Aerobic","70–80% MHR","Comfortable but challenging"),("Tempo","80–90% MHR","Comfortably hard"),("Interval","90–95% MHR","Hard, short bursts"),("Sprint","95–100% MHR","Max effort, < 60 sec")}) {
-          <div class="bp-row"><span style="font-weight:700">@z.Item1</span><span style="color:#a1a1aa;font-size:11px">@z.Item2</span><span style="font-size:11px;color:#52525b">@z.Item3</span></div>
+          @foreach (var z in new[]{("Easy","60–70% max HR","Conversation pace, recovery"),("Aerobic","70–80% max HR","Comfortable, base building"),("Tempo","80–90% max HR","Comfortably hard, lactate threshold"),("Interval","90–95% max HR","Hard, short repeats"),("Sprint","95–100% max HR","All-out, under 60 sec")}) {
+          <div class="bp-row"><span style="font-weight:700;min-width:64px">@z.Item1</span><span style="color:#a1a1aa;font-size:11px">@z.Item2</span></div>
           }
         </div>
       </div>
+
       } else {
-      <div class="bp-empty"><div style="font-size:52px;margin-bottom:16px">🏃</div><div style="font-size:17px;font-weight:800;color:#18181b;margin-bottom:8px">@(ne?"आफ्नो गति गणना गर्नुहोस्":"Calculate Your Running Pace")</div><div style="font-size:13px;color:#71717a">@(ne?"दूरी र समय भर्नुहोस् — गति र भविष्यको दौड समय थाहा पाउनुहोस्":"Enter distance & time to get your pace + race time predictions")</div></div>
+      <div class="bp-empty">
+        <div style="font-size:36px;font-weight:900;color:#ef4444;margin-bottom:12px">RUN</div>
+        <div style="font-size:17px;font-weight:800;color:#18181b;margin-bottom:8px">Calculate Your Running Pace</div>
+        <div style="font-size:13px;color:#71717a">Enter distance (km or miles) and time — get pace in both units plus race predictions</div>
+      </div>
       }
     </div>
   </div>
 </div></div>
+<script>
+function setUnit(v, btn) {
+  document.getElementById('unitInput').value = v;
+  document.querySelectorAll('.unit-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('distLabel').textContent = 'Distance (' + (v === 'mi' ? 'miles' : 'km') + ')';
+  document.getElementById('distInput').placeholder = v === 'mi' ? 'e.g. 3.1' : 'e.g. 5';
+}
+</script>
