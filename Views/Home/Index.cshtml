@@ -232,7 +232,7 @@
 .app-footer-col a:hover { color:#18181b; }
 .app-footer-bottom { max-width:1100px; margin:0 auto; display:flex; justify-content:space-between; align-items:center; padding-top:24px; border-top:1px solid rgba(0,0,0,0.05); font-size:12px; color:#a1a1aa; }
 
-/* Calculator dropdown (duplicated here for home page's own nav) */
+/* Calculator dropdown */
 .calc-dropdown { position:relative; }
 .calc-dropdown-btn {
   display:flex; align-items:center; gap:5px;
@@ -240,16 +240,18 @@
   background:rgba(34,197,94,0.08); border:1px solid rgba(34,197,94,0.2);
   border-radius:8px; cursor:pointer; transition:all .15s;
 }
-.calc-dropdown-btn:hover { background:rgba(34,197,94,0.14); }
-.calc-dropdown-btn svg { transition:transform .2s; }
-.calc-dropdown:hover .calc-dropdown-btn svg { transform:rotate(180deg); }
+.calc-dropdown-btn:hover, .calc-dropdown.open .calc-dropdown-btn { background:rgba(34,197,94,0.14); }
+.calc-dropdown-btn .cd-arrow { transition:transform .2s; }
+.calc-dropdown.open .calc-dropdown-btn .cd-arrow { transform:rotate(180deg); }
 .calc-dropdown-menu {
-  display:none; position:absolute; top:calc(100% + 6px); left:0;
-  background:#fff; border:1px solid rgba(0,0,0,0.09);
-  border-radius:12px; box-shadow:0 8px 24px rgba(0,0,0,0.1);
-  min-width:220px; padding:6px; z-index:999;
+  display:none; position:absolute; top:100%; left:0;
+  padding-top:8px; z-index:999; min-width:220px;
 }
-.calc-dropdown:hover .calc-dropdown-menu { display:block; }
+.calc-dropdown-menu-inner {
+  background:#fff; border:1px solid rgba(0,0,0,0.09);
+  border-radius:12px; box-shadow:0 8px 24px rgba(0,0,0,0.12); padding:6px;
+}
+.calc-dropdown.open .calc-dropdown-menu { display:block; }
 .calc-menu-item {
   display:flex; align-items:center; gap:10px;
   padding:10px 12px; border-radius:8px; text-decoration:none;
@@ -281,20 +283,22 @@
         <a href="/Exercise" class="app-nav-link">@(ne?"व्यायाम":"Exercises")</a>
         <a href="/Health" class="app-nav-link">@(ne?"स्वास्थ्य":"Health")</a>
         <a href="/Running" class="app-nav-link">@(ne?"दौड":"Running")</a>
-        <div class="calc-dropdown">
-          <button class="calc-dropdown-btn" style="font-size:13px">
+        <div class="calc-dropdown" id="calcDropdownHome">
+          <button class="calc-dropdown-btn" style="font-size:13px" onclick="toggleHomeCalc(event)">
             🧮 @(ne?"क्याल्कुलेटर":"Calculators")
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+            <svg class="cd-arrow" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
           </button>
           <div class="calc-dropdown-menu">
-            <a href="/Bmi" class="calc-menu-item">
-              <div class="calc-menu-icon" style="background:#eff6ff">⚖️</div>
-              <div><div>@(ne?"BMI क्याल्कुलेटर":"BMI Calculator")</div><div style="font-size:11px;color:#94a3b8;font-weight:500">Body Mass Index</div></div>
-            </a>
-            <a href="/Calorie" class="calc-menu-item">
-              <div class="calc-menu-icon" style="background:#fff7ed">🔥</div>
-              <div><div>@(ne?"क्यालोरी क्याल्कुलेटर":"Calorie Calculator")</div><div style="font-size:11px;color:#94a3b8;font-weight:500">TDEE & Macros</div></div>
-            </a>
+            <div class="calc-dropdown-menu-inner">
+              <a href="/Bmi" class="calc-menu-item">
+                <div class="calc-menu-icon" style="background:#eff6ff">⚖️</div>
+                <div><div>@(ne?"BMI क्याल्कुलेटर":"BMI Calculator")</div><div style="font-size:11px;color:#94a3b8;font-weight:500">Body Mass Index</div></div>
+              </a>
+              <a href="/Calorie" class="calc-menu-item">
+                <div class="calc-menu-icon" style="background:#fff7ed">🔥</div>
+                <div><div>@(ne?"क्यालोरी क्याल्कुलेटर":"Calorie Calculator")</div><div style="font-size:11px;color:#94a3b8;font-weight:500">TDEE & Macros</div></div>
+              </a>
+            </div>
           </div>
         </div>
     </div>
@@ -613,6 +617,13 @@
 
 @section Scripts {
 <script>
+function toggleHomeCalc(e) {
+  e.stopPropagation();
+  document.getElementById('calcDropdownHome')?.classList.toggle('open');
+}
+document.addEventListener('click', function() {
+  document.getElementById('calcDropdownHome')?.classList.remove('open');
+});
 const bmiData = {
   en: [
     {max:18.5,label:'Underweight',color:'#60a5fa'},

@@ -107,16 +107,19 @@
       background:rgba(34,197,94,0.08); border:1px solid rgba(34,197,94,0.2);
       border-radius:8px; cursor:pointer; transition:all .15s;
     }
-    .calc-dropdown-btn:hover { background:rgba(34,197,94,0.14); }
-    .calc-dropdown-btn svg { transition:transform .2s; }
-    .calc-dropdown:hover .calc-dropdown-btn svg { transform:rotate(180deg); }
+    .calc-dropdown-btn:hover, .calc-dropdown.open .calc-dropdown-btn { background:rgba(34,197,94,0.14); }
+    .calc-dropdown-btn .cd-arrow { transition:transform .2s; }
+    .calc-dropdown.open .calc-dropdown-btn .cd-arrow { transform:rotate(180deg); }
     .calc-dropdown-menu {
-      display:none; position:absolute; top:calc(100% + 6px); left:0;
-      background:#fff; border:1px solid rgba(0,0,0,0.09);
-      border-radius:12px; box-shadow:0 8px 24px rgba(0,0,0,0.1);
-      min-width:220px; padding:6px; z-index:999;
+      display:none; position:absolute; top:100%; left:0;
+      padding-top:8px; z-index:999; min-width:220px;
     }
-    .calc-dropdown:hover .calc-dropdown-menu { display:block; }
+    .calc-dropdown-menu-inner {
+      background:#fff; border:1px solid rgba(0,0,0,0.09);
+      border-radius:12px; box-shadow:0 8px 24px rgba(0,0,0,0.12);
+      padding:6px;
+    }
+    .calc-dropdown.open .calc-dropdown-menu { display:block; }
     .calc-menu-item {
       display:flex; align-items:center; gap:10px;
       padding:10px 12px; border-radius:8px; text-decoration:none;
@@ -342,26 +345,28 @@ else
             <a href="/" class="guest-nav-link">@(lang=="ne"?"गृहपृष्ठ":"Home")</a>
             <a href="/Exercise" class="guest-nav-link">@(lang=="ne"?"व्यायाम":"Exercises")</a>
             <a href="/Health" class="guest-nav-link">@(lang=="ne"?"स्वास्थ्य":"Health")</a>
-            <div class="calc-dropdown">
-              <button class="calc-dropdown-btn">
+            <div class="calc-dropdown" id="calcDropdown">
+              <button class="calc-dropdown-btn" onclick="toggleCalcMenu(event)">
                 🧮 @(lang=="ne"?"क्याल्कुलेटर":"Calculators")
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+                <svg class="cd-arrow" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
               </button>
               <div class="calc-dropdown-menu">
-                <a href="/Bmi" class="calc-menu-item">
-                  <div class="calc-menu-icon" style="background:#eff6ff">⚖️</div>
-                  <div>
-                    <div>@(lang=="ne"?"BMI क्याल्कुलेटर":"BMI Calculator")</div>
-                    <div style="font-size:11px;color:#94a3b8;font-weight:500">@(lang=="ne"?"Body Mass Index":"Body Mass Index")</div>
-                  </div>
-                </a>
-                <a href="/Calorie" class="calc-menu-item">
-                  <div class="calc-menu-icon" style="background:#fff7ed">🔥</div>
-                  <div>
-                    <div>@(lang=="ne"?"क्यालोरी क्याल्कुलेटर":"Calorie Calculator")</div>
-                    <div style="font-size:11px;color:#94a3b8;font-weight:500">@(lang=="ne"?"TDEE र म्याक्रो":"TDEE & Macros")</div>
-                  </div>
-                </a>
+                <div class="calc-dropdown-menu-inner">
+                  <a href="/Bmi" class="calc-menu-item">
+                    <div class="calc-menu-icon" style="background:#eff6ff">⚖️</div>
+                    <div>
+                      <div>@(lang=="ne"?"BMI क्याल्कुलेटर":"BMI Calculator")</div>
+                      <div style="font-size:11px;color:#94a3b8;font-weight:500">Body Mass Index</div>
+                    </div>
+                  </a>
+                  <a href="/Calorie" class="calc-menu-item">
+                    <div class="calc-menu-icon" style="background:#fff7ed">🔥</div>
+                    <div>
+                      <div>@(lang=="ne"?"क्यालोरी क्याल्कुलेटर":"Calorie Calculator")</div>
+                      <div style="font-size:11px;color:#94a3b8;font-weight:500">TDEE & Macros</div>
+                    </div>
+                  </a>
+                </div>
               </div>
             </div>
         </div>
@@ -448,6 +453,13 @@ else
 <script src="~/js/fitforge.js" asp-append-version="true"></script>
 <script>
 // ── DRAWER ──
+function toggleCalcMenu(e) {
+  e.stopPropagation();
+  document.getElementById('calcDropdown')?.classList.toggle('open');
+}
+document.addEventListener('click', function() {
+  document.getElementById('calcDropdown')?.classList.remove('open');
+});
 function openDrawer() {
   document.getElementById('sidebarDrawer')?.classList.add('open');
   document.getElementById('drawerOverlay')?.classList.add('open');
