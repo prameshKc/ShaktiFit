@@ -392,9 +392,9 @@
                 </div>
                 <div style="flex:1;display:flex;flex-direction:column;gap:8px">
                   @foreach (var row in new[]{
-                    ("BMR","@(ne?\"आराम क्यालोरी\":\"Calories at rest\")","1,650"),
-                    ("TDEE","@(ne?\"कुल दैनिक खर्च\":\"Total daily burn\")","2,200"),
-                    ("@(ne?\"लक्ष्य\":\"Target\")","@(ne?\"तौल घटाउने\":\"Weight loss\")","1,700")
+                    ("BMR",               ne?"आराम क्यालोरी":"Calories at rest",  "1,650"),
+                    ("TDEE",              ne?"कुल दैनिक खर्च":"Total daily burn", "2,200"),
+                    (ne?"लक्ष्य":"Target",ne?"तौल घटाउने":"Weight loss",           "1,700")
                   }) {
                   <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:#fff;border-radius:8px;border:1px solid rgba(0,0,0,0.06)">
                     <div>
