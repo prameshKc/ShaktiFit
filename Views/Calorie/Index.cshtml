@@ -58,23 +58,24 @@
 }
 .cal-label { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:#94a3b8; margin-bottom:10px; }
 .form-group { margin-bottom:12px; }
-.form-group label { display:block; font-size:12px; font-weight:600; color:var(--text-secondary,#475569); margin-bottom:4px; }
+.form-group label { display:block; font-size:12px; font-weight:600; color:#94a3b8; margin-bottom:4px; }
 .form-input {
   width:100%; padding:9px 12px; border:1.5px solid var(--border-color,#e2e8f0); border-radius:8px;
-  font-size:13px; font-weight:600; color:var(--text-primary,#0f172a); background:var(--input-bg,#fafafa);
+  font-size:13px; font-weight:600; color:#374151; background:var(--input-bg,#fafafa);
   box-sizing:border-box; outline:none; transition:border-color .15s;
 }
 .form-input:focus { border-color:#22c55e; }
+.form-input::placeholder { color:#94a3b8; }
 .gender-row { display:grid; grid-template-columns:1fr 1fr; gap:6px; }
 .gender-btn {
   padding:8px; border:1.5px solid var(--border-color,#e2e8f0); border-radius:8px;
-  background:var(--input-bg,#fff); font-size:12px; font-weight:700; color:var(--text-secondary,#64748b);
+  background:var(--input-bg,#fff); font-size:12px; font-weight:700; color:#64748b;
   cursor:pointer; transition:all .15s; text-align:center;
 }
 .gender-btn.active { border-color:#22c55e; background:#f0fdf4; color:#16a34a; }
 .activity-select, .goal-select {
   width:100%; padding:9px 12px; border:1.5px solid var(--border-color,#e2e8f0); border-radius:8px;
-  font-size:12px; font-weight:600; color:var(--text-primary,#0f172a); background:var(--input-bg,#fafafa);
+  font-size:12px; font-weight:600; color:#374151; background:var(--input-bg,#fafafa);
   box-sizing:border-box; outline:none; cursor:pointer;
 }
 .calc-btn {
