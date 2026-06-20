@@ -43,7 +43,16 @@ public class WorkoutController : Controller
     public async Task<IActionResult> Details(string id)
     {
         var workout = await _workouts.GetByIdAsync(id);
-        if (workout == null) return NotFound();
+        if (workout == null)
+        {
+            var userId = HttpContext.Session.GetString("UserId");
+            if (userId != null)
+            {
+                var routines = await _workouts.GetUserRoutinesAsync(userId);
+                workout = routines.FirstOrDefault(r => r.Id == id);
+            }
+        }
+        if (workout == null) return RedirectToAction("Index");
         ViewBag.T = _translations.GetAll(Lang);
         return View(workout);
     }
