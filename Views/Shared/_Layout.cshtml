@@ -307,6 +307,7 @@ else
             <a href="/Health" class="guest-nav-link">@(lang=="ne"?"स्वास्थ्य":"Health")</a>
             <a href="/Exercise" class="guest-nav-link">@(lang=="ne"?"व्यायाम":"Exercises")</a>
             <a href="/Bmi" class="guest-nav-link">BMI</a>
+            <a href="/Calorie" class="guest-nav-link">@(lang=="ne"?"क्यालोरी":"Calories")</a>
         </div>
         <div class="guest-nav-actions">
             <a href="/Home/SetLang?lang=@(lang=="en"?"ne":"en")&returnUrl=@Context.Request.Path" style="font-size:12px;font-weight:700;color:#475569;padding:6px 12px;border:1px solid rgba(0,0,0,0.12);border-radius:6px">
@@ -329,7 +330,7 @@ else
             <button onclick="closeGuestMenu()" style="background:none;border:none;color:#94a3b8;font-size:22px;cursor:pointer">✕</button>
         </div>
         <div style="padding:12px 8px">
-            @foreach (var item in new[]{ ("/","🏠",lang=="ne"?"गृहपृष्ठ":"Home"), ("/Health","🏥",lang=="ne"?"स्वास्थ्य":"Health"), ("/Exercise","📚",lang=="ne"?"व्यायाम":"Exercises"), ("/Bmi","⚖️","BMI") })
+            @foreach (var item in new[]{ ("/","🏠",lang=="ne"?"गृहपृष्ठ":"Home"), ("/Health","🏥",lang=="ne"?"स्वास्थ्य":"Health"), ("/Exercise","📚",lang=="ne"?"व्यायाम":"Exercises"), ("/Bmi","⚖️","BMI"), ("/Calorie","🔥",lang=="ne"?"क्यालोरी":"Calories") })
             {
             <a href="@item.Item1" onclick="closeGuestMenu()" style="display:flex;align-items:center;gap:10px;padding:12px 10px;border-radius:10px;text-decoration:none;color:#475569;font-size:14px;font-weight:600;margin-bottom:2px">
                 <span style="font-size:20px">@item.Item2</span> @item.Item3
