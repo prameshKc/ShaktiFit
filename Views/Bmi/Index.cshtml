@@ -139,7 +139,8 @@
         double idealMin = Math.Round(18.5 * hm * hm, 1);
         double idealMax = Math.Round(24.9 * hm * hm, 1);
         double idealMid = Math.Round((idealMin + idealMax) / 2, 1);
-        double diff = Math.Round(weight - idealMid, 1);
+        // Target the nearest boundary of healthy range, not the midpoint
+        double diff = Math.Round(weight - (bmi.HasValue && bmi.Value >= 25 ? idealMax : bmi.HasValue && bmi.Value < 18.5 ? idealMin : idealMid), 1);
         bool needsLoss = bmi.HasValue && bmi.Value >= 25;
         bool needsGain = bmi.HasValue && bmi.Value < 18.5;
         bool isNormal  = bmi.HasValue && !needsLoss && !needsGain;
@@ -208,7 +209,7 @@
               </div>
             </div>
             <div style="background:#ffffff;border-radius:12px;padding:14px;text-align:center;border:1px solid rgba(0,0,0,0.07)">
-              <div style="font-size:22px;font-weight:900;color:#0f172a">@idealMid kg</div>
+              <div style="font-size:22px;font-weight:900;color:#0f172a">@(needsLoss ? idealMax : needsGain ? idealMin : idealMid) kg</div>
               <div style="font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.06em;margin-top:3px">
                 @(ne?"लक्ष्य तौल":"Target Weight")
               </div>
