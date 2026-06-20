@@ -43,6 +43,7 @@
       <form method="post" action="/Calculator/Pace">
         @Html.AntiForgeryToken()
         <input type="hidden" name="unit" id="unitInput" value="@unit" />
+        <input type="hidden" name="eventVal" id="eventValInput" value="@(ViewBag.EventVal as string ?? "")" />
 
         <div class="bp-lbl">Distance Unit</div>
         <div class="unit-toggle">
@@ -171,10 +172,10 @@ function setUnit(v, btn) {
   document.getElementById('eventPicker').value = '';
 }
 function pickEvent(sel) {
-  if (!sel.value) return;
+  if (!sel.value) { document.getElementById('eventValInput').value = ''; return; }
   var parts = sel.value.split('|');
   var u = parts[0], d = parseFloat(parts[1]);
-  // Switch unit buttons
+  document.getElementById('eventValInput').value = sel.value;
   document.getElementById('unitInput').value = u;
   document.querySelectorAll('.unit-btn').forEach(b => {
     b.classList.toggle('active', b.textContent.trim() === (u === 'km' ? 'km' : 'miles'));
@@ -183,4 +184,9 @@ function pickEvent(sel) {
   document.getElementById('distInput').placeholder = u === 'mi' ? 'e.g. 3.1' : 'e.g. 5';
   document.getElementById('distInput').value = d;
 }
+// Restore dropdown selection after postback
+(function() {
+  var saved = document.getElementById('eventValInput').value;
+  if (saved) document.getElementById('eventPicker').value = saved;
+})();
 </script>

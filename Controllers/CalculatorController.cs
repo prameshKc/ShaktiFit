@@ -153,7 +153,7 @@ public class CalculatorController : Controller
     public IActionResult Pace() { SetGuest(); ViewBag.ActiveNav = "calculators"; return View(); }
 
     [HttpPost]
-    public IActionResult Pace(double distVal, int hours, int minutes, int seconds, string unit = "km")
+    public IActionResult Pace(double distVal, int hours, int minutes, int seconds, string unit = "km", string eventVal = "")
     {
         SetGuest();
         double totalSeconds = hours * 3600 + minutes * 60 + seconds;
@@ -188,7 +188,7 @@ public class CalculatorController : Controller
         ViewBag.Pred10k      = Fmt(totalSeconds * Math.Pow(10.0    / distKm, 1.06));
         ViewBag.PredHalf     = Fmt(totalSeconds * Math.Pow(21.0975 / distKm, 1.06));
         ViewBag.PredMarathon = Fmt(totalSeconds * Math.Pow(42.195  / distKm, 1.06));
-        ViewBag.DistVal = distVal; ViewBag.Unit = unit;
+        ViewBag.DistVal = distVal; ViewBag.Unit = unit; ViewBag.EventVal = eventVal;
         ViewBag.ActiveNav = "calculators";
         return View();
     }
