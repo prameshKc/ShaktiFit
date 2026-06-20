@@ -99,6 +99,31 @@
     .guest-nav-links { display:flex; align-items:center; gap:4px; }
     .guest-nav-link { padding:7px 14px; font-size:13px; font-weight:500; color:#475569; border-radius:8px; transition:all 0.15s; text-decoration:none; }
     .guest-nav-link:hover { color:#0f172a; background:rgba(34,197,94,0.08); }
+    /* Calculator dropdown */
+    .calc-dropdown { position:relative; }
+    .calc-dropdown-btn {
+      display:flex; align-items:center; gap:5px;
+      padding:7px 14px; font-size:13px; font-weight:600; color:#16a34a;
+      background:rgba(34,197,94,0.08); border:1px solid rgba(34,197,94,0.2);
+      border-radius:8px; cursor:pointer; transition:all .15s;
+    }
+    .calc-dropdown-btn:hover { background:rgba(34,197,94,0.14); }
+    .calc-dropdown-btn svg { transition:transform .2s; }
+    .calc-dropdown:hover .calc-dropdown-btn svg { transform:rotate(180deg); }
+    .calc-dropdown-menu {
+      display:none; position:absolute; top:calc(100% + 6px); left:0;
+      background:#fff; border:1px solid rgba(0,0,0,0.09);
+      border-radius:12px; box-shadow:0 8px 24px rgba(0,0,0,0.1);
+      min-width:220px; padding:6px; z-index:999;
+    }
+    .calc-dropdown:hover .calc-dropdown-menu { display:block; }
+    .calc-menu-item {
+      display:flex; align-items:center; gap:10px;
+      padding:10px 12px; border-radius:8px; text-decoration:none;
+      color:#374151; font-size:13px; font-weight:600; transition:background .12s;
+    }
+    .calc-menu-item:hover { background:rgba(34,197,94,0.08); color:#16a34a; }
+    .calc-menu-icon { width:32px; height:32px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:16px; flex-shrink:0; }
     .guest-nav-actions { display:flex; gap:8px; align-items:center; }
     .guest-btn-login { padding:7px 16px; font-size:13px; font-weight:600; color:#475569; border:1px solid rgba(0,0,0,0.15); border-radius:8px; transition:all 0.15s; text-decoration:none; }
     .guest-btn-login:hover { color:#0f172a; border-color:rgba(0,0,0,0.3); background:#f8faf8; }
@@ -214,8 +239,18 @@
                 ("/Exercise","📚","exercises",lang=="ne"?"व्यायाम पुस्तकालय":"Exercise Library"),
                 ("/Activity","🏅","activity",lang=="ne"?"गतिविधि":"Activities"),
                 ("/Running","🏃","running",lang=="ne"?"दौड":"Running"),
-                ("/Bmi","⚖️","bmi",lang=="ne"?"BMI जाँच":"BMI Check"),
                 ("/Health","🏥","health",lang=="ne"?"स्वास्थ्य जानकारी":"Health Info")
+            })
+            {
+            <a href="@item.Item1" onclick="closeDrawer()" style="display:flex;align-items:center;gap:10px;padding:10px 10px;border-radius:10px;text-decoration:none;margin-bottom:2px;@(activeNav==item.Item3?"background:rgba(245,197,66,0.12);color:var(--accent);":"color:rgba(245,240,232,0.7);")">
+                <span style="font-size:18px">@item.Item2</span>
+                <span style="font-size:14px;font-weight:600">@item.Item4</span>
+            </a>
+            }
+            <div style="font-size:10px;font-weight:700;color:rgba(245,240,232,0.3);text-transform:uppercase;letter-spacing:0.1em;padding:12px 8px 4px">@(lang=="ne"?"फिटनेस क्याल्कुलेटर":"Fitness Calculators")</div>
+            @foreach (var item in new[]{
+                ("/Bmi","⚖️","bmi",lang=="ne"?"BMI क्याल्कुलेटर":"BMI Calculator"),
+                ("/Calorie","🔥","calorie",lang=="ne"?"क्यालोरी क्याल्कुलेटर":"Calorie Calculator")
             })
             {
             <a href="@item.Item1" onclick="closeDrawer()" style="display:flex;align-items:center;gap:10px;padding:10px 10px;border-radius:10px;text-decoration:none;margin-bottom:2px;@(activeNav==item.Item3?"background:rgba(245,197,66,0.12);color:var(--accent);":"color:rgba(245,240,232,0.7);")">
@@ -268,9 +303,10 @@
                 <a href="/Exercise" class="nav-link-item @(activeNav=="exercises"?"active":"")"><span class="nli-icon">📚</span> @(lang=="ne"?"व्यायाम पुस्तकालय":"Exercise Library")</a>
                 <a href="/Activity" class="nav-link-item @(activeNav=="activity"?"active":"")"><span class="nli-icon">🏅</span> @(lang=="ne"?"गतिविधि":"Activities")</a>
                 <a href="/Running" class="nav-link-item @(activeNav=="running"?"active":"")"><span class="nli-icon">🏃</span> @(lang=="ne"?"दौड":"Running")</a>
-                <a href="/Bmi" class="nav-link-item @(activeNav=="bmi"?"active":"")"><span class="nli-icon">⚖️</span> @(lang=="ne"?"BMI जाँच":"BMI Check")</a>
-                <a href="/Calorie" class="nav-link-item @(activeNav=="calorie"?"active":"")"><span class="nli-icon">🔥</span> @(lang=="ne"?"क्यालोरी":"Calories")</a>
                 <a href="/Health" class="nav-link-item @(activeNav=="health"?"active":"")"><span class="nli-icon">🏥</span> @(lang=="ne"?"स्वास्थ्य जानकारी":"Health Info")</a>
+                <div class="nav-group-label" style="margin-top:12px">@(lang=="ne"?"फिटनेस क्याल्कुलेटर":"Fitness Calculators")</div>
+                <a href="/Bmi" class="nav-link-item @(activeNav=="bmi"?"active":"")"><span class="nli-icon">⚖️</span> @(lang=="ne"?"BMI क्याल्कुलेटर":"BMI Calculator")</a>
+                <a href="/Calorie" class="nav-link-item @(activeNav=="calorie"?"active":"")"><span class="nli-icon">🔥</span> @(lang=="ne"?"क्यालोरी क्याल्कुलेटर":"Calorie Calculator")</a>
                 <div class="nav-group-label" style="margin-top:12px">@(lang=="ne"?"प्रगति":"Progress")</div>
                 <a href="/Progress" class="nav-link-item @(activeNav=="progress"?"active":"")"><span class="nli-icon">📈</span> @(lang=="ne"?"प्रगति":"My Progress")</a>
                 <a href="/Workout/Hybrid" class="nav-link-item @(activeNav=="hybrid"?"active":"")"><span class="nli-icon">🦸</span> @(lang=="ne"?"हाइब्रिड योजना":"Hybrid Plan")</a>
@@ -304,10 +340,30 @@ else
         </a>
         <div class="guest-nav-links">
             <a href="/" class="guest-nav-link">@(lang=="ne"?"गृहपृष्ठ":"Home")</a>
-            <a href="/Health" class="guest-nav-link">@(lang=="ne"?"स्वास्थ्य":"Health")</a>
             <a href="/Exercise" class="guest-nav-link">@(lang=="ne"?"व्यायाम":"Exercises")</a>
-            <a href="/Bmi" class="guest-nav-link">BMI</a>
-            <a href="/Calorie" class="guest-nav-link">@(lang=="ne"?"क्यालोरी":"Calories")</a>
+            <a href="/Health" class="guest-nav-link">@(lang=="ne"?"स्वास्थ्य":"Health")</a>
+            <div class="calc-dropdown">
+              <button class="calc-dropdown-btn">
+                🧮 @(lang=="ne"?"क्याल्कुलेटर":"Calculators")
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+              </button>
+              <div class="calc-dropdown-menu">
+                <a href="/Bmi" class="calc-menu-item">
+                  <div class="calc-menu-icon" style="background:#eff6ff">⚖️</div>
+                  <div>
+                    <div>@(lang=="ne"?"BMI क्याल्कुलेटर":"BMI Calculator")</div>
+                    <div style="font-size:11px;color:#94a3b8;font-weight:500">@(lang=="ne"?"Body Mass Index":"Body Mass Index")</div>
+                  </div>
+                </a>
+                <a href="/Calorie" class="calc-menu-item">
+                  <div class="calc-menu-icon" style="background:#fff7ed">🔥</div>
+                  <div>
+                    <div>@(lang=="ne"?"क्यालोरी क्याल्कुलेटर":"Calorie Calculator")</div>
+                    <div style="font-size:11px;color:#94a3b8;font-weight:500">@(lang=="ne"?"TDEE र म्याक्रो":"TDEE & Macros")</div>
+                  </div>
+                </a>
+              </div>
+            </div>
         </div>
         <div class="guest-nav-actions">
             <a href="/Home/SetLang?lang=@(lang=="en"?"ne":"en")&returnUrl=@Context.Request.Path" style="font-size:12px;font-weight:700;color:#475569;padding:6px 12px;border:1px solid rgba(0,0,0,0.12);border-radius:6px">
@@ -330,12 +386,21 @@ else
             <button onclick="closeGuestMenu()" style="background:none;border:none;color:#94a3b8;font-size:22px;cursor:pointer">✕</button>
         </div>
         <div style="padding:12px 8px">
-            @foreach (var item in new[]{ ("/","🏠",lang=="ne"?"गृहपृष्ठ":"Home"), ("/Health","🏥",lang=="ne"?"स्वास्थ्य":"Health"), ("/Exercise","📚",lang=="ne"?"व्यायाम":"Exercises"), ("/Bmi","⚖️","BMI"), ("/Calorie","🔥",lang=="ne"?"क्यालोरी":"Calories") })
+            @foreach (var item in new[]{ ("/","🏠",lang=="ne"?"गृहपृष्ठ":"Home"), ("/Exercise","📚",lang=="ne"?"व्यायाम":"Exercises"), ("/Health","🏥",lang=="ne"?"स्वास्थ्य":"Health") })
             {
             <a href="@item.Item1" onclick="closeGuestMenu()" style="display:flex;align-items:center;gap:10px;padding:12px 10px;border-radius:10px;text-decoration:none;color:#475569;font-size:14px;font-weight:600;margin-bottom:2px">
                 <span style="font-size:20px">@item.Item2</span> @item.Item3
             </a>
             }
+            <div style="font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.1em;padding:10px 10px 4px">@(lang=="ne"?"फिटनेस क्याल्कुलेटर":"Fitness Calculators")</div>
+            <a href="/Bmi" onclick="closeGuestMenu()" style="display:flex;align-items:center;gap:10px;padding:10px;border-radius:10px;text-decoration:none;color:#475569;font-size:14px;font-weight:600;margin-bottom:2px;background:rgba(34,197,94,0.04)">
+                <span style="width:32px;height:32px;background:#eff6ff;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px">⚖️</span>
+                <div><div>@(lang=="ne"?"BMI क्याल्कुलेटर":"BMI Calculator")</div><div style="font-size:11px;color:#94a3b8">Body Mass Index</div></div>
+            </a>
+            <a href="/Calorie" onclick="closeGuestMenu()" style="display:flex;align-items:center;gap:10px;padding:10px;border-radius:10px;text-decoration:none;color:#475569;font-size:14px;font-weight:600;margin-bottom:2px;background:rgba(34,197,94,0.04)">
+                <span style="width:32px;height:32px;background:#fff7ed;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px">🔥</span>
+                <div><div>@(lang=="ne"?"क्यालोरी क्याल्कुलेटर":"Calorie Calculator")</div><div style="font-size:11px;color:#94a3b8">TDEE & Macros</div></div>
+            </a>
         </div>
         <div style="padding:16px;border-top:1px solid rgba(0,0,0,0.08);display:flex;flex-direction:column;gap:10px;margin-top:auto">
             <a href="/Account/Login" style="display:block;text-align:center;padding:12px;border:1px solid rgba(0,0,0,0.15);border-radius:10px;color:#475569;font-weight:600;text-decoration:none">@(lang=="ne"?"लगइन":"Login")</a>

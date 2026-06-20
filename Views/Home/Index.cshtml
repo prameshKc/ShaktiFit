@@ -224,13 +224,39 @@
   background:#f0f7f0; border-top:1px solid rgba(0,0,0,0.06);
   padding:48px 40px 32px;
 }
-.app-footer-grid { display:grid; grid-template-columns:2fr 1fr 1fr 1fr; gap:40px; max-width:1100px; margin:0 auto 40px; }
+.app-footer-grid { display:grid; grid-template-columns:2fr 1fr 1fr 1fr 1fr; gap:32px; max-width:1100px; margin:0 auto 40px; }
 .app-footer-brand { font-size:15px; font-weight:800; color:#18181b; margin-bottom:10px; display:flex; align-items:center; gap:8px; }
 .app-footer-brand-sub { font-size:13px; color:#a1a1aa; line-height:1.6; max-width:260px; }
 .app-footer-col h4 { font-size:11px; font-weight:700; color:#a1a1aa; text-transform:uppercase; letter-spacing:0.1em; margin-bottom:14px; }
 .app-footer-col a { display:block; font-size:13px; color:#71717a; margin-bottom:8px; transition:color 0.15s; }
 .app-footer-col a:hover { color:#18181b; }
 .app-footer-bottom { max-width:1100px; margin:0 auto; display:flex; justify-content:space-between; align-items:center; padding-top:24px; border-top:1px solid rgba(0,0,0,0.05); font-size:12px; color:#a1a1aa; }
+
+/* Calculator dropdown (duplicated here for home page's own nav) */
+.calc-dropdown { position:relative; }
+.calc-dropdown-btn {
+  display:flex; align-items:center; gap:5px;
+  padding:6px 14px; font-size:13px; font-weight:600; color:#16a34a;
+  background:rgba(34,197,94,0.08); border:1px solid rgba(34,197,94,0.2);
+  border-radius:8px; cursor:pointer; transition:all .15s;
+}
+.calc-dropdown-btn:hover { background:rgba(34,197,94,0.14); }
+.calc-dropdown-btn svg { transition:transform .2s; }
+.calc-dropdown:hover .calc-dropdown-btn svg { transform:rotate(180deg); }
+.calc-dropdown-menu {
+  display:none; position:absolute; top:calc(100% + 6px); left:0;
+  background:#fff; border:1px solid rgba(0,0,0,0.09);
+  border-radius:12px; box-shadow:0 8px 24px rgba(0,0,0,0.1);
+  min-width:220px; padding:6px; z-index:999;
+}
+.calc-dropdown:hover .calc-dropdown-menu { display:block; }
+.calc-menu-item {
+  display:flex; align-items:center; gap:10px;
+  padding:10px 12px; border-radius:8px; text-decoration:none;
+  color:#374151; font-size:13px; font-weight:600; transition:background .12s;
+}
+.calc-menu-item:hover { background:rgba(34,197,94,0.08); color:#16a34a; }
+.calc-menu-icon { width:32px; height:32px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:16px; flex-shrink:0; }
 
 @@media (max-width:768px) {
   .bento-grid { grid-template-columns:1fr; }
@@ -253,9 +279,24 @@
     </div>
     <div class="app-nav-links">
         <a href="/Exercise" class="app-nav-link">@(ne?"व्यायाम":"Exercises")</a>
-        <a href="/Bmi" class="app-nav-link">@(ne?"BMI":"BMI")</a>
         <a href="/Health" class="app-nav-link">@(ne?"स्वास्थ्य":"Health")</a>
         <a href="/Running" class="app-nav-link">@(ne?"दौड":"Running")</a>
+        <div class="calc-dropdown">
+          <button class="calc-dropdown-btn" style="font-size:13px">
+            🧮 @(ne?"क्याल्कुलेटर":"Calculators")
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div class="calc-dropdown-menu">
+            <a href="/Bmi" class="calc-menu-item">
+              <div class="calc-menu-icon" style="background:#eff6ff">⚖️</div>
+              <div><div>@(ne?"BMI क्याल्कुलेटर":"BMI Calculator")</div><div style="font-size:11px;color:#94a3b8;font-weight:500">Body Mass Index</div></div>
+            </a>
+            <a href="/Calorie" class="calc-menu-item">
+              <div class="calc-menu-icon" style="background:#fff7ed">🔥</div>
+              <div><div>@(ne?"क्यालोरी क्याल्कुलेटर":"Calorie Calculator")</div><div style="font-size:11px;color:#94a3b8;font-weight:500">TDEE & Macros</div></div>
+            </a>
+          </div>
+        </div>
     </div>
     <div class="app-nav-actions">
         <div class="app-nav-lang">
@@ -282,12 +323,13 @@
     </h1>
     <p class="app-hero-sub">
         @(ne
-            ? "BMI ट्र्याकर, व्यक्तिगत व्यायाम, दौड कोचिङ र स्वास्थ्य जानकारी — सबै एकै एपमा।"
-            : "BMI tracker, personalized workouts, running coaching, and health info — one app, zero excuses.")
+            ? "BMI, क्यालोरी क्याल्कुलेटर, व्यक्तिगत व्यायाम, दौड कोचिङ र स्वास्थ्य जानकारी — सबै एकै एपमा।"
+            : "Fitness calculators, personalized workouts, running coaching, and health info — one app, zero excuses.")
     </p>
     <div class="hero-actions">
         <a href="/Account/Register" class="hero-btn-primary">🚀 @(ne?"निःशुल्क सुरु गर्नुहोस्":"Start for Free")</a>
         <a href="/Bmi" class="hero-btn-secondary">⚖️ @(ne?"BMI जाँच्नुहोस्":"Check My BMI")</a>
+        <a href="/Calorie" class="hero-btn-secondary">🔥 @(ne?"क्यालोरी जाँच्नुहोस्":"Calorie Calculator")</a>
     </div>
     <div class="hero-pills">
         <span class="hero-pill"><strong>5,000+</strong> @(ne?"सक्रिय प्रयोगकर्ता":"active users")</span>
@@ -302,29 +344,61 @@
 <div class="bento-wrap">
     <div class="bento-grid">
 
-        <!-- Live BMI Calculator — large card -->
+        <!-- Fitness Calculators — large card -->
         <div class="bento-card span2 tall" style="background:#ffffff;border:1.5px solid rgba(34,197,94,0.2);">
-            <div class="bento-tag">⚖️ @(ne?"लाइभ BMI":"Live BMI")</div>
-            <div class="bento-title" style="color:#0f172a">@(ne?"अहिले नै आफ्नो BMI जाँच्नुहोस्":"Check Your BMI Instantly")</div>
-            <div class="bento-desc" style="margin-bottom:18px;color:#64748b">@(ne?"कुनै खाता चाहिँदैन।":"No account needed — get your result right now.")</div>
-            <div class="bento-bmi">
-                <div class="bento-bmi-inputs">
-                    <div>
-                        <div style="font-size:10px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px">@(ne?"उचाइ cm":"Height cm")</div>
-                        <input type="number" class="bento-bmi-input" id="bH" placeholder="172" min="100" max="250" oninput="calcBmi()" />
-                    </div>
-                    <div>
-                        <div style="font-size:10px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px">@(ne?"तौल kg":"Weight kg")</div>
-                        <input type="number" class="bento-bmi-input" id="bW" placeholder="70" min="30" max="300" oninput="calcBmi()" />
-                    </div>
+            <div class="bento-tag">🧮 @(ne?"फिटनेस क्याल्कुलेटर":"Fitness Calculators")</div>
+            <div class="bento-title" style="color:#0f172a">@(ne?"निःशुल्क स्वास्थ्य उपकरणहरू":"Free Health Tools — No Account Needed")</div>
+            <div class="bento-desc" style="margin-bottom:20px;color:#64748b">@(ne?"आफ्नो BMI र दैनिक क्यालोरी आवश्यकता तुरुन्त थाहा पाउनुहोस्।":"Instantly know your BMI and daily calorie needs.")</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+              <!-- BMI mini widget -->
+              <div style="background:#f8fafc;border-radius:14px;padding:16px;border:1px solid rgba(0,0,0,0.07)">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+                  <span style="width:28px;height:28px;background:#eff6ff;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px">⚖️</span>
+                  <div style="font-size:12px;font-weight:700;color:#0f172a">BMI @(ne?"क्याल्कुलेटर":"Calculator")</div>
                 </div>
-                <div class="bento-bmi-result">
-                    <div class="bento-bmi-val" id="bVal">—</div>
-                    <div class="bento-bmi-cat" id="bCat">@(ne?"उचाइ र तौल भर्नुहोस्":"Enter height & weight above")</div>
+                <div class="bento-bmi-inputs" style="margin-bottom:10px">
+                  <div>
+                    <div style="font-size:10px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px">@(ne?"उचाइ cm":"Height cm")</div>
+                    <input type="number" class="bento-bmi-input" id="bH" placeholder="172" min="100" max="250" oninput="calcBmi()" style="font-size:14px;padding:8px 10px" />
+                  </div>
+                  <div>
+                    <div style="font-size:10px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px">@(ne?"तौल kg":"Weight kg")</div>
+                    <input type="number" class="bento-bmi-input" id="bW" placeholder="70" min="30" max="300" oninput="calcBmi()" style="font-size:14px;padding:8px 10px" />
+                  </div>
                 </div>
-                <a href="/Bmi" style="display:flex;align-items:center;justify-content:center;gap:6px;background:#22c55e;color:#ffffff;font-weight:700;font-size:13px;padding:11px;border-radius:10px;">
-                    @(ne?"विस्तृत विश्लेषण →":"Full Analysis →")
+                <div class="bento-bmi-result" style="margin-bottom:10px;padding:10px">
+                  <div class="bento-bmi-val" id="bVal" style="font-size:28px">—</div>
+                  <div class="bento-bmi-cat" id="bCat" style="font-size:11px">@(ne?"उचाइ र तौल भर्नुहोस्":"Enter values above")</div>
+                </div>
+                <a href="/Bmi" style="display:flex;align-items:center;justify-content:center;gap:5px;background:#3b82f6;color:#fff;font-weight:700;font-size:12px;padding:9px;border-radius:8px;text-decoration:none">
+                  @(ne?"विस्तृत विश्लेषण →":"Full Analysis →")
                 </a>
+              </div>
+              <!-- Calorie card -->
+              <div style="background:#f8fafc;border-radius:14px;padding:16px;border:1px solid rgba(0,0,0,0.07);display:flex;flex-direction:column">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+                  <span style="width:28px;height:28px;background:#fff7ed;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px">🔥</span>
+                  <div style="font-size:12px;font-weight:700;color:#0f172a">@(ne?"क्यालोरी क्याल्कुलेटर":"Calorie Calculator")</div>
+                </div>
+                <div style="flex:1;display:flex;flex-direction:column;gap:8px">
+                  @foreach (var row in new[]{
+                    ("BMR","@(ne?\"आराम क्यालोरी\":\"Calories at rest\")","1,650"),
+                    ("TDEE","@(ne?\"कुल दैनिक खर्च\":\"Total daily burn\")","2,200"),
+                    ("@(ne?\"लक्ष्य\":\"Target\")","@(ne?\"तौल घटाउने\":\"Weight loss\")","1,700")
+                  }) {
+                  <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:#fff;border-radius:8px;border:1px solid rgba(0,0,0,0.06)">
+                    <div>
+                      <div style="font-size:11px;font-weight:700;color:#0f172a">@row.Item1</div>
+                      <div style="font-size:10px;color:#94a3b8">@Html.Raw(row.Item2)</div>
+                    </div>
+                    <div style="font-size:14px;font-weight:800;color:#f97316">@row.Item3</div>
+                  </div>
+                  }
+                </div>
+                <a href="/Calorie" style="display:flex;align-items:center;justify-content:center;gap:5px;background:#f97316;color:#fff;font-weight:700;font-size:12px;padding:9px;border-radius:8px;text-decoration:none;margin-top:12px">
+                  @(ne?"आफ्नो क्यालोरी थाहा पाउनुहोस् →":"Calculate My Calories →")
+                </a>
+              </div>
             </div>
         </div>
 
@@ -418,17 +492,25 @@
 
     <div class="feature-row">
         <div class="feature-row-text">
-            <div class="feature-row-tag">⚖️ @(ne?"BMI":"BMI")</div>
-            <div class="feature-row-title">@(ne?"तुरुन्त BMI जाँच्नुहोस्":"Instant BMI + Advice")</div>
-            <div class="feature-row-desc">@(ne?"उचाइ र तौल हाल्नुहोस् र तुरुन्त परिणाम पाउनुहोस्। लगइन आवश्यक छैन।":"Enter your height and weight — get your BMI, category, and personalized lifestyle advice instantly. No account needed.")</div>
-            <a href="/Bmi" class="feature-row-link">@(ne?"BMI जाँच्नुहोस्":"Try BMI Calculator") →</a>
+            <div class="feature-row-tag">🧮 @(ne?"फिटनेस क्याल्कुलेटर":"Fitness Calculators")</div>
+            <div class="feature-row-title">@(ne?"BMI र क्यालोरी — लगइन बिना":"BMI & Calorie Tools, No Login")</div>
+            <div class="feature-row-desc">@(ne?"आफ्नो BMI थाहा पाउनुहोस् र Mifflin-St Jeor सूत्रले दैनिक TDEE, BMR र म्याक्रो लक्ष्य गणना गर्नुहोस्। सम्पूर्ण निःशुल्क।":"Know your BMI and calculate your daily TDEE, BMR, and macro targets using the Mifflin-St Jeor formula. Completely free, no account needed.")</div>
+            <div style="display:flex;gap:10px;flex-wrap:wrap">
+              <a href="/Bmi" class="feature-row-link">@(ne?"BMI जाँच्नुहोस्":"BMI Calculator") →</a>
+              <a href="/Calorie" class="feature-row-link" style="color:#f97316;border-color:rgba(249,115,22,0.3)">@(ne?"क्यालोरी गणना":"Calorie Calculator") →</a>
+            </div>
         </div>
-        <div class="feature-row-visual">
-            <div class="mock-card" style="width:220px">
-                <div style="font-size:10px;color:#94a3b8;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:12px">BMI Result</div>
-                <div style="font-size:48px;font-weight:900;color:#16a34a;line-height:1">22.4</div>
-                <div style="color:#16a34a;font-weight:700;font-size:13px;margin:6px 0 12px">✅ Normal Weight</div>
-                <div style="font-size:12px;color:#64748b">Height: 172cm · Weight: 66kg</div>
+        <div class="feature-row-visual" style="flex-direction:column;gap:10px;padding:20px">
+            <div class="mock-card" style="width:210px">
+                <div style="font-size:10px;color:#94a3b8;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px">⚖️ BMI Result</div>
+                <div style="font-size:40px;font-weight:900;color:#16a34a;line-height:1">22.4</div>
+                <div style="color:#16a34a;font-weight:700;font-size:12px;margin:5px 0 8px">✅ Normal Weight</div>
+                <div style="font-size:11px;color:#64748b">172cm · 66kg</div>
+            </div>
+            <div class="mock-card" style="width:210px">
+                <div style="font-size:10px;color:#94a3b8;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px">🔥 Daily Calories</div>
+                <div style="font-size:40px;font-weight:900;color:#f97316;line-height:1">1,700</div>
+                <div style="font-size:11px;color:#64748b;margin-top:5px">TDEE 2,200 · Goal: Lose</div>
             </div>
         </div>
     </div>
@@ -501,7 +583,11 @@
             <a href="/Exercise">@(ne?"व्यायाम":"Exercises")</a>
             <a href="/Workout">@(ne?"योजनाहरू":"Plans")</a>
             <a href="/Running">@(ne?"दौड":"Running")</a>
-            <a href="/Bmi">BMI</a>
+        </div>
+        <div class="app-footer-col">
+            <h4>@(ne?"क्याल्कुलेटर":"Calculators")</h4>
+            <a href="/Bmi">⚖️ BMI</a>
+            <a href="/Calorie">🔥 @(ne?"क्यालोरी":"Calories")</a>
         </div>
         <div class="app-footer-col">
             <h4>@(ne?"स्वास्थ्य":"Health")</h4>
