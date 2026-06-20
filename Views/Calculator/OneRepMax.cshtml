@@ -1,0 +1,69 @@
+@{
+    ViewBag.Title = "1 Rep Max Calculator – ShaktiFit";
+    var isAuth = Context.Session.GetString("UserId") != null;
+    if (!isAuth) { ViewBag.IsLanding = true; }
+    ViewBag.ActiveNav = "calculators";
+    var lang = Context.Session.GetString("Lang") ?? "en";
+    bool ne = lang == "ne";
+    bool has = ViewBag.OneRM != null;
+    double oneRM = has ? (double)ViewBag.OneRM : 0;
+    double epley = has ? (double)ViewBag.Epley : 0;
+    double brzycki = has ? (double)ViewBag.Brzycki : 0;
+    double lander = has ? (double)ViewBag.Lander : 0;
+    double lombardi = has ? (double)ViewBag.Lombardi : 0;
+    double liftWeight = ViewBag.LiftWeight is double lw ? lw : 0;
+    int reps = ViewBag.Reps is int r ? r : 0;
+}
+@await Html.PartialAsync("_CalcStyle")
+<div class="bp"><div class="bp-inner">
+  <a href="/Calculator" class="bp-back">← @(ne?"सबै क्याल्कुलेटर":"All Calculators")</a>
+  <div class="bp-tag">🏋️ @(ne?"शक्ति":"Strength")</div>
+  <div class="bp-title">@(ne?"१ रेप म्याक्स (1RM) क्याल्कुलेटर":"1 Rep Max (1RM) Calculator")</div>
+  <div class="bp-sub">@(ne?"Epley, Brzycki, Lander र Lombardi — ४ सूत्रहरूको औसत":"Average of Epley, Brzycki, Lander & Lombardi formulas for maximum accuracy")</div>
+  <div class="bp-layout">
+    <div class="bp-form">
+      <div class="bp-form-title">🏋️ @(ne?"तपाईंको लिफ्ट":"Your Lift")</div>
+      <form method="post" action="/Calculator/OneRepMax">
+        @Html.AntiForgeryToken()
+        <div class="bp-lbl">@(ne?"उठाएको तौल (kg)":"Weight Lifted (kg)")</div>
+        <input class="bp-inp" type="number" name="liftWeight" placeholder="e.g. 80" min="1" max="500" step="0.5" value="@(liftWeight>0?liftWeight.ToString():"")" inputmode="decimal" required />
+        <div class="bp-lbl">@(ne?"रेप्स (१-३० सम्म)":"Reps Performed (1-30)")</div>
+        <input class="bp-inp" type="number" name="reps" placeholder="e.g. 5" min="1" max="30" value="@(reps>0?reps.ToString():"")" inputmode="numeric" required />
+        <button class="bp-btn" type="submit">🏋️ @(ne?"1RM गणना गर्नुहोस्":"Calculate 1RM")</button>
+      </form>
+      <div style="margin-top:16px;padding-top:14px;border-top:1px solid rgba(0,0,0,0.07)">
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#a1a1aa;margin-bottom:8px">@(ne?"सूत्रहरू":"Formulas")</div>
+        @foreach (var f in new[]{("Epley","w × (1 + r/30)"),("Brzycki","w / (1.0278 − 0.0278r)"),("Lander","(100w) / (101.3 − 2.67r)"),("Lombardi","w × r^0.10")}) {
+        <div style="padding:5px 0;border-bottom:1px solid rgba(0,0,0,0.05);font-size:11px">
+          <div style="font-weight:700;color:#52525b">@f.Item1</div>
+          <div style="color:#a1a1aa;font-family:monospace;font-size:10px">@f.Item2</div>
+        </div>
+        }
+      </div>
+    </div>
+    <div>
+      @if (has) {
+      <div class="bp-result" style="border-color:#f97316">
+        <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#f97316;margin-bottom:6px">@(ne?"अनुमानित 1RM":"Estimated 1RM")</div>
+        <div class="bp-result-num" style="color:#f97316">@oneRM<span style="font-size:24px"> kg</span></div>
+        <div style="font-size:12px;color:#a1a1aa;margin-top:4px">@(ne?"४ सूत्रहरूको औसत":"average of 4 formulas")</div>
+        <div class="bp-stats" style="margin-top:16px">
+          @foreach (var f in new[]{("Epley",epley),("Brzycki",brzycki),("Lander",lander),("Lombardi",lombardi)}) {
+          <div class="bp-stat"><div class="bp-stat-val">@f.Item2</div><div class="bp-stat-lbl">@f.Item1</div></div>
+          }
+        </div>
+      </div>
+      <div class="bp-card">
+        <div class="bp-card-head">📊 @(ne?"% आधारित प्रशिक्षण":"% Based Training")</div>
+        <div class="bp-card-body">
+          @foreach (var p in new[]{(100,"1","Max effort / testing"),(95,"2–3","Neuromuscular strength"),(90,"3–5","Heavy strength"),(85,"5–6","Strength"),(80,"6–8","Strength / hypertrophy"),(75,"8–10","Hypertrophy"),(70,"10–12","Hypertrophy / endurance"),(65,"12–15","Endurance / volume"),(60,"15–20","Warm-up / recovery")}) {
+          <div class="bp-row"><span style="font-weight:700;color:#f97316">@p.Item1%</span><span style="font-weight:700">@(Math.Round(oneRM*p.Item1/100,1)) kg</span><span style="color:#a1a1aa;font-size:11px">@p.Item2 reps · @p.Item3</span></div>
+          }
+        </div>
+      </div>
+      } else {
+      <div class="bp-empty"><div style="font-size:52px;margin-bottom:16px">🏋️</div><div style="font-size:17px;font-weight:800;color:#18181b;margin-bottom:8px">@(ne?"आफ्नो 1RM थाहा पाउनुहोस्":"Find Your 1 Rep Max")</div><div style="font-size:13px;color:#71717a">@(ne?"४ सूत्रहरूको औसतले सटीक 1RM अनुमान":"Accurate 1RM from the average of 4 validated formulas")</div></div>
+      }
+    </div>
+  </div>
+</div></div>

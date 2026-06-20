@@ -1,0 +1,79 @@
+@{
+    ViewBag.Title = "Heart Rate Zones – ShaktiFit";
+    var isAuth = Context.Session.GetString("UserId") != null;
+    if (!isAuth) { ViewBag.IsLanding = true; }
+    ViewBag.ActiveNav = "calculators";
+    var lang = Context.Session.GetString("Lang") ?? "en";
+    bool ne = lang == "ne";
+    bool has = ViewBag.MaxHr != null;
+    int maxHr = has ? (int)ViewBag.MaxHr : 0;
+    int restHr = has ? (int)ViewBag.RestHr : 0;
+    int age = ViewBag.Age is int a ? a : 0;
+    int restHrInput = ViewBag.RestHrInput is int ri ? ri : 0;
+}
+@await Html.PartialAsync("_CalcStyle")
+<style>
+  .zone-bar { height:8px; border-radius:4px; margin-bottom:4px; }
+  .zone-card { background:#fff; border:1px solid rgba(0,0,0,0.08); border-radius:14px; padding:14px 16px; margin-bottom:10px; }
+  .zone-head { display:flex; align-items:center; gap:10px; margin-bottom:6px; }
+  .zone-dot { width:12px; height:12px; border-radius:50%; flex-shrink:0; }
+  .zone-name { font-size:14px; font-weight:800; color:#18181b; }
+  .zone-pct { font-size:12px; color:#a1a1aa; margin-left:auto; }
+  .zone-range { font-size:22px; font-weight:900; letter-spacing:-0.02em; }
+  .zone-desc { font-size:12px; color:#71717a; margin-top:4px; }
+</style>
+<div class="bp"><div class="bp-inner">
+  <a href="/Calculator" class="bp-back">← @(ne?"सबै क्याल्कुलेटर":"All Calculators")</a>
+  <div class="bp-tag">❤️ @(ne?"कार्डियो":"Cardio")</div>
+  <div class="bp-title">@(ne?"हृदय गति क्षेत्र क्याल्कुलेटर":"Heart Rate Zones Calculator")</div>
+  <div class="bp-sub">@(ne?"Tanaka MaxHR (208 − 0.7 × उमेर) + Karvonen HRR विधिले ५ प्रशिक्षण क्षेत्र":"Tanaka MaxHR (208 − 0.7 × age) + Karvonen Heart Rate Reserve method — 5 training zones")</div>
+  <div class="bp-layout">
+    <div class="bp-form">
+      <div class="bp-form-title">❤️ @(ne?"तपाईंको जानकारी":"Your Details")</div>
+      <form method="post" action="/Calculator/HeartRate">
+        @Html.AntiForgeryToken()
+        <div class="bp-lbl">@(ne?"उमेर (वर्ष)":"Age (years)")</div>
+        <input class="bp-inp" type="number" name="age" placeholder="e.g. 30" min="10" max="100" value="@(age>0?age.ToString():"")" inputmode="numeric" required />
+        <div class="bp-lbl">@(ne?"आराम हृदय गति (bpm)":"Resting Heart Rate (bpm)")</div>
+        <input class="bp-inp" type="number" name="restHr" placeholder="e.g. 65" min="30" max="120" value="@(restHrInput>0?restHrInput.ToString():"")" inputmode="numeric" required />
+        <div style="font-size:11px;color:#a1a1aa;margin-top:-8px;margin-bottom:14px">@(ne?"बिहान उठेपछि सुत्दैमा नापेर लिनुहोस्":"Measure in the morning before getting up")</div>
+        <button class="bp-btn" type="submit">❤️ @(ne?"क्षेत्रहरू गणना गर्नुहोस्":"Calculate Zones")</button>
+      </form>
+      @if (has) {
+      <div style="margin-top:14px;padding-top:12px;border-top:1px solid rgba(0,0,0,0.07)">
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#a1a1aa;margin-bottom:8px">@(ne?"आधार मानहरू":"Base Values")</div>
+        <div style="display:flex;justify-content:space-between;font-size:12px;padding:5px 0"><span style="color:#71717a">Max HR (Tanaka)</span><strong style="color:#e11d48">@maxHr bpm</strong></div>
+        <div style="display:flex;justify-content:space-between;font-size:12px;padding:5px 0"><span style="color:#71717a">HRR (reserve)</span><strong style="color:#52525b">@(maxHr-restHr) bpm</strong></div>
+      </div>
+      }
+    </div>
+    <div>
+      @if (has) {
+        var zones = new[]{
+          (1,"Zone 1","Recovery",     50, 60, "#94a3b8","Low intensity recovery",  "Walking, gentle cycling — active recovery"),
+          (2,"Zone 2","Fat Burn",     60, 70, "#3b82f6","Aerobic base building",   "Easy run, cycling — improves fat oxidation"),
+          (3,"Zone 3","Aerobic",      70, 80, "#22c55e","Aerobic capacity",         "Tempo run — improves cardiovascular efficiency"),
+          (4,"Zone 4","Threshold",    80, 90, "#f59e0b","Lactate threshold",        "Hard intervals — improves speed and VO2 max"),
+          (5,"Zone 5","VO2 Max",      90,100, "#ef4444","Maximum effort",           "All-out sprints — builds peak performance"),
+        };
+        int hrr2 = maxHr - restHr;
+      @foreach (var z in zones) {
+        int lo = (int)Math.Round(restHr + hrr2 * z.Item4 / 100.0);
+        int hi = (int)Math.Round(restHr + hrr2 * z.Item5 / 100.0);
+      <div class="zone-card">
+        <div class="zone-head">
+          <div class="zone-dot" style="background:@z.Item6"></div>
+          <div class="zone-name">@z.Item2 – @z.Item3</div>
+          <div class="zone-pct">@z.Item4–@z.Item5% HRR</div>
+        </div>
+        <div class="zone-bar" style="background:@z.Item6;opacity:0.25"></div>
+        <div class="zone-range" style="color:@z.Item6">@lo–@hi <span style="font-size:14px;font-weight:600">bpm</span></div>
+        <div class="zone-desc">@z.Item7 · @z.Item8</div>
+      </div>
+      }
+      } else {
+      <div class="bp-empty"><div style="font-size:52px;margin-bottom:16px">❤️</div><div style="font-size:17px;font-weight:800;color:#18181b;margin-bottom:8px">@(ne?"हृदय गति क्षेत्र थाहा पाउनुहोस्":"Find Your Heart Rate Zones")</div><div style="font-size:13px;color:#71717a">@(ne?"Karvonen विधिले ५ व्यक्तिगत प्रशिक्षण क्षेत्र":"5 personalized training zones via the Karvonen method")</div></div>
+      }
+    </div>
+  </div>
+</div></div>

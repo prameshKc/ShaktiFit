@@ -1,0 +1,81 @@
+@{
+    ViewBag.Title = "Waist-to-Height Ratio – ShaktiFit";
+    var isAuth = Context.Session.GetString("UserId") != null;
+    if (!isAuth) { ViewBag.IsLanding = true; }
+    ViewBag.ActiveNav = "calculators";
+    var lang = Context.Session.GetString("Lang") ?? "en";
+    bool ne = lang == "ne";
+    bool has = ViewBag.Ratio != null;
+    double ratio = has ? (double)ViewBag.Ratio : 0;
+    string cat = ViewBag.Cat as string ?? "";
+    string catColor = ViewBag.CatColor as string ?? "#22c55e";
+    string gender = ViewBag.Gender as string ?? "male";
+    double waist = ViewBag.Waist is double w ? w : 0;
+    double height = ViewBag.Height is double h ? h : 0;
+}
+@await Html.PartialAsync("_CalcStyle")
+<div class="bp"><div class="bp-inner">
+  <a href="/Calculator" class="bp-back">← @(ne?"सबै क्याल्कुलेटर":"All Calculators")</a>
+  <div class="bp-tag">📏 @(ne?"स्वास्थ्य":"Health")</div>
+  <div class="bp-title">@(ne?"कम्मर-उचाइ अनुपात":"Waist-to-Height Ratio")</div>
+  <div class="bp-sub">@(ne?"हृदय रोग र मेटाबोलिक जोखिम मूल्यांकन — BMI भन्दा बढी सटीक":"More accurate than BMI for predicting cardiovascular & metabolic risk")</div>
+  <div class="bp-layout">
+    <div class="bp-form">
+      <div class="bp-form-title">📏 @(ne?"तपाईंको मापन":"Your Measurements")</div>
+      <form method="post" action="/Calculator/WaistHeight">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="gender" id="genderInput" value="@gender" />
+        <div class="bp-lbl">@(ne?"लिंग":"Gender")</div>
+        <div class="bp-gender">
+          <button type="button" class="bp-gender-btn @(gender=="male"?"active":"")" onclick="setG('male',this)">♂ @(ne?"पुरुष":"Male")</button>
+          <button type="button" class="bp-gender-btn @(gender=="female"?"active":"")" onclick="setG('female',this)">♀ @(ne?"महिला":"Female")</button>
+        </div>
+        <div class="bp-lbl">@(ne?"कम्मर परिधि (cm) — नाभिमा नाप्नुहोस्":"Waist circumference (cm) — at navel")</div>
+        <input class="bp-inp" type="number" name="waist" placeholder="e.g. 80" min="40" max="200" step="0.1" value="@(waist>0?waist.ToString():"")" inputmode="decimal" required />
+        <div class="bp-lbl">@(ne?"उचाइ (cm)":"Height (cm)")</div>
+        <input class="bp-inp" type="number" name="height" placeholder="e.g. 170" min="100" max="250" step="0.1" value="@(height>0?height.ToString():"")" inputmode="decimal" required />
+        <button class="bp-btn" type="submit">📏 @(ne?"अनुपात गणना गर्नुहोस्":"Calculate Ratio")</button>
+      </form>
+      <div style="margin-top:16px;padding-top:14px;border-top:1px solid rgba(0,0,0,0.07)">
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#a1a1aa;margin-bottom:8px">@(ne?"सन्दर्भ दायरा":"Reference Ranges")</div>
+        @{
+          var refs = gender == "female"
+            ? new[]{("#3b82f6","< 0.42","Slim"),("#22c55e","0.42–0.48","Healthy"),("#f59e0b","0.49–0.57","Overweight"),("#ef4444","≥ 0.58","Obese / High risk")}
+            : new[]{("#3b82f6","< 0.43","Slim"),("#22c55e","0.43–0.52","Healthy"),("#f59e0b","0.53–0.57","Overweight"),("#ef4444","≥ 0.58","Obese / High risk")};
+        }
+        @foreach (var r in refs) {
+        <div style="display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid rgba(0,0,0,0.06)">
+          <div style="width:10px;height:10px;border-radius:50%;background:@r.Item1;flex-shrink:0"></div>
+          <span style="font-size:12px;color:#71717a;flex:1">@r.Item2</span>
+          <span style="font-size:12px;font-weight:700;color:@r.Item1">@r.Item3</span>
+        </div>
+        }
+      </div>
+    </div>
+    <div>
+      @if (has) {
+      <div class="bp-result" style="border-color:@catColor">
+        <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:@catColor;margin-bottom:6px">@cat</div>
+        <div class="bp-result-num" style="color:@catColor">@ratio.ToString("F3")</div>
+        <div style="font-size:12px;color:#a1a1aa;margin-top:4px">@(ne?"कम्मर ÷ उचाइ":"waist ÷ height")</div>
+        <div class="bp-stats" style="margin-top:16px">
+          <div class="bp-stat"><div class="bp-stat-val">@waist cm</div><div class="bp-stat-lbl">@(ne?"कम्मर":"Waist")</div></div>
+          <div class="bp-stat"><div class="bp-stat-val">@height cm</div><div class="bp-stat-lbl">@(ne?"उचाइ":"Height")</div></div>
+          <div class="bp-stat"><div class="bp-stat-val" style="color:@catColor">@ratio.ToString("F3")</div><div class="bp-stat-lbl">@(ne?"अनुपात":"Ratio")</div></div>
+        </div>
+      </div>
+      <div class="bp-card">
+        <div class="bp-card-head">💡 @(ne?"WHtR किन महत्त्वपूर्ण छ":"Why WHtR Matters")</div>
+        <div class="bp-card-body">
+          @foreach (var n in (ne ? new[]{"पेटको बोसो हृदय रोग र टाइप-२ मधुमेहको मुख्य जोखिम हो","WHtR उचाइ अनुसार समायोजित हुने हुँदा BMI भन्दा बढी सटीक हो","०.५ भन्दा कम राख्नु — 'कम्मर उचाइको आधाभन्दा सानो' नियम","आहार र व्यायामले पेटको बोसो प्रभावकारी रूपमा घटाउँछ"} : new[]{"Abdominal fat is the primary risk for heart disease & type 2 diabetes","WHtR accounts for height, making it more accurate than BMI","Target below 0.5 — the 'keep your waist less than half your height' rule","Diet and exercise effectively reduce central adiposity"})) {
+          <div class="bp-item"><div style="width:6px;height:6px;border-radius:50%;background:@catColor;margin-top:5px;flex-shrink:0"></div><div>@n</div></div>
+          }
+        </div>
+      </div>
+      } else {
+      <div class="bp-empty"><div style="font-size:52px;margin-bottom:16px">📏</div><div style="font-size:17px;font-weight:800;color:#18181b;margin-bottom:8px">@(ne?"कम्मर-उचाइ अनुपात थाहा पाउनुहोस्":"Find Your Waist-to-Height Ratio")</div><div style="font-size:13px;color:#71717a">@(ne?"BMI भन्दा सटीक हृदय जोखिम मूल्यांकन":"More accurate cardiovascular risk assessment than BMI")</div></div>
+      }
+    </div>
+  </div>
+</div></div>
+<script>function setG(v,btn){document.getElementById('genderInput').value=v;document.querySelectorAll('.bp-gender-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');}</script>

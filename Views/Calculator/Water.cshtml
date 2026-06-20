@@ -1,0 +1,70 @@
+@{
+    ViewBag.Title = "Water Intake Calculator – ShaktiFit";
+    var isAuth = Context.Session.GetString("UserId") != null;
+    if (!isAuth) { ViewBag.IsLanding = true; }
+    ViewBag.ActiveNav = "calculators";
+    var lang = Context.Session.GetString("Lang") ?? "en";
+    bool ne = lang == "ne";
+    bool has = ViewBag.TotalMl != null;
+    int totalMl = has ? (int)ViewBag.TotalMl : 0;
+    double totalL = has ? Math.Round(totalMl / 1000.0, 1) : 0;
+    int cups = has ? (int)Math.Round(totalMl / 240.0) : 0;
+    double weight = ViewBag.Weight is double w ? w : 0;
+    string activity = ViewBag.Activity as string ?? "moderate";
+    string climate = ViewBag.Climate as string ?? "temperate";
+
+    var actOpts = new[]{("none","🪑",ne?"व्यायाम छैन":"No exercise"),("light","🚶",ne?"हल्का (१-२ घण्टा/हप्ता)":"Light (1-2 hrs/week)"),("moderate","🏃",ne?"मध्यम (३-५ घण्टा/हप्ता)":"Moderate (3-5 hrs/week)"),("intense","💪",ne?"तीव्र (६+ घण्टा/हप्ता)":"Intense (6+ hrs/week)"),("athlete","🏅",ne?"एथलेट":"Athlete")};
+    var climOpts = new[]{("cold","🧊",ne?"चिसो (< 15°C)":"Cold (< 15°C)"),("temperate","🌤",ne?"समशीतोष्ण (15-25°C)":"Temperate (15-25°C)"),("warm","☀️",ne?"न्यानो (25-32°C)":"Warm (25-32°C)"),("hot","🔥",ne?"गर्मी (> 32°C)":"Hot (> 32°C)")};
+    var actSb = new System.Text.StringBuilder("<select class=\"bp-sel\" name=\"activity\">");
+    foreach (var o in actOpts) actSb.Append($"<option value=\"{o.Item1}\"{(activity==o.Item1?" selected":"")}>{o.Item2} {o.Item3}</option>");
+    actSb.Append("</select>");
+    var climSb = new System.Text.StringBuilder("<select class=\"bp-sel\" name=\"climate\">");
+    foreach (var o in climOpts) climSb.Append($"<option value=\"{o.Item1}\"{(climate==o.Item1?" selected":"")}>{o.Item2} {o.Item3}</option>");
+    climSb.Append("</select>");
+}
+@await Html.PartialAsync("_CalcStyle")
+<div class="bp"><div class="bp-inner">
+  <a href="/Calculator" class="bp-back">← @(ne?"सबै क्याल्कुलेटर":"All Calculators")</a>
+  <div class="bp-tag">💧 @(ne?"जलयोजन":"Hydration")</div>
+  <div class="bp-title">@(ne?"पानी सेवन क्याल्कुलेटर":"Water Intake Calculator")</div>
+  <div class="bp-sub">@(ne?"३५ ml/kg आधार + गतिविधि र हावापानी अनुसार समायोजन":"35 ml/kg base + adjustments for activity level and climate")</div>
+  <div class="bp-layout">
+    <div class="bp-form">
+      <div class="bp-form-title">📋 @(ne?"तपाईंको जानकारी":"Your Details")</div>
+      <form method="post" action="/Calculator/Water">
+        @Html.AntiForgeryToken()
+        <div class="bp-lbl">@(ne?"तौल (kg)":"Body Weight (kg)")</div>
+        <input class="bp-inp" type="number" name="weight" placeholder="e.g. 70" min="30" max="200" step="0.1" value="@(weight>0?weight.ToString():"")" inputmode="decimal" required />
+        <div class="bp-lbl">@(ne?"गतिविधि स्तर":"Activity Level")</div>
+        @Html.Raw(actSb.ToString())
+        <div class="bp-lbl">@(ne?"हावापानी":"Climate")</div>
+        @Html.Raw(climSb.ToString())
+        <button class="bp-btn" type="submit">💧 @(ne?"पानी आवश्यकता गणना गर्नुहोस्":"Calculate Water Needs")</button>
+      </form>
+    </div>
+    <div>
+      @if (has) {
+      <div class="bp-result" style="border-color:#06b6d4">
+        <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#06b6d4;margin-bottom:6px">@(ne?"दैनिक पानी":"Daily Water")</div>
+        <div class="bp-result-num" style="color:#06b6d4">@totalL<span style="font-size:28px"> L</span></div>
+        <div style="font-size:12px;color:#a1a1aa;margin-top:4px">@totalMl ml · ~@cups cups</div>
+        <div class="bp-stats" style="margin-top:16px">
+          <div class="bp-stat"><div class="bp-stat-val">@(Math.Round(weight*35))ml</div><div class="bp-stat-lbl">@(ne?"आधार":"Base")</div></div>
+          <div class="bp-stat"><div class="bp-stat-val">@totalMl ml</div><div class="bp-stat-lbl">@(ne?"कुल":"Total")</div></div>
+          <div class="bp-stat"><div class="bp-stat-val">@cups</div><div class="bp-stat-lbl">@(ne?"कप (240ml)":"Cups (240ml)")</div></div>
+        </div>
+      </div>
+      <div class="bp-card">
+        <div class="bp-card-head">⏰ @(ne?"दिनभर वितरण":"Distribution Through Day")</div>
+        <div class="bp-card-body">
+          @foreach (var t in new[]{("Morning (6–9am)",ne?"उठेपछि तुरुन्त बिस्तारै पिउनुहोस्":"Drink 500ml gradually after waking"),("Pre-workout",ne?"व्यायाम भन्दा ३० मिनेट पहिले":"500ml 30 minutes before exercise"),("During exercise",ne?"प्रति घण्टा १५०–२५० ml":"150–250ml every 15-20 minutes"),("With meals",ne?"खानासँगै १–२ गिलास":"1-2 glasses with each meal"),("Evening",ne?"सुत्नु भन्दा १ घण्टा पहिले रोक्नुहोस्":"Stop 1 hour before bed")}) {
+          <div class="bp-row"><span style="font-weight:700">@t.Item1</span><span style="color:#71717a;font-size:12px;text-align:right;max-width:55%">@t.Item2</span></div>
+          }
+        </div>
+      </div>
+      } else {
+      <div class="bp-empty"><div style="font-size:52px;margin-bottom:16px">💧</div><div style="font-size:17px;font-weight:800;color:#18181b;margin-bottom:8px">@(ne?"आफ्नो पानी आवश्यकता जान्नुहोस्":"Know Your Water Needs")</div><div style="font-size:13px;color:#71717a">@(ne?"तौल, गतिविधि र हावापानी अनुसार व्यक्तिगत सिफारिस":"Personalized recommendation based on weight, activity & climate")</div></div>
+      }
+    </div>
+  </div>
+</div></div>

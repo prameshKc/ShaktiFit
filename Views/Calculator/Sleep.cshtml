@@ -1,0 +1,84 @@
+@{
+    ViewBag.Title = "Sleep Calculator – ShaktiFit";
+    var isAuth = Context.Session.GetString("UserId") != null;
+    if (!isAuth) { ViewBag.IsLanding = true; }
+    ViewBag.ActiveNav = "calculators";
+    var lang = Context.Session.GetString("Lang") ?? "en";
+    bool ne = lang == "ne";
+    bool has = ViewBag.WakeTimes != null;
+    string mode = ViewBag.Mode as string ?? "bedtime";
+    string inputTime = ViewBag.InputTime as string ?? "";
+    var times = has ? (List<string>)ViewBag.WakeTimes : new List<string>();
+    string label = has ? (string)ViewBag.ResultLabel : "";
+
+    var modeSb = new System.Text.StringBuilder("<select class=\"bp-sel\" name=\"mode\">");
+    modeSb.Append($"<option value=\"bedtime\"{(mode=="bedtime"?" selected":"")}>🌙 {(ne?"सुत्ने समय जान्नुहोस्":"I want to wake up at...")}</option>");
+    modeSb.Append($"<option value=\"waketime\"{(mode=="waketime"?" selected":"")}>⏰ {(ne?"उठ्ने समय जान्नुहोस्":"I want to go to bed at...")}</option>");
+    modeSb.Append("</select>");
+}
+@await Html.PartialAsync("_CalcStyle")
+<style>
+  .sleep-times { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-top:12px; }
+  .sleep-time { background:#f9f9f8; border:1.5px solid rgba(0,0,0,0.08); border-radius:14px; padding:14px 10px; text-align:center; }
+  .sleep-time-val { font-size:22px; font-weight:900; color:#6366f1; }
+  .sleep-time-lbl { font-size:10px; color:#a1a1aa; margin-top:4px; text-transform:uppercase; letter-spacing:0.05em; }
+</style>
+<div class="bp"><div class="bp-inner">
+  <a href="/Calculator" class="bp-back">← @(ne?"सबै क्याल्कुलेटर":"All Calculators")</a>
+  <div class="bp-tag">😴 @(ne?"निद्रा":"Sleep")</div>
+  <div class="bp-title">@(ne?"निद्रा क्याल्कुलेटर":"Sleep Calculator")</div>
+  <div class="bp-sub">@(ne?"९०-मिनेट निद्रा साइकलमा आधारित — थकान नभई उठ्ने उत्तम समय":"Based on 90-minute sleep cycles + 15 min to fall asleep — wake feeling refreshed, not groggy")</div>
+  <div class="bp-layout">
+    <div class="bp-form">
+      <div class="bp-form-title">😴 @(ne?"निद्रा प्राथमिकता":"Sleep Preference")</div>
+      <form method="post" action="/Calculator/Sleep">
+        @Html.AntiForgeryToken()
+        <div class="bp-lbl">@(ne?"के जान्न चाहनुहुन्छ?":"What do you want to know?")</div>
+        @Html.Raw(modeSb.ToString())
+        <div class="bp-lbl" id="timeLabel">@(mode=="bedtime"?ne?"उठ्ने समय (HH:MM)":"Wake-up time (HH:MM)":ne?"सुत्ने समय (HH:MM)":"Bed time (HH:MM)")</div>
+        <input class="bp-inp" type="time" name="inputTime" value="@inputTime" required />
+        <div style="font-size:11px;color:#a1a1aa;margin-top:-8px;margin-bottom:14px">@(ne?"२४-घण्टे ढाँचामा लेख्नुहोस्":"Enter in 24-hour format")</div>
+        <button class="bp-btn" type="submit">😴 @(ne?"निद्रा समय गणना गर्नुहोस्":"Calculate Sleep Times")</button>
+      </form>
+      <div style="margin-top:16px;padding-top:14px;border-top:1px solid rgba(0,0,0,0.07)">
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#a1a1aa;margin-bottom:8px">@(ne?"निद्रा साइकल बारे":"About Sleep Cycles")</div>
+        @foreach (var n in (ne ? new[]{"एउटा निद्रा साइकल ~९० मिनेट हुन्छ","४–६ साइकल (६–९ घण्टा) आदर्श हो","साइकलको बीचमा उठ्दा थकान हुन्छ","+१५ मिनेट निदाउने समय जोडिएको छ"} : new[]{"Each sleep cycle is ~90 minutes","4–6 cycles (6–9 hours) is optimal","Waking mid-cycle causes grogginess","+15 min fall-asleep buffer included"})) {
+        <div class="bp-item"><div style="width:6px;height:6px;border-radius:50%;background:#6366f1;margin-top:5px;flex-shrink:0"></div><div style="font-size:12px">@n</div></div>
+        }
+      </div>
+    </div>
+    <div>
+      @if (has && times.Count > 0) {
+      <div class="bp-result" style="border-color:#6366f1">
+        <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#6366f1;margin-bottom:6px">@label</div>
+        <div style="font-size:13px;color:#a1a1aa;margin-bottom:12px">@(ne?"निद्रा साइकल अनुसार उत्तम समयहरू":"Optimal times based on sleep cycles")</div>
+        <div class="sleep-times">
+          @{ var cycles = new[]{4,5,6}; }
+          @for (int i = 0; i < Math.Min(times.Count, 3); i++) {
+          <div class="sleep-time">
+            <div class="sleep-time-val">@times[i]</div>
+            <div class="sleep-time-lbl">@(cycles[i]) @(ne?"साइकल":"cycles")<br/>@(cycles[i]*90/60)h @(cycles[i]*90%60)m</div>
+          </div>
+          }
+        </div>
+      </div>
+      <div class="bp-card">
+        <div class="bp-card-head">💡 @(ne?"निद्रा सुझावहरू":"Sleep Tips")</div>
+        <div class="bp-card-body">
+          @foreach (var t in (ne ? new[]{"हरेक दिन एउटै समयमा सुत्नुहोस् र उठ्नुहोस्","सुत्नुभन्दा १ घण्टा पहिले स्क्रिन बन्द गर्नुहोस्","कोठा अँध्यारो, चिसो र शान्त राख्नुहोस्","क्याफिन दिउँसो १२ बजे पछि नपिउनुहोस्","सुत्नुभन्दा ३ घण्टा पहिले ठूलो खाना नखानुहोस्"} : new[]{"Maintain a consistent sleep/wake schedule every day","Avoid screens (blue light) 1 hour before bed","Keep your bedroom dark, cool (16-18°C), and quiet","No caffeine after noon — it has a 6-hour half-life","Avoid large meals within 3 hours of bedtime"})) {
+          <div class="bp-item"><div style="width:6px;height:6px;border-radius:50%;background:#6366f1;margin-top:5px;flex-shrink:0"></div><div>@t</div></div>
+          }
+        </div>
+      </div>
+      } else {
+      <div class="bp-empty"><div style="font-size:52px;margin-bottom:16px">😴</div><div style="font-size:17px;font-weight:800;color:#18181b;margin-bottom:8px">@(ne?"उत्तम निद्रा समय जान्नुहोस्":"Find Your Optimal Sleep Time")</div><div style="font-size:13px;color:#71717a">@(ne?"९०-मिनेट साइकलले थकान बिना उठ्ने सही समय":"90-minute cycle timing so you wake feeling rested, not groggy")</div></div>
+      }
+    </div>
+  </div>
+</div></div>
+<script>
+document.querySelector('select[name="mode"]').addEventListener('change', function() {
+  var lbl = document.getElementById('timeLabel');
+  if (lbl) lbl.textContent = this.value === 'bedtime' ? '@(ne?"उठ्ने समय (HH:MM)":"Wake-up time (HH:MM)")' : '@(ne?"सुत्ने समय (HH:MM)":"Bed time (HH:MM)")';
+});
+</script>

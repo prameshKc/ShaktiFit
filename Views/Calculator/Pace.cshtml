@@ -1,0 +1,78 @@
+@{
+    ViewBag.Title = "Running Pace Calculator – ShaktiFit";
+    var isAuth = Context.Session.GetString("UserId") != null;
+    if (!isAuth) { ViewBag.IsLanding = true; }
+    ViewBag.ActiveNav = "calculators";
+    var lang = Context.Session.GetString("Lang") ?? "en";
+    bool ne = lang == "ne";
+    bool has = ViewBag.PaceMin != null;
+    int paceMin = has ? (int)ViewBag.PaceMin : 0;
+    int paceSec = has ? (int)ViewBag.PaceSec : 0;
+    double speedKph = has ? (double)ViewBag.SpeedKph : 0;
+    double distKm = ViewBag.DistKm is double d ? d : 0;
+    int totalMin = ViewBag.TotalMin is int tm ? tm : 0;
+    int totalSec = ViewBag.TotalSec is int ts ? ts : 0;
+
+    // Riegel predictions from ViewBag
+    bool hasPred = ViewBag.Pred5k != null;
+}
+@await Html.PartialAsync("_CalcStyle")
+<style>
+  .pace-pred { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+</style>
+<div class="bp"><div class="bp-inner">
+  <a href="/Calculator" class="bp-back">← @(ne?"सबै क्याल्कुलेटर":"All Calculators")</a>
+  <div class="bp-tag">🏃 @(ne?"दौड":"Running")</div>
+  <div class="bp-title">@(ne?"दौड गति क्याल्कुलेटर":"Running Pace Calculator")</div>
+  <div class="bp-sub">@(ne?"गति, समय र दूरी गणना + Riegel सूत्रले दौड समय अनुमान":"Calculate pace/speed/time + race time predictions using the Riegel formula (T2 = T1 × (D2/D1)^1.06)")</div>
+  <div class="bp-layout">
+    <div class="bp-form">
+      <div class="bp-form-title">🏃 @(ne?"तपाईंको दौड":"Your Run")</div>
+      <form method="post" action="/Calculator/Pace">
+        @Html.AntiForgeryToken()
+        <div class="bp-lbl">@(ne?"दूरी (km)":"Distance (km)")</div>
+        <input class="bp-inp" type="number" name="distKm" placeholder="e.g. 5" min="0.1" max="1000" step="0.1" value="@(distKm>0?distKm.ToString():"")" inputmode="decimal" required />
+        <div class="bp-lbl">@(ne?"समय — मिनेट":"Time — Minutes")</div>
+        <input class="bp-inp" type="number" name="totalMin" placeholder="e.g. 25" min="0" max="9999" value="@(totalMin>0?totalMin.ToString():"")" inputmode="numeric" required />
+        <div class="bp-lbl">@(ne?"समय — सेकेन्ड":"Time — Seconds")</div>
+        <input class="bp-inp" type="number" name="totalSec" placeholder="e.g. 30" min="0" max="59" value="@(totalSec>0?totalSec.ToString():"")" inputmode="numeric" />
+        <button class="bp-btn" type="submit">🏃 @(ne?"गति गणना गर्नुहोस्":"Calculate Pace")</button>
+      </form>
+    </div>
+    <div>
+      @if (has) {
+      <div class="bp-result" style="border-color:#ef4444">
+        <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#ef4444;margin-bottom:6px">@(ne?"तपाईंको गति":"Your Pace")</div>
+        <div class="bp-result-num" style="color:#ef4444">@paceMin<span style="font-size:28px">:</span>@paceSec.ToString("D2")<span style="font-size:20px"> /km</span></div>
+        <div style="font-size:14px;color:#a1a1aa;margin-top:4px">@speedKph km/h</div>
+      </div>
+      @if (hasPred) {
+      <div class="bp-card">
+        <div class="bp-card-head">🏁 @(ne?"Riegel दौड अनुमान":"Riegel Race Predictions")</div>
+        <div class="bp-card-body">
+          <div style="font-size:11px;color:#a1a1aa;padding:8px 0;margin-bottom:4px">T2 = T1 × (D2/D1)^1.06</div>
+          <div class="pace-pred">
+            @{
+              var races = new[]{("5K",ViewBag.Pred5k),("10K",ViewBag.Pred10k),("Half Marathon",ViewBag.PredHalf),("Marathon",ViewBag.PredMarathon)};
+            }
+            @foreach (var r in races) {
+            <div class="bp-stat"><div class="bp-stat-val" style="font-size:15px;color:#ef4444">@r.Item2</div><div class="bp-stat-lbl">@r.Item1</div></div>
+            }
+          </div>
+        </div>
+      </div>
+      }
+      <div class="bp-card">
+        <div class="bp-card-head">🎯 @(ne?"गति क्षेत्रहरू":"Pace Zones (approx)")</div>
+        <div class="bp-card-body">
+          @foreach (var z in new[]{("Easy","60–70% MHR","Conversation pace"),("Aerobic","70–80% MHR","Comfortable but challenging"),("Tempo","80–90% MHR","Comfortably hard"),("Interval","90–95% MHR","Hard, short bursts"),("Sprint","95–100% MHR","Max effort, < 60 sec")}) {
+          <div class="bp-row"><span style="font-weight:700">@z.Item1</span><span style="color:#a1a1aa;font-size:11px">@z.Item2</span><span style="font-size:11px;color:#52525b">@z.Item3</span></div>
+          }
+        </div>
+      </div>
+      } else {
+      <div class="bp-empty"><div style="font-size:52px;margin-bottom:16px">🏃</div><div style="font-size:17px;font-weight:800;color:#18181b;margin-bottom:8px">@(ne?"आफ्नो गति गणना गर्नुहोस्":"Calculate Your Running Pace")</div><div style="font-size:13px;color:#71717a">@(ne?"दूरी र समय भर्नुहोस् — गति र भविष्यको दौड समय थाहा पाउनुहोस्":"Enter distance & time to get your pace + race time predictions")</div></div>
+      }
+    </div>
+  </div>
+</div></div>
