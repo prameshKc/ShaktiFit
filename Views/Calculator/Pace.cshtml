@@ -76,11 +76,11 @@
         <div class="bp-lbl" id="distLabel">Distance (@(unit=="mi"?"miles":"km"))</div>
         <input class="bp-inp" type="number" name="distVal" id="distInput" placeholder="@(unit=="mi"?"e.g. 3.1":"e.g. 5")" min="0.01" max="1000" step="any" value="@(distVal>0?distVal.ToString():"")" inputmode="decimal" required />
 
-        <div class="bp-lbl">Time <span style="font-weight:400;color:#a1a1aa">(type digits only — colons added automatically)</span></div>
+        <div class="bp-lbl">Time <span style="font-weight:400;color:#a1a1aa">(digits only: 4 = mm:ss · 6 = hh:mm:ss)</span></div>
         <input class="bp-inp" type="text" name="timeStr" id="timeStr"
-               placeholder="e.g. 2530 → 25:30 or 14500 → 1:45:00"
+               placeholder="e.g. 2530 = 25:30 · 013300 = 1:33:00"
                value="@(ViewBag.TimeStr as string ?? "")"
-               inputmode="numeric" autocomplete="off" maxlength="9" required />
+               inputmode="numeric" autocomplete="off" maxlength="7" required />
 
         <button class="bp-btn" type="submit" style="background:#ef4444">Calculate Pace</button>
       </form>
@@ -139,27 +139,25 @@
   </div>
 </div></div>
 <script>
-// Auto-colon time mask: user types digits only, colons inserted automatically
-// Formats as mm:ss (≤4 digits) or h:mm:ss / hh:mm:ss (5–6 digits)
+// Auto-colon time mask — digits only, colons auto-inserted
+// Rules: exactly 4 digits → mm:ss  |  exactly 6 digits → hh:mm:ss
+// Partial input (1–3 or 5 digits) shows raw digits so user can keep typing
 (function() {
   var inp = document.getElementById('timeStr');
   if (!inp) return;
-  inp.addEventListener('input', function(e) {
-    var digits = inp.value.replace(/\D/g, '').slice(0, 6);
-    var fmt = '';
+  function fmt(digits) {
     var n = digits.length;
-    if (n <= 2) {
-      fmt = digits;
-    } else if (n <= 4) {
-      fmt = digits.slice(0, n - 2) + ':' + digits.slice(n - 2);
-    } else {
-      // 5–6 digits → h:mm:ss or hh:mm:ss
-      fmt = digits.slice(0, n - 4) + ':' + digits.slice(n - 4, n - 2) + ':' + digits.slice(n - 2);
-    }
-    inp.value = fmt;
+    if (n === 4) return digits.slice(0,2) + ':' + digits.slice(2);           // mm:ss
+    if (n === 5) return digits.slice(0,1) + ':' + digits.slice(1,3) + ':' + digits.slice(3); // h:mm:ss
+    if (n === 6) return digits.slice(0,2) + ':' + digits.slice(2,4) + ':' + digits.slice(4); // hh:mm:ss
+    return digits; // 1–3 digits: show as-is, let user keep typing
+  }
+  inp.addEventListener('input', function() {
+    var pos = inp.selectionStart;
+    var digits = inp.value.replace(/\D/g, '').slice(0, 6);
+    inp.value = fmt(digits);
   });
   inp.addEventListener('keydown', function(e) {
-    // Allow backspace to also remove the auto-colon before it
     if (e.key === 'Backspace' && inp.value.slice(-1) === ':') {
       e.preventDefault();
       inp.value = inp.value.slice(0, -2);
