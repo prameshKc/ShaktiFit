@@ -52,6 +52,29 @@
           <button type="button" class="unit-btn @(unit=="mi"?"active":"")" onclick="setUnit('mi',this)">miles</button>
         </div>
 
+        <div class="bp-lbl">Pick an Event <span style="font-weight:400;color:#a1a1aa">(optional)</span></div>
+        <select class="bp-sel" id="eventPicker" onchange="pickEvent(this)">
+          <option value="">-- or enter distance manually --</option>
+          <optgroup label="Road Races (km)">
+            <option value="km|0.8">800 m</option>
+            <option value="km|1.5">1500 m</option>
+            <option value="km|1">1K</option>
+            <option value="km|5">5K</option>
+            <option value="km|10">10K</option>
+            <option value="km|21.0975">Half Marathon</option>
+            <option value="km|42.195">Marathon</option>
+          </optgroup>
+          <optgroup label="Imperial Races (miles)">
+            <option value="mi|1">1 Mile</option>
+            <option value="mi|3.10686">5K (miles)</option>
+            <option value="mi|5">5 Miles</option>
+            <option value="mi|6.21371">10K (miles)</option>
+            <option value="mi|10">10 Miles</option>
+            <option value="mi|13.1094">Half Marathon</option>
+            <option value="mi|26.2188">Marathon</option>
+          </optgroup>
+        </select>
+
         <div class="bp-lbl" id="distLabel">Distance (@(unit=="mi"?"miles":"km"))</div>
         <input class="bp-inp" type="number" name="distVal" id="distInput" placeholder="@(unit=="mi"?"e.g. 3.1":"e.g. 5")" min="0.1" max="1000" step="0.01" value="@(distVal>0?distVal.ToString():"")" inputmode="decimal" required />
 
@@ -124,5 +147,19 @@ function setUnit(v, btn) {
   btn.classList.add('active');
   document.getElementById('distLabel').textContent = 'Distance (' + (v === 'mi' ? 'miles' : 'km') + ')';
   document.getElementById('distInput').placeholder = v === 'mi' ? 'e.g. 3.1' : 'e.g. 5';
+  document.getElementById('eventPicker').value = '';
+}
+function pickEvent(sel) {
+  if (!sel.value) return;
+  var parts = sel.value.split('|');
+  var u = parts[0], d = parseFloat(parts[1]);
+  // Switch unit buttons
+  document.getElementById('unitInput').value = u;
+  document.querySelectorAll('.unit-btn').forEach(b => {
+    b.classList.toggle('active', b.textContent.trim() === (u === 'km' ? 'km' : 'miles'));
+  });
+  document.getElementById('distLabel').textContent = 'Distance (' + (u === 'mi' ? 'miles' : 'km') + ')';
+  document.getElementById('distInput').placeholder = u === 'mi' ? 'e.g. 3.1' : 'e.g. 5';
+  document.getElementById('distInput').value = d;
 }
 </script>
