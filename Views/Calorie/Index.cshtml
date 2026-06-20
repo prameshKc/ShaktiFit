@@ -47,65 +47,66 @@
 }
 
 <style>
-.cal-page { max-width:900px; margin:0 auto; padding:24px 16px 80px; }
-.cal-header { margin-bottom:28px; }
-.cal-grid { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+.cal-page { max-width:900px; margin:0 auto; padding:20px 16px 80px; }
+.cal-header { margin-bottom:20px; }
+.cal-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; align-items:start; }
 @@media(max-width:640px) { .cal-grid { grid-template-columns:1fr; } }
 .cal-card {
-  background:#ffffff; border-radius:16px; padding:24px;
-  border:1px solid rgba(0,0,0,0.07); box-shadow:0 2px 8px rgba(0,0,0,0.04);
+  background:var(--card-bg,#ffffff); border-radius:14px; padding:20px;
+  border:1px solid var(--border-color,rgba(0,0,0,0.07));
+  box-shadow:0 2px 8px rgba(0,0,0,0.04);
 }
-.cal-label { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:#94a3b8; margin-bottom:12px; }
-.form-group { margin-bottom:16px; }
-.form-group label { display:block; font-size:13px; font-weight:600; color:#475569; margin-bottom:6px; }
+.cal-label { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:#94a3b8; margin-bottom:10px; }
+.form-group { margin-bottom:12px; }
+.form-group label { display:block; font-size:12px; font-weight:600; color:var(--text-secondary,#475569); margin-bottom:4px; }
 .form-input {
-  width:100%; padding:11px 14px; border:1.5px solid #e2e8f0; border-radius:10px;
-  font-size:14px; font-weight:600; color:#0f172a; background:#fafafa;
+  width:100%; padding:9px 12px; border:1.5px solid var(--border-color,#e2e8f0); border-radius:8px;
+  font-size:13px; font-weight:600; color:var(--text-primary,#0f172a); background:var(--input-bg,#fafafa);
   box-sizing:border-box; outline:none; transition:border-color .15s;
 }
-.form-input:focus { border-color:#22c55e; background:#fff; }
-.gender-row { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.form-input:focus { border-color:#22c55e; }
+.gender-row { display:grid; grid-template-columns:1fr 1fr; gap:6px; }
 .gender-btn {
-  padding:10px; border:1.5px solid #e2e8f0; border-radius:10px;
-  background:#fff; font-size:13px; font-weight:700; color:#64748b;
+  padding:8px; border:1.5px solid var(--border-color,#e2e8f0); border-radius:8px;
+  background:var(--input-bg,#fff); font-size:12px; font-weight:700; color:var(--text-secondary,#64748b);
   cursor:pointer; transition:all .15s; text-align:center;
 }
 .gender-btn.active { border-color:#22c55e; background:#f0fdf4; color:#16a34a; }
 .activity-select, .goal-select {
-  width:100%; padding:11px 14px; border:1.5px solid #e2e8f0; border-radius:10px;
-  font-size:13px; font-weight:600; color:#0f172a; background:#fafafa;
+  width:100%; padding:9px 12px; border:1.5px solid var(--border-color,#e2e8f0); border-radius:8px;
+  font-size:12px; font-weight:600; color:var(--text-primary,#0f172a); background:var(--input-bg,#fafafa);
   box-sizing:border-box; outline:none; cursor:pointer;
 }
 .calc-btn {
-  width:100%; padding:14px; background:linear-gradient(135deg,#22c55e,#16a34a);
-  border:none; border-radius:12px; color:#fff; font-size:15px; font-weight:800;
+  width:100%; padding:11px; background:linear-gradient(135deg,#22c55e,#16a34a);
+  border:none; border-radius:10px; color:#fff; font-size:14px; font-weight:800;
   cursor:pointer; box-shadow:0 4px 14px rgba(34,197,94,0.3); transition:opacity .15s; margin-top:4px;
 }
 .calc-btn:hover { opacity:.9; }
 /* Result cards */
-.stat-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:20px; }
-.stat-box { background:#f8fafc; border-radius:12px; padding:14px; text-align:center; border:1px solid #e2e8f0; }
-.stat-val { font-size:22px; font-weight:900; color:#0f172a; }
+.stat-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:16px; }
+.stat-box { background:var(--bg-secondary,#f8fafc); border-radius:10px; padding:12px; text-align:center; border:1px solid var(--border-color,#e2e8f0); }
+.stat-val { font-size:20px; font-weight:900; color:var(--text-primary,#0f172a); }
 .stat-lbl { font-size:10px; font-weight:700; color:#94a3b8; text-transform:uppercase; letter-spacing:0.06em; margin-top:3px; }
 /* Macro bar */
-.macro-bar { height:14px; border-radius:999px; display:flex; overflow:hidden; margin:10px 0 6px; }
+.macro-bar { height:12px; border-radius:999px; display:flex; overflow:hidden; margin:8px 0 6px; }
 .macro-seg-p { background:#3b82f6; }
 .macro-seg-c { background:#f59e0b; }
 .macro-seg-f { background:#ef4444; }
-.macro-legend { display:flex; gap:14px; flex-wrap:wrap; }
-.macro-dot { width:10px; height:10px; border-radius:50%; display:inline-block; margin-right:4px; }
-.macro-row { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-top:16px; }
-.macro-box { border-radius:12px; padding:14px; text-align:center; }
+.macro-legend { display:flex; gap:12px; flex-wrap:wrap; font-size:12px; color:var(--text-secondary,#475569); }
+.macro-dot { width:8px; height:8px; border-radius:50%; display:inline-block; margin-right:3px; }
+.macro-row { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:12px; }
+.macro-box { border-radius:10px; padding:12px; text-align:center; }
 .macro-box-p { background:#eff6ff; }
 .macro-box-c { background:#fffbeb; }
 .macro-box-f { background:#fef2f2; }
 /* Meal plan */
-.meal-row { display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid #f1f5f9; }
+.meal-row { display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid var(--border-color,#f1f5f9); }
 .meal-row:last-child { border-bottom:none; }
 /* Tips */
-.tip-item { display:flex; align-items:flex-start; gap:10px; padding:8px 0; border-bottom:1px solid #f1f5f9; font-size:13px; color:#475569; }
+.tip-item { display:flex; align-items:flex-start; gap:8px; padding:7px 0; border-bottom:1px solid var(--border-color,#f1f5f9); font-size:12px; color:var(--text-secondary,#475569); }
 .tip-item:last-child { border-bottom:none; }
-.tip-dot { width:6px; height:6px; border-radius:50%; background:#22c55e; margin-top:6px; flex-shrink:0; }
+.tip-dot { width:5px; height:5px; border-radius:50%; background:#22c55e; margin-top:5px; flex-shrink:0; }
 </style>
 
 <div class="cal-page">
@@ -114,10 +115,10 @@
     <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#16a34a;margin-bottom:6px">
       @(ne?"पोषण":"Nutrition")
     </div>
-    <h1 style="font-size:26px;font-weight:900;margin:0 0 6px;color:#0f172a">
+    <h1 style="font-size:24px;font-weight:900;margin:0 0 4px;color:var(--text-primary,#0f172a)">
       🔥 @(ne?"क्यालोरी क्याल्कुलेटर":"Calorie Calculator")
     </h1>
-    <p style="font-size:14px;color:#64748b;margin:0">
+    <p style="font-size:13px;color:var(--text-secondary,#64748b);margin:0">
       @(ne?"तपाईंको दैनिक क्यालोरी र म्याक्रो आवश्यकता पत्ता लगाउनुहोस्":"Find your daily calorie needs and macro targets using Mifflin-St Jeor formula")
     </p>
   </div>
@@ -288,19 +289,19 @@
         }
         <div class="meal-row">
           <div><span style="font-size:16px">🌅</span> <strong style="font-size:13px">@(ne?"बिहानको खाना":"Breakfast")</strong></div>
-          <div style="font-weight:800;color:#0f172a">@b <span style="font-size:11px;color:#94a3b8">cal</span></div>
+          <div style="font-weight:800;color:var(--text-primary,#0f172a)">@b <span style="font-size:11px;color:#94a3b8">cal</span></div>
         </div>
         <div class="meal-row">
           <div><span style="font-size:16px">☀️</span> <strong style="font-size:13px">@(ne?"दिउँसोको खाना":"Lunch")</strong></div>
-          <div style="font-weight:800;color:#0f172a">@l <span style="font-size:11px;color:#94a3b8">cal</span></div>
+          <div style="font-weight:800;color:var(--text-primary,#0f172a)">@l <span style="font-size:11px;color:#94a3b8">cal</span></div>
         </div>
         <div class="meal-row">
           <div><span style="font-size:16px">🌙</span> <strong style="font-size:13px">@(ne?"बेलुकाको खाना":"Dinner")</strong></div>
-          <div style="font-weight:800;color:#0f172a">@d <span style="font-size:11px;color:#94a3b8">cal</span></div>
+          <div style="font-weight:800;color:var(--text-primary,#0f172a)">@d <span style="font-size:11px;color:#94a3b8">cal</span></div>
         </div>
         <div class="meal-row">
           <div><span style="font-size:16px">🍎</span> <strong style="font-size:13px">@(ne?"खाजा":"Snacks")</strong></div>
-          <div style="font-weight:800;color:#0f172a">@s <span style="font-size:11px;color:#94a3b8">cal</span></div>
+          <div style="font-weight:800;color:var(--text-primary,#0f172a)">@s <span style="font-size:11px;color:#94a3b8">cal</span></div>
         </div>
       </div>
 
@@ -334,7 +335,7 @@
       <!-- Placeholder -->
       <div class="cal-card" style="text-align:center;padding:48px 24px;border:2px dashed #e2e8f0">
         <div style="font-size:48px;margin-bottom:16px">🔥</div>
-        <div style="font-size:16px;font-weight:700;color:#0f172a;margin-bottom:8px">
+        <div style="font-size:16px;font-weight:700;color:var(--text-primary,#0f172a);margin-bottom:8px">
           @(ne?"आफ्नो क्यालोरी थाहा पाउनुहोस्":"Discover your calorie needs")
         </div>
         <div style="font-size:13px;color:#94a3b8">
