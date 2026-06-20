@@ -8,324 +8,556 @@
         : 0;
     var user = Model.User;
     var ne = Model.Lang == "ne";
+
+    double heightM = user.HeightCm / 100.0;
+    double bmi = heightM > 0 ? Math.Round(user.WeightKg / (heightM * heightM), 1) : 0;
+    string bmiCat = bmi == 0 ? "—" : bmi < 18.5 ? (ne?"कम तौल":"Underweight") : bmi < 25 ? (ne?"सामान्य":"Normal") : bmi < 30 ? (ne?"अधिक तौल":"Overweight") : (ne?"मोटोपन":"Obese");
+    string bmiClr = bmi == 0 ? "#94a3b8" : bmi < 18.5 ? "#3b82f6" : bmi < 25 ? "#059669" : bmi < 30 ? "#d97706" : "#dc2626";
+
+    var actStats = ViewBag.ActivityStats as FitForgeAI.Services.ActivityStats;
+    var recentActs = ViewBag.RecentActivities as List<FitForgeAI.Models.Activity> ?? new();
+    var actSuggestions = ViewBag.ActivitySuggestions as List<string> ?? new();
+    string AIcon(string tp) => tp.ToLower() switch { "run"=>"RUN","ride"or"cycling"=>"RIDE","walk"=>"WALK","swim"=>"SWIM","gym"=>"GYM","hiit"=>"HIIT","yoga"=>"YOGA","hike"=>"HIKE",_=>"ACT" };
+    string AColor(string tp) => tp.ToLower() switch { "run"=>"#ef4444","ride"or"cycling"=>"#3b82f6","walk"=>"#22c55e","swim"=>"#06b6d4","gym"=>"#8b5cf6","hiit"=>"#f97316","yoga"=>"#ec4899","hike"=>"#10b981",_=>"#f59e0b" };
 }
 
-<div class="page-container">
+<style>
+/* ── DASHBOARD REDESIGN ── */
+.db-page { background:#f4f6f4; min-height:100vh; }
 
-    @if (TempData["Success"] != null)
-    { <div class="alert alert-success">✅ @TempData["Success"]</div> }
-    @if (TempData["EmailSuccess"] != null)
-    { <div style="background:#f0fdf4;border:1.5px solid rgba(34,197,94,.3);border-radius:12px;padding:13px 18px;margin-bottom:14px;font-size:14px;font-weight:700;color:#16a34a">@TempData["EmailSuccess"]</div> }
-    @if (TempData["EmailError"] != null)
-    { <div style="background:#fef2f2;border:1.5px solid rgba(239,68,68,.3);border-radius:12px;padding:13px 18px;margin-bottom:14px;font-size:14px;font-weight:700;color:#dc2626">@TempData["EmailError"]</div> }
+/* Welcome banner */
+.db-banner {
+  background:linear-gradient(135deg,#0f1f0f 0%,#1a3a1a 55%,#16a34a 100%);
+  border-radius:20px; padding:28px 32px; margin-bottom:20px; position:relative; overflow:hidden;
+}
+.db-banner::after {
+  content:''; position:absolute; top:-60px; right:-40px;
+  width:220px; height:220px; background:radial-gradient(circle,rgba(74,222,128,0.18) 0%,transparent 70%);
+  border-radius:50%; pointer-events:none;
+}
+.db-banner-top { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; margin-bottom:16px; }
+.db-greeting { font-size:22px; font-weight:900; color:#f0fdf4; letter-spacing:-0.02em; }
+.db-date { font-size:12px; color:rgba(240,253,244,0.55); font-weight:600; }
+.db-quote { font-size:13px; color:rgba(240,253,244,0.65); font-style:italic; margin-bottom:14px; }
+.db-banner-actions { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+.db-streak-pill {
+  display:inline-flex; align-items:center; gap:6px;
+  padding:7px 14px; background:rgba(74,222,128,0.15);
+  border:1px solid rgba(74,222,128,0.3); border-radius:999px;
+  font-size:13px; font-weight:700; color:#4ade80;
+}
+.db-email-btn {
+  padding:7px 16px; background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.25);
+  border-radius:999px; color:#f0fdf4; font-size:12px; font-weight:700; cursor:pointer;
+  transition:all .15s; font-family:inherit;
+}
+.db-email-btn:hover { background:rgba(255,255,255,0.2); }
 
-    <!-- Welcome Strip -->
-    <div class="welcome-strip" style="position:relative">
-        <div class="ws-greeting">@(ne?"नमस्ते":"Welcome back"), @user.Name! 👋</div>
-        <div class="ws-quote">"@Model.MotivationalQuote"</div>
-        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:14px">
-          <div class="ws-streak">🔥 @user.WorkoutStreak @(ne?"दिनको लहर":"day streak")</div>
-          <form method="post" action="/Email/SendReminder" style="display:inline">
-            @Html.AntiForgeryToken()
-            <button type="submit"
-              style="padding:8px 16px;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);border-radius:999px;color:#f0fdf4;font-size:12px;font-weight:700;cursor:pointer;transition:all .15s"
-              onmouseover="this.style.background='rgba(255,255,255,0.25)'"
-              onmouseout="this.style.background='rgba(255,255,255,0.15)'">
-              📧 @(ne?"आजको Reminder पठाउनुहोस्":"Email Today's Workout")
-            </button>
-          </form>
+/* Stat cards */
+.db-stats { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:20px; }
+.db-stat {
+  background:#fff; border:1px solid rgba(0,0,0,0.07); border-radius:16px;
+  padding:18px 20px; position:relative; overflow:hidden;
+  box-shadow:0 1px 3px rgba(0,0,0,0.04);
+}
+.db-stat-accent { border-top:3px solid #22c55e; }
+.db-stat-badge {
+  display:inline-flex; align-items:center; justify-content:center;
+  width:36px; height:36px; border-radius:10px;
+  font-size:11px; font-weight:900; letter-spacing:0.02em;
+  margin-bottom:12px;
+}
+.db-stat-lbl { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; color:#94a3b8; margin-bottom:6px; }
+.db-stat-val { font-size:28px; font-weight:900; color:#0f172a; letter-spacing:-0.03em; line-height:1; }
+.db-stat-sub { font-size:12px; color:#94a3b8; margin-top:5px; font-weight:500; }
+
+/* Main grid */
+.db-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px; }
+.db-grid .span2 { grid-column:span 2; }
+.db-grid .span3 { grid-column:span 3; }
+.db-card {
+  background:#fff; border:1px solid rgba(0,0,0,0.07); border-radius:18px;
+  overflow:hidden; box-shadow:0 1px 3px rgba(0,0,0,0.04);
+}
+.db-card-head {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:16px 20px; border-bottom:1px solid rgba(0,0,0,0.07);
+}
+.db-card-title { font-size:14px; font-weight:800; color:#0f172a; display:flex; align-items:center; gap:8px; }
+.db-card-title-badge { width:22px; height:22px; border-radius:6px; display:flex; align-items:center; justify-content:center; font-size:9px; font-weight:900; }
+.db-card-body { padding:20px; }
+.db-link { font-size:12px; font-weight:700; color:#22c55e; text-decoration:none; }
+.db-link:hover { color:#16a34a; }
+
+/* Workout table */
+.db-ex-table { width:100%; border-collapse:collapse; font-size:13px; }
+.db-ex-table th { padding:8px 12px; text-align:left; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.08em; color:#94a3b8; background:#fafbff; border-bottom:1px solid rgba(0,0,0,0.06); }
+.db-ex-table td { padding:11px 12px; border-bottom:1px solid rgba(0,0,0,0.04); color:#374151; }
+.db-ex-table tr:last-child td { border-bottom:none; }
+
+/* Progress ring */
+.db-ring-wrap { display:flex; flex-direction:column; align-items:center; padding:24px 20px; }
+.ring-svg { transform:rotate(-90deg); }
+.ring-track { fill:none; stroke:#f0f0f0; stroke-width:10; }
+.ring-progress { fill:none; stroke:url(#rg2); stroke-width:10; stroke-linecap:round; transition:stroke-dashoffset 1s ease; }
+.ring-center { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); text-align:center; }
+.ring-pct2 { font-size:26px; font-weight:900; color:#0f172a; line-height:1; }
+.ring-sub2 { font-size:10px; color:#94a3b8; font-weight:600; text-transform:uppercase; letter-spacing:0.06em; }
+
+/* Run items */
+.db-run { display:flex; align-items:center; gap:12px; padding:12px 0; border-bottom:1px solid rgba(0,0,0,0.05); }
+.db-run:last-child { border-bottom:none; }
+.db-run-icon { width:36px; height:36px; background:#fef2f2; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:900; color:#ef4444; flex-shrink:0; }
+.db-run-dist { font-size:16px; font-weight:800; color:#0f172a; }
+.db-run-meta { font-size:11px; color:#94a3b8; margin-top:2px; }
+.db-run-pace { text-align:right; font-size:16px; font-weight:800; color:#22c55e; }
+.db-run-pace-lbl { font-size:10px; color:#94a3b8; text-align:right; }
+
+/* Activity stats mini */
+.db-act-stats { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:16px; }
+.db-act-mini { background:#f9f9f8; border-radius:12px; padding:12px; text-align:center; }
+.db-act-mini-val { font-size:18px; font-weight:900; color:#0f172a; letter-spacing:-0.02em; }
+.db-act-mini-lbl { font-size:10px; color:#a1a1aa; font-weight:600; text-transform:uppercase; margin-top:2px; }
+
+/* BMI visual bar */
+.db-bmi-bar { display:flex; height:8px; border-radius:999px; overflow:hidden; margin:12px 0 6px; gap:2px; }
+.db-bmi-seg { flex:1; border-radius:999px; }
+.db-bmi-marker { width:12px; height:12px; border-radius:50%; background:#0f172a; border:2px solid #fff; box-shadow:0 1px 4px rgba(0,0,0,0.2); }
+
+/* Quick actions */
+.db-quick { display:flex; flex-direction:column; gap:8px; }
+.db-quick-btn {
+  display:flex; align-items:center; gap:10px;
+  padding:11px 14px; border:1px solid rgba(0,0,0,0.08);
+  border-radius:12px; font-size:13px; font-weight:600; color:#374151;
+  text-decoration:none; transition:all .15s;
+}
+.db-quick-btn:hover { background:#f8faf8; border-color:rgba(34,197,94,0.3); color:#16a34a; }
+.db-quick-icon { width:28px; height:28px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:900; flex-shrink:0; }
+
+/* Goal badges */
+.db-goal-badge { padding:5px 12px; background:rgba(99,102,241,0.1); border:1px solid rgba(99,102,241,0.2); border-radius:999px; font-size:12px; font-weight:600; color:#6366f1; }
+
+/* Calc shortcut strip */
+.db-calcs { display:grid; grid-template-columns:repeat(6,1fr); gap:8px; }
+.db-calc-btn {
+  display:flex; flex-direction:column; align-items:center; gap:6px;
+  padding:14px 8px; background:#f9f9f8; border:1px solid rgba(0,0,0,0.07);
+  border-radius:14px; text-decoration:none; transition:all .15s;
+}
+.db-calc-btn:hover { background:#f0fdf4; border-color:rgba(34,197,94,0.3); }
+.db-calc-icon { width:36px; height:36px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:900; }
+.db-calc-lbl { font-size:11px; font-weight:700; color:#374151; text-align:center; }
+
+@@media (max-width:900px) {
+  .db-stats { grid-template-columns:1fr 1fr; }
+  .db-grid { grid-template-columns:1fr; }
+  .db-grid .span2, .db-grid .span3 { grid-column:span 1; }
+  .db-calcs { grid-template-columns:repeat(3,1fr); }
+  .db-act-stats { grid-template-columns:1fr 1fr; }
+}
+</style>
+
+<div class="db-page">
+
+  @if (TempData["Success"] != null)
+  { <div style="background:#f0fdf4;border:1.5px solid rgba(34,197,94,.3);border-radius:12px;padding:13px 18px;margin-bottom:14px;font-size:14px;font-weight:700;color:#16a34a">@TempData["Success"]</div> }
+  @if (TempData["EmailSuccess"] != null)
+  { <div style="background:#f0fdf4;border:1.5px solid rgba(34,197,94,.3);border-radius:12px;padding:13px 18px;margin-bottom:14px;font-size:14px;font-weight:700;color:#16a34a">@TempData["EmailSuccess"]</div> }
+  @if (TempData["EmailError"] != null)
+  { <div style="background:#fef2f2;border:1.5px solid rgba(239,68,68,.3);border-radius:12px;padding:13px 18px;margin-bottom:14px;font-size:14px;font-weight:700;color:#dc2626">@TempData["EmailError"]</div> }
+
+  <!-- WELCOME BANNER -->
+  <div class="db-banner">
+    <div class="db-banner-top">
+      <div>
+        <div class="db-greeting">@(ne?"नमस्ते":"Welcome back"), @user.Name!</div>
+        <div class="db-date">@DateTime.Now.ToString("dddd, MMMM dd yyyy")</div>
+      </div>
+      <div class="db-banner-actions">
+        <div class="db-streak-pill">
+          <span style="font-size:14px">F</span>
+          @user.WorkoutStreak @(ne?"दिनको लहर":"day streak")
         </div>
+        <form method="post" action="/Email/SendReminder" style="display:inline">
+          @Html.AntiForgeryToken()
+          <button type="submit" class="db-email-btn">@(ne?"आजको Reminder":"Email Workout")</button>
+        </form>
+      </div>
     </div>
+    <div class="db-quote">"@Model.MotivationalQuote"</div>
+  </div>
 
-    <!-- Stats -->
-    <div class="stats-grid">
-        <div class="stat-card">
-            <div class="stat-icon">🏋️</div>
-            <div class="stat-label">@Tr("today_workout")</div>
-            <div class="stat-value text-gradient">@(Model.TodaysWorkout?.Type ?? (ne?"आराम":"Rest"))</div>
-            <div class="stat-sub">@(Model.TodaysWorkout?.Name ?? (ne?"पुनःप्राप्ति दिन":"Recovery Day"))</div>
-        </div>
-        <div class="stat-card sc-green">
-            <div class="stat-icon">🔥</div>
-            <div class="stat-label">@Tr("workout_streak")</div>
-            <div class="stat-value" data-counter data-target="@user.WorkoutStreak">0</div>
-            <div class="stat-sub">@(ne?"लगातार दिनहरू":"days in a row")</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-icon">✅</div>
-            <div class="stat-label">@(ne?"कुल व्यायाम":"Total Workouts")</div>
-            <div class="stat-value text-gradient" data-counter data-target="@user.TotalWorkoutsCompleted">0</div>
-            <div class="stat-sub">@(ne?"सबै समय":"all time")</div>
-        </div>
-        <div class="stat-card sc-green">
-            <div class="stat-icon">🏃</div>
-            <div class="stat-label">@(ne?"साप्ताहिक किमी":"Weekly km")</div>
-            <div class="stat-value">@Model.WeeklyMileage.ToString("0.0")</div>
-            <div class="stat-sub">@(ne?"यस हप्ता":"this week")</div>
-        </div>
+  <!-- STAT CARDS -->
+  <div class="db-stats">
+    <div class="db-stat db-stat-accent">
+      <div class="db-stat-badge" style="background:#f0fdf4;color:#22c55e">WRK</div>
+      <div class="db-stat-lbl">@(ne?"आजको व्यायाम":"Today's Workout")</div>
+      <div class="db-stat-val" style="font-size:22px;color:#22c55e">@(Model.TodaysWorkout?.Type ?? (ne?"आराम":"Rest"))</div>
+      <div class="db-stat-sub">@(Model.TodaysWorkout?.Name ?? (ne?"पुनःप्राप्ति दिन":"Recovery Day"))</div>
     </div>
+    <div class="db-stat db-stat-accent" style="border-top-color:#f97316">
+      <div class="db-stat-badge" style="background:#fff7ed;color:#f97316">STR</div>
+      <div class="db-stat-lbl">@(ne?"लहर":"Streak")</div>
+      <div class="db-stat-val" style="color:#f97316" data-counter data-target="@user.WorkoutStreak">0</div>
+      <div class="db-stat-sub">@(ne?"लगातार दिनहरू":"days in a row")</div>
+    </div>
+    <div class="db-stat db-stat-accent" style="border-top-color:#8b5cf6">
+      <div class="db-stat-badge" style="background:#f5f3ff;color:#8b5cf6">TOT</div>
+      <div class="db-stat-lbl">@(ne?"कुल व्यायाम":"Total Workouts")</div>
+      <div class="db-stat-val" style="color:#8b5cf6" data-counter data-target="@user.TotalWorkoutsCompleted">0</div>
+      <div class="db-stat-sub">@(ne?"सबै समय":"all time")</div>
+    </div>
+    <div class="db-stat db-stat-accent" style="border-top-color:#06b6d4">
+      <div class="db-stat-badge" style="background:#ecfeff;color:#06b6d4">KM</div>
+      <div class="db-stat-lbl">@(ne?"साप्ताहिक किमी":"Weekly km")</div>
+      <div class="db-stat-val" style="color:#06b6d4">@Model.WeeklyMileage.ToString("0.0")</div>
+      <div class="db-stat-sub">@(ne?"यस हप्ता":"this week")</div>
+    </div>
+  </div>
 
-    <!-- Main Grid -->
-    <div class="dash-grid">
+  <!-- MAIN GRID -->
+  <div class="db-grid">
 
-        <!-- Today's Workout -->
-        <div class="card span2" style="background:#ffffff;border:1.5px solid rgba(0,0,0,0.07)">
-            <div class="card-header">
-                <div class="card-title">🏋️ @Tr("today_workout")</div>
-                @if (Model.TodaysWorkout != null)
-                {
-                <span class="wt-badge wtb-@(Model.TodaysWorkout.Type.ToLower())">@(ne && !string.IsNullOrEmpty(Model.TodaysWorkout.NameNepali) ? Model.TodaysWorkout.Type : Model.TodaysWorkout.Type)</span>
-                }
-            </div>
-            <div class="card-body">
-                @if (Model.TodaysWorkout != null)
-                {
-                <div style="margin-bottom:18px">
-                    <div style="font-size:20px;font-weight:800;margin-bottom:6px">@(ne && !string.IsNullOrEmpty(Model.TodaysWorkout.NameNepali) ? Model.TodaysWorkout.NameNepali : Model.TodaysWorkout.Name)</div>
-                    <div style="color:#64748b;font-size:13px">⏱️ @Model.TodaysWorkout.DurationMinutes @(ne?"मिनेट":"min") &nbsp;·&nbsp; 🔥 ~@Model.TodaysWorkout.EstimatedCalories kcal &nbsp;·&nbsp; 💪 @Model.TodaysWorkout.Exercises.Count @(ne?"व्यायाम":"exercises")</div>
-                </div>
-                <table style="width:100%;border-collapse:collapse;font-size:13px;margin-bottom:20px">
-                    <thead><tr>
-                      <th style="padding:10px 12px;text-align:left;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:#94a3b8;background:#fafbff;border-bottom:1px solid rgba(0,0,0,0.06)">@(ne?"व्यायाम":"Exercise")</th>
-                      <th style="padding:10px 12px;text-align:left;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:#94a3b8;background:#fafbff;border-bottom:1px solid rgba(0,0,0,0.06)">@Tr("sets")</th>
-                      <th style="padding:10px 12px;text-align:left;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:#94a3b8;background:#fafbff;border-bottom:1px solid rgba(0,0,0,0.06)">@Tr("reps")</th>
-                      <th style="padding:10px 12px;text-align:left;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:#94a3b8;background:#fafbff;border-bottom:1px solid rgba(0,0,0,0.06)">@Tr("rest")</th>
-                    </tr></thead>
-                    <tbody>
-                        @foreach (var ex in Model.TodaysWorkout.Exercises)
-                        {
-                        <tr style="border-bottom:1px solid rgba(0,0,0,0.04)">
-                            <td style="padding:12px 12px;font-weight:700;color:#0f172a"><strong>@ex.ExerciseName</strong></td>
-                            <td style="padding:12px 12px;color:#374151">@ex.Sets</td>
-                            <td style="padding:12px 12px;color:#22c55e;font-weight:700">@ex.Reps</td>
-                            <td style="padding:12px 12px;color:#64748b">@ex.RestSeconds s</td>
-                        </tr>
-                        }
-                    </tbody>
-                </table>
-                <div style="display:flex;gap:10px;flex-wrap:wrap">
-                    <form method="post" action="/Dashboard/CompleteWorkout" style="display:inline">
-                        <input type="hidden" name="workoutId" value="@Model.TodaysWorkout.Id" />
-                        <input type="hidden" name="duration" value="@Model.TodaysWorkout.DurationMinutes" />
-                        <button type="submit" class="btn btn-success">✅ @Tr("complete_workout")</button>
-                    </form>
-                    <a href="/Workout/Details/@Model.TodaysWorkout.Id" class="btn btn-ghost">📋 @(ne?"विवरण हेर्नुहोस्":"Full Details")</a>
-                </div>
-                }
-                else
-                {
-                <div style="text-align:center;padding:40px 0">
-                    <div style="font-size:48px;margin-bottom:12px">🌟</div>
-                    <div style="font-size:18px;font-weight:700;margin-bottom:8px">@(ne?"आराम दिन":"Recovery Day")</div>
-                    <div style="color:#64748b">@(ne?"आराम गर्नुहोस् र भोलिको लागि तयार हुनुहोस्।":"Rest, recover, and come back stronger tomorrow.")</div>
-                    <a href="/Running" class="btn btn-outline" style="margin-top:16px">🏃 @(ne?"सजिलो दौड लग गर्नुहोस्":"Log an Easy Run")</a>
-                </div>
-                }
-            </div>
+    <!-- TODAY'S WORKOUT -->
+    <div class="db-card span2">
+      <div class="db-card-head">
+        <div class="db-card-title">
+          <div class="db-card-title-badge" style="background:#f0fdf4;color:#22c55e">WRK</div>
+          @(ne?"आजको व्यायाम":"Today's Workout")
         </div>
-
-        <!-- Weekly Progress Ring -->
-        <div class="card">
-            <div class="card-header"><div class="card-title">📊 @Tr("weekly_progress")</div></div>
-            <div class="card-body" style="display:flex;flex-direction:column;align-items:center;padding:28px">
-                <div class="progress-ring-container">
-                    <svg class="ring-svg" width="130" height="130">
-                        <defs>
-                            <linearGradient id="rg" x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="0%" stop-color="#4f46e5"/>
-                                <stop offset="100%" stop-color="#10b981"/>
-                            </linearGradient>
-                        </defs>
-                        <circle class="ring-track" cx="65" cy="65" r="52"/>
-                        <circle class="ring-progress" cx="65" cy="65" r="52"
-                                style="stroke-dasharray:326.7;stroke-dashoffset:@(326.7 - (pct/100.0*326.7))"/>
-                    </svg>
-                    <div class="ring-center">
-                        <div class="ring-pct">@pct%</div>
-                        <div class="ring-sub">@(ne?"लक्ष्य":"of goal")</div>
-                    </div>
-                </div>
-                <div style="margin-top:16px;text-align:center">
-                    <div style="font-size:22px;font-weight:800">@Model.WeeklyCompleted / @Model.WorkoutDaysTarget</div>
-                    <div style="color:var(--text-muted);font-size:13px">@(ne?"यस हप्ता व्यायाम":"workouts this week")</div>
-                </div>
-                <div class="prog-bar-track" style="width:100%;margin-top:14px">
-                    <div class="prog-bar-fill pbf-green" data-pct="@pct" style="width:0%"></div>
-                </div>
-            </div>
-        </div>
-
-        <!-- BMI Card -->
-        <div class="card">
-            <div class="card-header"><div class="card-title">⚖️ @(ne?"BMI अवस्था":"BMI Status")</div><a href="/Bmi" class="btn btn-outline btn-sm">@(ne?"जाँच्नुहोस्":"Check")</a></div>
-            <div class="card-body" style="text-align:center">
-                @{
-                    double heightM = user.HeightCm / 100.0;
-                    double bmi = heightM > 0 ? Math.Round(user.WeightKg / (heightM * heightM), 1) : 0;
-                    string bmiCat = bmi < 18.5 ? (ne?"कम तौल":"Underweight") : bmi < 25 ? (ne?"सामान्य":"Normal") : bmi < 30 ? (ne?"अधिक तौल":"Overweight") : (ne?"मोटोपन":"Obese");
-                    string bmiClr = bmi < 18.5 ? "#3b82f6" : bmi < 25 ? "#059669" : bmi < 30 ? "#d97706" : "#dc2626";
-                }
-                <div style="font-size:44px;font-weight:900;color:@bmiClr;line-height:1">@bmi</div>
-                <div style="font-weight:700;color:@bmiClr;margin:4px 0">@bmiCat</div>
-                <div style="font-size:12px;color:var(--text-muted)">@user.HeightCm cm · @user.WeightKg kg</div>
-                <a href="/Bmi" class="btn btn-ghost btn-sm" style="margin-top:14px;width:100%;justify-content:center">@(ne?"विस्तृत सुझाव पाउनुहोस्":"Get Detailed Suggestions →")</a>
-            </div>
-        </div>
-
-        <!-- Recent Runs -->
-        <div class="card span2">
-            <div class="card-header">
-                <div class="card-title">🏃 @(ne?"हालका दौडहरू":"Recent Runs")</div>
-                <a href="/Running" class="btn btn-ghost btn-sm">@(ne?"सबै हेर्नुहोस्":"View All")</a>
-            </div>
-            <div class="card-body">
-                @if (Model.RecentRuns.Any())
-                {
-                    @foreach (var run in Model.RecentRuns.Take(3))
-                    {
-                    <div class="run-item">
-                        <div class="run-dot">🏃</div>
-                        <div class="run-main">
-                            <div class="run-dist">@run.DistanceKm km</div>
-                            <div class="run-meta">@run.RunType · @run.Date.ToString("MMM dd") · @run.DurationMinutes @(ne?"मिनेट":"min")</div>
-                        </div>
-                        <div>
-                            <div class="run-pace-val">@run.PaceMinPerKm.ToString("0.0")</div>
-                            <div class="run-pace-lbl">min/km</div>
-                        </div>
-                    </div>
-                    }
-                }
-                else
-                {
-                <div style="text-align:center;padding:30px;color:#94a3b8">
-                    🏃 @(ne?"कुनै दौड लग छैन।":"No runs logged yet.") <a href="/Running">@(ne?"पहिलो दौड लग गर्नुहोस् →":"Log your first run →")</a>
-                </div>
-                }
-            </div>
-        </div>
-
-        <!-- Weight Progress -->
-        <div class="card">
-            <div class="card-header"><div class="card-title">⚖️ @(ne?"तौल प्रगति":"Weight Progress")</div><a href="/Progress" class="btn btn-ghost btn-sm">@(ne?"ट्र्याक":"Track")</a></div>
-            <div class="card-body" style="text-align:center">
-                @if (Model.LatestProgress?.WeightKg != null)
-                {
-                    var diff = (Model.LatestProgress.WeightKg ?? user.WeightKg) - user.WeightKg;
-                    var sign = diff >= 0 ? "+" : "";
-                <div style="font-size:38px;font-weight:900;color:#16a34a">@Model.LatestProgress.WeightKg kg</div>
-                <div style="color:#94a3b8;font-size:12px;margin-top:4px">@Model.LatestProgress.Date.ToString("MMM dd")</div>
-                <div style="margin-top:12px;background:#f8faf8;border-radius:8px;padding:10px;font-size:13px;color:#374151">
-                    @(ne?"शुरुवातदेखि:":"Change from start:")
-                    <span style="font-weight:700;color:@(diff < 0 ? "#22c55e" : "#ef4444")">@sign@diff.ToString("0.1") kg</span>
-                </div>
-                }
-                else
-                {
-                <div style="padding:24px;color:#94a3b8">
-                    <div style="font-size:32px;margin-bottom:8px">⚖️</div>
-                    <a href="/Progress">@(ne?"तौल लग गर्नुहोस् →":"Log weight →")</a>
-                </div>
-                }
-            </div>
-        </div>
-
-        <!-- Goals + Quick Actions -->
-        <div class="card">
-            <div class="card-header"><div class="card-title">🎯 @(ne?"मेरो लक्ष्यहरू":"My Goals")</div><a href="/Settings" class="btn btn-ghost btn-sm">@(ne?"सम्पादन":"Edit")</a></div>
-            <div class="card-body">
-                <div style="display:flex;flex-wrap:wrap;gap:7px;margin-bottom:16px">
-                    @if (user.Goals.Any()) {
-                        @foreach (var g in user.Goals) { <span class="badge badge-indigo">@g</span> }
-                    } else { <a href="/Settings" class="btn btn-ghost btn-sm">@(ne?"लक्ष्य थप्नुहोस्":"Add goals →")</a> }
-                </div>
-                <hr class="divider" />
-                <div style="display:flex;flex-direction:column;gap:8px">
-                    <a href="/Running" class="btn btn-ghost btn-sm" style="justify-content:flex-start">🏃 @Tr("log_run")</a>
-                    <a href="/Progress" class="btn btn-ghost btn-sm" style="justify-content:flex-start">📊 @Tr("track_progress")</a>
-                    <a href="/Bmi" class="btn btn-ghost btn-sm" style="justify-content:flex-start">⚖️ @(ne?"BMI जाँच्नुहोस्":"Check BMI")</a>
-                    <a href="/Health" class="btn btn-ghost btn-sm" style="justify-content:flex-start">🏥 @(ne?"स्वास्थ्य जानकारी":"Health Info")</a>
-                </div>
-            </div>
-        </div>
-
-        <!-- ── Activity Widget ── -->
-        @{
-            var actStats = ViewBag.ActivityStats as FitForgeAI.Services.ActivityStats;
-            var recentActs = ViewBag.RecentActivities as List<FitForgeAI.Models.Activity> ?? new();
-            var actSuggestions = ViewBag.ActivitySuggestions as List<string> ?? new();
-            string AIcon(string t) => t.ToLower() switch { "run"=>"🏃","ride"or"cycling"=>"🚴","walk"=>"🚶","swim"=>"🏊","gym"=>"🏋️","hiit"=>"⚡","yoga"=>"🧘","hike"=>"🥾",_=>"💪" };
-            string AColor(string t) => t.ToLower() switch { "run"=>"#f87171","ride"or"cycling"=>"#60a5fa","walk"=>"#4ade80","swim"=>"#38bdf8","gym"=>"#a78bfa","hiit"=>"#fb923c","yoga"=>"#f472b6","hike"=>"#86efac",_=>"#f5c542" };
+        @if (Model.TodaysWorkout != null) {
+          <span style="padding:4px 12px;background:rgba(34,197,94,0.1);border-radius:999px;font-size:11px;font-weight:700;color:#16a34a">@Model.TodaysWorkout.Type</span>
         }
-        <div class="card span3" style="background:#ffffff;border:1px solid rgba(0,0,0,0.08)">
-            <div class="card-header" style="display:flex;align-items:center;justify-content:space-between">
-                <div class="card-title">🏅 @(ne?"यो हप्ताको गतिविधि":"This Week's Activity")</div>
-                <a href="/Activity/Log" style="font-size:12px;font-weight:700;color:var(--accent,#f5c542);padding:6px 14px;border:1px solid rgba(245,197,66,0.3);border-radius:8px">+ @(ne?"थप्नुहोस्":"Log")</a>
+      </div>
+      <div class="db-card-body">
+        @if (Model.TodaysWorkout != null) {
+        <div style="display:flex;align-items:center;gap:16px;padding:14px;background:#f8faf8;border-radius:12px;margin-bottom:16px">
+          <div style="flex:1">
+            <div style="font-size:18px;font-weight:800;color:#0f172a;margin-bottom:4px">@(ne && !string.IsNullOrEmpty(Model.TodaysWorkout.NameNepali) ? Model.TodaysWorkout.NameNepali : Model.TodaysWorkout.Name)</div>
+            <div style="display:flex;gap:16px;flex-wrap:wrap">
+              <span style="font-size:12px;color:#64748b;font-weight:600">@Model.TodaysWorkout.DurationMinutes @(ne?"मिनेट":"min")</span>
+              <span style="font-size:12px;color:#f97316;font-weight:600">~@Model.TodaysWorkout.EstimatedCalories kcal</span>
+              <span style="font-size:12px;color:#8b5cf6;font-weight:600">@Model.TodaysWorkout.Exercises.Count @(ne?"व्यायाम":"exercises")</span>
             </div>
-            <div class="card-body">
-                <!-- Mini stats row -->
-                <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px">
-                    @foreach (var s in new[]{
-                        ("🏃", actStats?.TotalSessions.ToString() ?? "0", ne?"सत्र":"Sessions"),
-                        ("⏱️", (actStats?.TotalMinutes ?? 0) + "m", ne?"मिनेट":"Minutes"),
-                        ("📍", (actStats?.TotalKm ?? 0).ToString("0.0") + "km", ne?"दूरी":"Distance"),
-                        ("🔥", (actStats?.TotalCalories ?? 0).ToString(), ne?"क्यालोरी":"Calories")
-                    })
-                    {
-                    <div style="background:#f9f9f8;border-radius:10px;padding:10px;text-align:center">
-                        <div style="font-size:16px;margin-bottom:3px">@s.Item1</div>
-                        <div style="font-size:16px;font-weight:900;color:#18181b;letter-spacing:-0.02em">@s.Item2</div>
-                        <div style="font-size:10px;color:#a1a1aa;font-weight:600">@s.Item3</div>
-                    </div>
-                    }
-                </div>
-
-                <!-- Recent activities -->
-                @if (recentActs.Any())
-                {
-                @foreach (var a in recentActs)
-                {
-                var ic = AIcon(a.Type); var cl = AColor(a.Type);
-                <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(0,0,0,0.07)">
-                    <div style="width:34px;height:34px;background:@(cl)18;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0">@ic</div>
-                    <div style="flex:1;min-width:0">
-                        <div style="font-size:13px;font-weight:700;color:#18181b">@(!string.IsNullOrEmpty(a.Title)?a.Title:$"{a.Type} Session")</div>
-                        <div style="font-size:11px;color:#71717a">@a.Date.ToString("MMM dd") · @a.DurationMinutes min@(a.DistanceKm.HasValue ? $" · {a.DistanceKm:0.0}km" : "")</div>
-                    </div>
-                    <div style="font-size:12px;font-weight:700;color:#71717a">🔥 @a.CaloriesBurned cal</div>
-                </div>
-                }
-                <a href="/Activity" style="display:block;text-align:center;padding:10px;color:#71717a;font-size:12px;font-weight:700;margin-top:8px">@(ne?"सबै हेर्नुहोस्":"View all activities →")</a>
-                }
-                else
-                {
-                <div style="text-align:center;padding:20px;color:#a1a1aa">
-                    <div style="font-size:32px;margin-bottom:8px">🏅</div>
-                    <div style="font-size:13px;font-weight:600;margin-bottom:12px">@(ne?"अझै कुनै गतिविधि छैन":"No activities this week")</div>
-                    <a href="/Activity/Log" style="padding:9px 20px;background:var(--accent,#22c55e);color:#ffffff;font-weight:800;border-radius:10px;font-size:13px">+ @(ne?"पहिलो गतिविधि लग गर्नुहोस्":"Log Your First Activity")</a>
-                </div>
-                }
-
-                <!-- Top suggestion -->
-                @if (actSuggestions.Any())
-                {
-                <div style="background:#f0fdf4;border:1px solid rgba(34,197,94,0.2);border-radius:10px;padding:10px 14px;margin-top:12px;font-size:12px;color:#374151">
-                    🤖 @actSuggestions.First()
-                </div>
-                }
-            </div>
+          </div>
         </div>
-
-        <!-- Quote -->
-        <div class="card span3" style="background:linear-gradient(135deg,var(--indigo-bg),var(--green-bg))">
-            <div class="card-body" style="display:flex;align-items:center;gap:18px;padding:24px">
-                <div style="font-size:40px">💡</div>
-                <div>
-                    <div style="font-size:16px;font-weight:700;font-style:italic">"@Model.MotivationalQuote"</div>
-                    <div style="font-size:12px;color:var(--indigo);font-weight:600;margin-top:5px">— @(ne?"दैनिक प्रेरणा":"Daily Motivation")</div>
-                </div>
-            </div>
+        <table class="db-ex-table" style="margin-bottom:16px">
+          <thead><tr>
+            <th>@(ne?"व्यायाम":"Exercise")</th>
+            <th>@Tr("sets")</th>
+            <th>@Tr("reps")</th>
+            <th>@(ne?"आराम":"Rest")</th>
+          </tr></thead>
+          <tbody>
+            @foreach (var ex in Model.TodaysWorkout.Exercises) {
+            <tr>
+              <td style="font-weight:700;color:#0f172a">@ex.ExerciseName</td>
+              <td style="font-weight:600">@ex.Sets</td>
+              <td style="color:#22c55e;font-weight:700">@ex.Reps</td>
+              <td style="color:#94a3b8">@ex.RestSeconds s</td>
+            </tr>
+            }
+          </tbody>
+        </table>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <form method="post" action="/Dashboard/CompleteWorkout" style="display:inline">
+            <input type="hidden" name="workoutId" value="@Model.TodaysWorkout.Id" />
+            <input type="hidden" name="duration" value="@Model.TodaysWorkout.DurationMinutes" />
+            <button type="submit" style="padding:11px 22px;background:#22c55e;color:#fff;font-weight:800;font-size:14px;border:none;border-radius:11px;cursor:pointer;font-family:inherit">@(ne?"व्यायाम पूरा भयो":"Mark Complete")</button>
+          </form>
+          <a href="/Workout/Details/@Model.TodaysWorkout.Id" style="padding:11px 18px;border:1.5px solid rgba(0,0,0,0.1);border-radius:11px;font-size:13px;font-weight:700;color:#374151;text-decoration:none">@(ne?"विवरण हेर्नुहोस्":"Full Details")</a>
         </div>
-
+        } else {
+        <div style="text-align:center;padding:40px 20px">
+          <div style="width:56px;height:56px;background:#f0fdf4;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:900;color:#22c55e;margin:0 auto 14px">REST</div>
+          <div style="font-size:18px;font-weight:800;margin-bottom:8px;color:#0f172a">@(ne?"आराम दिन":"Recovery Day")</div>
+          <div style="color:#64748b;font-size:13px;margin-bottom:18px">@(ne?"आराम गर्नुहोस् र भोलिको लागि तयार हुनुहोस्।":"Rest, recover, and come back stronger tomorrow.")</div>
+          <a href="/Running" style="padding:10px 20px;border:1.5px solid rgba(34,197,94,0.3);border-radius:10px;font-size:13px;font-weight:700;color:#16a34a;text-decoration:none">@(ne?"सजिलो दौड लग गर्नुहोस्":"Log an Easy Run")</a>
+        </div>
+        }
+      </div>
     </div>
+
+    <!-- WEEKLY PROGRESS RING -->
+    <div class="db-card">
+      <div class="db-card-head">
+        <div class="db-card-title">
+          <div class="db-card-title-badge" style="background:#eef2ff;color:#6366f1">WK</div>
+          @(ne?"साप्ताहिक प्रगति":"Weekly Progress")
+        </div>
+      </div>
+      <div class="db-ring-wrap">
+        <div style="position:relative;width:140px;height:140px">
+          <svg class="ring-svg" width="140" height="140" viewBox="0 0 140 140">
+            <defs>
+              <linearGradient id="rg2" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#22c55e"/>
+                <stop offset="100%" stop-color="#6366f1"/>
+              </linearGradient>
+            </defs>
+            <circle class="ring-track" cx="70" cy="70" r="56"/>
+            <circle class="ring-progress" cx="70" cy="70" r="56"
+                    style="stroke-dasharray:351.9;stroke-dashoffset:@(351.9 - (pct/100.0*351.9))"/>
+          </svg>
+          <div class="ring-center">
+            <div class="ring-pct2">@pct%</div>
+            <div class="ring-sub2">@(ne?"लक्ष्य":"of goal")</div>
+          </div>
+        </div>
+        <div style="margin-top:16px;text-align:center">
+          <div style="font-size:24px;font-weight:900;color:#0f172a">@Model.WeeklyCompleted <span style="font-size:14px;color:#94a3b8;font-weight:600">/ @Model.WorkoutDaysTarget</span></div>
+          <div style="font-size:12px;color:#94a3b8;margin-top:4px">@(ne?"यस हप्ता व्यायाम":"workouts this week")</div>
+        </div>
+        <div style="width:100%;height:6px;background:#f0f0f0;border-radius:999px;margin-top:14px;overflow:hidden">
+          <div style="height:100%;width:@(pct)%;background:linear-gradient(90deg,#22c55e,#6366f1);border-radius:999px;transition:width 1s ease"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BMI STATUS -->
+    <div class="db-card">
+      <div class="db-card-head">
+        <div class="db-card-title">
+          <div class="db-card-title-badge" style="background:#f0fdf4;color:#059669">BMI</div>
+          @(ne?"BMI अवस्था":"BMI Status")
+        </div>
+        <a href="/Bmi" class="db-link">@(ne?"जाँच्नुहोस्":"Check")</a>
+      </div>
+      <div class="db-card-body" style="text-align:center">
+        <div style="font-size:48px;font-weight:900;color:@bmiClr;line-height:1;letter-spacing:-0.04em">@(bmi > 0 ? bmi.ToString() : "—")</div>
+        <div style="font-weight:700;color:@bmiClr;margin:6px 0 4px">@bmiCat</div>
+        <div style="font-size:12px;color:#94a3b8">@user.HeightCm cm · @user.WeightKg kg</div>
+        <!-- BMI color bar -->
+        <div class="db-bmi-bar" style="margin-top:14px">
+          <div class="db-bmi-seg" style="background:#3b82f6;flex:1.85"></div>
+          <div class="db-bmi-seg" style="background:#22c55e;flex:6.5"></div>
+          <div class="db-bmi-seg" style="background:#f59e0b;flex:5"></div>
+          <div class="db-bmi-seg" style="background:#ef4444;flex:6.65"></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:9px;color:#94a3b8;font-weight:600">
+          <span>16</span><span>18.5</span><span>25</span><span>30</span><span>40+</span>
+        </div>
+        <a href="/Bmi" style="display:block;margin-top:14px;padding:10px;background:#f0fdf4;border-radius:10px;font-size:12px;font-weight:700;color:#16a34a;text-decoration:none">@(ne?"विस्तृत सुझाव →":"Get Detailed Advice →")</a>
+      </div>
+    </div>
+
+    <!-- RECENT RUNS -->
+    <div class="db-card span2">
+      <div class="db-card-head">
+        <div class="db-card-title">
+          <div class="db-card-title-badge" style="background:#fef2f2;color:#ef4444">RUN</div>
+          @(ne?"हालका दौडहरू":"Recent Runs")
+        </div>
+        <a href="/Running" class="db-link">@(ne?"सबै →":"View All →")</a>
+      </div>
+      <div class="db-card-body">
+        @if (Model.RecentRuns.Any()) {
+          @foreach (var run in Model.RecentRuns.Take(3)) {
+          <div class="db-run">
+            <div class="db-run-icon">RUN</div>
+            <div style="flex:1">
+              <div class="db-run-dist">@run.DistanceKm km</div>
+              <div class="db-run-meta">@run.RunType · @run.Date.ToString("MMM dd") · @run.DurationMinutes min</div>
+            </div>
+            <div>
+              <div class="db-run-pace">@run.PaceMinPerKm.ToString("0.0")</div>
+              <div class="db-run-pace-lbl">min/km</div>
+            </div>
+          </div>
+          }
+        } else {
+        <div style="text-align:center;padding:32px;color:#94a3b8">
+          <div style="width:44px;height:44px;background:#fef2f2;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;color:#ef4444;margin:0 auto 12px">RUN</div>
+          <div style="font-size:13px;font-weight:600;margin-bottom:10px">@(ne?"कुनै दौड लग छैन":"No runs logged yet")</div>
+          <a href="/Running" style="padding:9px 18px;background:#ef4444;color:#fff;border-radius:10px;font-size:13px;font-weight:700;text-decoration:none">@(ne?"पहिलो दौड लग गर्नुहोस्":"Log Your First Run")</a>
+        </div>
+        }
+      </div>
+    </div>
+
+    <!-- WEIGHT PROGRESS -->
+    <div class="db-card">
+      <div class="db-card-head">
+        <div class="db-card-title">
+          <div class="db-card-title-badge" style="background:#f0fdf4;color:#22c55e">WT</div>
+          @(ne?"तौल प्रगति":"Weight Progress")
+        </div>
+        <a href="/Progress" class="db-link">@(ne?"ट्र्याक →":"Track →")</a>
+      </div>
+      <div class="db-card-body" style="text-align:center">
+        @if (Model.LatestProgress?.WeightKg != null) {
+          var diff = Math.Round((Model.LatestProgress.WeightKg ?? user.WeightKg) - user.WeightKg, 1);
+          var sign = diff >= 0 ? "+" : "";
+        <div style="font-size:42px;font-weight:900;color:#16a34a;letter-spacing:-0.04em">@Model.LatestProgress.WeightKg<span style="font-size:16px">kg</span></div>
+        <div style="font-size:12px;color:#94a3b8;margin:4px 0 12px">@Model.LatestProgress.Date.ToString("MMM dd")</div>
+        <div style="background:#f8faf8;border-radius:10px;padding:10px 14px;font-size:13px">
+          <span style="color:#64748b">@(ne?"शुरुवातदेखि:":"Since start:")</span>
+          <span style="font-weight:800;color:@(diff <= 0 ? "#22c55e" : "#ef4444");margin-left:6px">@sign@diff kg</span>
+        </div>
+        } else {
+        <div style="padding:24px;color:#94a3b8">
+          <div style="width:44px;height:44px;background:#f0fdf4;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:900;color:#22c55e;margin:0 auto 12px">WT</div>
+          <div style="font-size:13px;margin-bottom:12px">@(ne?"तौल लग गर्नुहोस्":"Log your weight")</div>
+          <a href="/Progress" style="padding:9px 18px;background:#22c55e;color:#fff;border-radius:10px;font-size:13px;font-weight:700;text-decoration:none">@(ne?"लग गर्नुहोस्":"Log Weight")</a>
+        </div>
+        }
+      </div>
+    </div>
+
+    <!-- GOALS + QUICK ACTIONS -->
+    <div class="db-card">
+      <div class="db-card-head">
+        <div class="db-card-title">
+          <div class="db-card-title-badge" style="background:#eef2ff;color:#6366f1">GO</div>
+          @(ne?"मेरो लक्ष्यहरू":"My Goals")
+        </div>
+        <a href="/Settings" class="db-link">@(ne?"सम्पादन":"Edit")</a>
+      </div>
+      <div class="db-card-body">
+        <div style="display:flex;flex-wrap:wrap;gap:7px;margin-bottom:16px">
+          @if (user.Goals.Any()) {
+            @foreach (var g in user.Goals) { <span class="db-goal-badge">@g</span> }
+          } else {
+            <a href="/Settings" style="font-size:13px;font-weight:600;color:#6366f1">@(ne?"लक्ष्य थप्नुहोस् →":"Add goals →")</a>
+          }
+        </div>
+        <div style="height:1px;background:rgba(0,0,0,0.06);margin-bottom:14px"></div>
+        <div class="db-quick">
+          <a href="/Running" class="db-quick-btn">
+            <div class="db-quick-icon" style="background:#fef2f2;color:#ef4444">RUN</div>
+            @(ne?"दौड लग गर्नुहोस्":"Log a Run")
+          </a>
+          <a href="/Progress" class="db-quick-btn">
+            <div class="db-quick-icon" style="background:#f0fdf4;color:#22c55e">PRG</div>
+            @(ne?"प्रगति ट्र्याक":"Track Progress")
+          </a>
+          <a href="/Bmi" class="db-quick-btn">
+            <div class="db-quick-icon" style="background:#f0fdf4;color:#059669">BMI</div>
+            @(ne?"BMI जाँच्नुहोस्":"Check BMI")
+          </a>
+          <a href="/Health" class="db-quick-btn">
+            <div class="db-quick-icon" style="background:#fdf4ff;color:#a855f7">HLT</div>
+            @(ne?"स्वास्थ्य जानकारी":"Health Info")
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- ACTIVITY WIDGET -->
+    @{
+      string ActIcon(string tp) => tp.ToLower() switch { "run"=>"RUN","ride"or"cycling"=>"RIDE","walk"=>"WALK","swim"=>"SWIM","gym"=>"GYM","hiit"=>"HIIT","yoga"=>"YOGA","hike"=>"HIKE",_=>"ACT" };
+      string ActColor(string tp) => tp.ToLower() switch { "run"=>"#ef4444","ride"or"cycling"=>"#3b82f6","walk"=>"#22c55e","swim"=>"#06b6d4","gym"=>"#8b5cf6","hiit"=>"#f97316","yoga"=>"#ec4899","hike"=>"#10b981",_=>"#f59e0b" };
+    }
+    <div class="db-card span3">
+      <div class="db-card-head">
+        <div class="db-card-title">
+          <div class="db-card-title-badge" style="background:#fffbeb;color:#f59e0b">ACT</div>
+          @(ne?"यो हप्ताको गतिविधि":"This Week's Activity")
+        </div>
+        <a href="/Activity/Log" style="padding:7px 14px;background:#f59e0b;color:#fff;font-size:12px;font-weight:700;border-radius:8px;text-decoration:none">+ @(ne?"थप्नुहोस्":"Log")</a>
+      </div>
+      <div class="db-card-body">
+        <div class="db-act-stats">
+          @foreach (var s in new[]{
+            ("SES", actStats?.TotalSessions.ToString() ?? "0",  ne?"सत्र":"Sessions",   "#8b5cf6","#f5f3ff"),
+            ("MIN", (actStats?.TotalMinutes ?? 0) + "m",        ne?"मिनेट":"Minutes",   "#06b6d4","#ecfeff"),
+            ("KM",  (actStats?.TotalKm ?? 0).ToString("0.0"),   ne?"किमी":"Distance km","#22c55e","#f0fdf4"),
+            ("CAL", (actStats?.TotalCalories ?? 0).ToString(),  ne?"क्यालोरी":"Calories","#f97316","#fff7ed")
+          }) {
+          <div class="db-act-mini">
+            <div style="width:28px;height:28px;border-radius:8px;background:@s.Item5;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:900;color:@s.Item4;margin:0 auto 8px">@s.Item1</div>
+            <div class="db-act-mini-val" style="color:@s.Item4">@s.Item2</div>
+            <div class="db-act-mini-lbl">@s.Item3</div>
+          </div>
+          }
+        </div>
+        @if (recentActs.Any()) {
+          @foreach (var a in recentActs) {
+          var ic = ActIcon(a.Type); var cl = ActColor(a.Type);
+          <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid rgba(0,0,0,0.05)">
+            <div style="width:36px;height:36px;background:@(cl)18;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:900;color:@cl;flex-shrink:0">@ic</div>
+            <div style="flex:1;min-width:0">
+              <div style="font-size:13px;font-weight:700;color:#0f172a">@(!string.IsNullOrEmpty(a.Title)?a.Title:$"{a.Type} Session")</div>
+              <div style="font-size:11px;color:#94a3b8">@a.Date.ToString("MMM dd") · @a.DurationMinutes min@(a.DistanceKm.HasValue ? $" · {a.DistanceKm:0.0}km" : "")</div>
+            </div>
+            <div style="font-size:12px;font-weight:700;color:#94a3b8">@a.CaloriesBurned cal</div>
+          </div>
+          }
+          <a href="/Activity" style="display:block;text-align:center;padding:10px;color:#94a3b8;font-size:12px;font-weight:700;margin-top:8px">@(ne?"सबै हेर्नुहोस् →":"View all activities →")</a>
+        } else {
+        <div style="text-align:center;padding:24px;color:#94a3b8">
+          <div style="font-size:13px;font-weight:600;margin-bottom:12px">@(ne?"अझै कुनै गतिविधि छैन":"No activities this week")</div>
+          <a href="/Activity/Log" style="padding:9px 20px;background:#f59e0b;color:#fff;font-weight:800;border-radius:10px;font-size:13px;text-decoration:none">+ @(ne?"पहिलो गतिविधि लग गर्नुहोस्":"Log Your First Activity")</a>
+        </div>
+        }
+        @if (actSuggestions.Any()) {
+        <div style="background:#f0fdf4;border:1px solid rgba(34,197,94,0.2);border-radius:10px;padding:10px 14px;margin-top:12px;font-size:12px;color:#374151">
+          @actSuggestions.First()
+        </div>
+        }
+      </div>
+    </div>
+
+    <!-- FITNESS CALCULATORS SHORTCUT -->
+    <div class="db-card span3">
+      <div class="db-card-head">
+        <div class="db-card-title">
+          <div class="db-card-title-badge" style="background:#f0fdf4;color:#22c55e">CAL</div>
+          @(ne?"फिटनेस क्याल्कुलेटरहरू":"Fitness Calculators")
+        </div>
+        <a href="/Calculator" class="db-link">@(ne?"सबै →":"All Calculators →")</a>
+      </div>
+      <div class="db-card-body">
+        <div class="db-calcs">
+          @foreach (var c in new[]{
+            ("/Bmi",                   "BMI", "#22c55e","#f0fdf4", ne?"BMI":"BMI"),
+            ("/Calorie",               "CAL", "#f97316","#fff7ed", ne?"क्यालोरी":"Calories"),
+            ("/Calculator/BodyFat",    "BF%", "#3b82f6","#eff6ff", ne?"बोसो %":"Body Fat"),
+            ("/Calculator/IdealWeight","IW",  "#22c55e","#f0fdf4", ne?"आदर्श तौल":"Ideal Wt"),
+            ("/Calculator/Protein",    "PRO", "#8b5cf6","#f5f3ff", ne?"प्रोटिन":"Protein"),
+            ("/Calculator/Water",      "H2O", "#06b6d4","#ecfeff", ne?"पानी":"Water"),
+            ("/Calculator/OneRepMax",  "1RM", "#f97316","#fff7ed", ne?"1RM":"1RM"),
+            ("/Calculator/Pace",       "RUN", "#ef4444","#fef2f2", ne?"गति":"Pace"),
+            ("/Calculator/HeartRate",  "HR",  "#e11d48","#fff1f2", ne?"हृदय":"Heart Rate"),
+            ("/Calculator/Sleep",      "ZZZ", "#6366f1","#eef2ff", ne?"निद्रा":"Sleep"),
+            ("/Calculator/WaistHeight","WHR", "#f59e0b","#fffbeb", ne?"कम्मर":"W:H Ratio"),
+          }) {
+          <a href="@c.Item1" class="db-calc-btn">
+            <div class="db-calc-icon" style="background:@c.Item4;color:@c.Item3">@c.Item2</div>
+            <div class="db-calc-lbl">@c.Item5</div>
+          </a>
+          }
+        </div>
+      </div>
+    </div>
+
+    <!-- DAILY MOTIVATION -->
+    <div class="db-card span3" style="background:linear-gradient(135deg,#0f1f0f,#1a3a1a);border:none">
+      <div class="db-card-body" style="display:flex;align-items:center;gap:20px;padding:24px">
+        <div style="width:48px;height:48px;background:rgba(74,222,128,0.15);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;color:#4ade80;flex-shrink:0">TIP</div>
+        <div>
+          <div style="font-size:15px;font-weight:700;font-style:italic;color:#f0fdf4">"@Model.MotivationalQuote"</div>
+          <div style="font-size:12px;color:rgba(74,222,128,0.6);font-weight:600;margin-top:6px">— @(ne?"दैनिक प्रेरणा":"Daily Motivation")</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
 </div>
+
+@section Scripts {
+<script>
+document.querySelectorAll('[data-counter]').forEach(el => {
+  const target = parseInt(el.dataset.target) || 0;
+  if (target === 0) { el.textContent = '0'; return; }
+  let cur = 0;
+  const step = Math.max(1, Math.floor(target / 40));
+  const timer = setInterval(() => {
+    cur = Math.min(cur + step, target);
+    el.textContent = cur;
+    if (cur >= target) clearInterval(timer);
+  }, 30);
+});
+</script>
+}
