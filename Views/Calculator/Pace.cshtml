@@ -83,20 +83,26 @@
             int tsM = tsParts.Length >= 2 ? (int.TryParse(tsParts[tsParts.Length - 2], out int pm2) ? pm2 : 0) : 0;
             int tsS = tsParts.Length >= 1 ? (int.TryParse(tsParts[tsParts.Length - 1], out int ps2) ? ps2 : 0) : 0;
         }
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px">
-          <div>
-            <div style="font-size:10px;font-weight:700;color:#a1a1aa;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px">H</div>
-            <input type="number" name="hours" min="0" max="23" placeholder="0" value="@(tsH > 0 ? tsH.ToString() : "")" style="width:100%;padding:8px 10px;font-size:15px;font-weight:600;border:1.5px solid #e4e4e7;border-radius:10px;text-align:center;outline:none;box-sizing:border-box;background:#fff" />
+        <div style="display:flex;align-items:center;gap:0;border:1.5px solid #e4e4e7;border-radius:12px;overflow:hidden;background:#fff">
+          <div style="flex:1;display:flex;flex-direction:column;align-items:center;padding:10px 8px 6px">
+            <input type="number" name="hours" min="0" max="23" placeholder="00" value="@(tsH > 0 ? tsH.ToString("D2") : "")"
+                   style="width:100%;border:none;outline:none;font-size:20px;font-weight:700;color:#0f172a;text-align:center;background:transparent;-moz-appearance:textfield" />
+            <span style="font-size:9px;font-weight:700;color:#a1a1aa;text-transform:uppercase;letter-spacing:.08em;margin-top:2px">hrs</span>
           </div>
-          <div>
-            <div style="font-size:10px;font-weight:700;color:#a1a1aa;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px">Min</div>
-            <input type="number" name="minutes" min="0" max="59" placeholder="25" value="@(tsM > 0 ? tsM.ToString() : "")" style="width:100%;padding:8px 10px;font-size:15px;font-weight:600;border:1.5px solid #e4e4e7;border-radius:10px;text-align:center;outline:none;box-sizing:border-box;background:#fff" required />
+          <span style="font-size:22px;font-weight:800;color:#d1d5db;padding-bottom:14px">:</span>
+          <div style="flex:1;display:flex;flex-direction:column;align-items:center;padding:10px 8px 6px;border-left:1px solid #f0f0f0;border-right:1px solid #f0f0f0">
+            <input type="number" name="minutes" min="0" max="59" placeholder="00" value="@(tsM > 0 ? tsM.ToString("D2") : "")"
+                   style="width:100%;border:none;outline:none;font-size:20px;font-weight:700;color:#0f172a;text-align:center;background:transparent;-moz-appearance:textfield" required />
+            <span style="font-size:9px;font-weight:700;color:#a1a1aa;text-transform:uppercase;letter-spacing:.08em;margin-top:2px">min</span>
           </div>
-          <div>
-            <div style="font-size:10px;font-weight:700;color:#a1a1aa;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px">Sec</div>
-            <input type="number" name="seconds" min="0" max="59" placeholder="30" value="@tsS" style="width:100%;padding:8px 10px;font-size:15px;font-weight:600;border:1.5px solid #e4e4e7;border-radius:10px;text-align:center;outline:none;box-sizing:border-box;background:#fff" />
+          <span style="font-size:22px;font-weight:800;color:#d1d5db;padding-bottom:14px">:</span>
+          <div style="flex:1;display:flex;flex-direction:column;align-items:center;padding:10px 8px 6px">
+            <input type="number" name="seconds" min="0" max="59" placeholder="00" value="@(tsS > 0 ? tsS.ToString("D2") : "")"
+                   style="width:100%;border:none;outline:none;font-size:20px;font-weight:700;color:#0f172a;text-align:center;background:transparent;-moz-appearance:textfield" />
+            <span style="font-size:9px;font-weight:700;color:#a1a1aa;text-transform:uppercase;letter-spacing:.08em;margin-top:2px">sec</span>
           </div>
         </div>
+        <style>input[name=hours]::-webkit-outer-spin-button,input[name=hours]::-webkit-inner-spin-button,input[name=minutes]::-webkit-outer-spin-button,input[name=minutes]::-webkit-inner-spin-button,input[name=seconds]::-webkit-outer-spin-button,input[name=seconds]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}</style>
 
         <button class="bp-btn" type="submit" style="background:#ef4444">Calculate Pace</button>
       </form>
