@@ -289,15 +289,21 @@
             <svg class="cd-arrow" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
           </button>
           <div class="calc-dropdown-menu">
-            <div class="calc-dropdown-menu-inner">
-              <a href="/Bmi" class="calc-menu-item">
-                <div class="calc-menu-icon" style="background:#eff6ff">⚖️</div>
-                <div><div>@(ne?"BMI क्याल्कुलेटर":"BMI Calculator")</div><div style="font-size:11px;color:#94a3b8;font-weight:500">Body Mass Index</div></div>
-              </a>
-              <a href="/Calorie" class="calc-menu-item">
-                <div class="calc-menu-icon" style="background:#fff7ed">🔥</div>
-                <div><div>@(ne?"क्यालोरी क्याल्कुलेटर":"Calorie Calculator")</div><div style="font-size:11px;color:#94a3b8;font-weight:500">TDEE & Macros</div></div>
-              </a>
+            <div class="calc-dropdown-menu-inner" style="min-width:260px;max-height:420px;overflow-y:auto">
+              <a href="/Bmi" class="calc-menu-item"><div class="calc-menu-icon" style="background:#f0fdf4">⚖️</div><div><div>BMI Calculator</div><div style="font-size:11px;color:#94a3b8;font-weight:500">Body Mass Index</div></div></a>
+              <a href="/Calorie" class="calc-menu-item"><div class="calc-menu-icon" style="background:#fff7ed">🔥</div><div><div>Calorie Calculator</div><div style="font-size:11px;color:#94a3b8;font-weight:500">TDEE & Macros</div></div></a>
+              <div style="height:1px;background:rgba(0,0,0,0.07);margin:4px 0"></div>
+              <a href="/Calculator/BodyFat" class="calc-menu-item"><div class="calc-menu-icon" style="background:#eff6ff">🧮</div><div><div>Body Fat %</div><div style="font-size:11px;color:#94a3b8;font-weight:500">US Navy method</div></div></a>
+              <a href="/Calculator/IdealWeight" class="calc-menu-item"><div class="calc-menu-icon" style="background:#f0fdf4">⚖️</div><div><div>Ideal Weight</div><div style="font-size:11px;color:#94a3b8;font-weight:500">4 medical formulas</div></div></a>
+              <a href="/Calculator/Protein" class="calc-menu-item"><div class="calc-menu-icon" style="background:#f5f3ff">💪</div><div><div>Protein Intake</div><div style="font-size:11px;color:#94a3b8;font-weight:500">ISSN/ACSM guidelines</div></div></a>
+              <a href="/Calculator/Water" class="calc-menu-item"><div class="calc-menu-icon" style="background:#ecfeff">💧</div><div><div>Water Intake</div><div style="font-size:11px;color:#94a3b8;font-weight:500">Activity & climate</div></div></a>
+              <a href="/Calculator/OneRepMax" class="calc-menu-item"><div class="calc-menu-icon" style="background:#fff7ed">🏋️</div><div><div>1 Rep Max</div><div style="font-size:11px;color:#94a3b8;font-weight:500">4 formulas averaged</div></div></a>
+              <a href="/Calculator/Pace" class="calc-menu-item"><div class="calc-menu-icon" style="background:#fef2f2">🏃</div><div><div>Running Pace</div><div style="font-size:11px;color:#94a3b8;font-weight:500">Riegel race predictions</div></div></a>
+              <a href="/Calculator/HeartRate" class="calc-menu-item"><div class="calc-menu-icon" style="background:#fff1f2">❤️</div><div><div>Heart Rate Zones</div><div style="font-size:11px;color:#94a3b8;font-weight:500">Karvonen 5 zones</div></div></a>
+              <a href="/Calculator/Sleep" class="calc-menu-item"><div class="calc-menu-icon" style="background:#eef2ff">😴</div><div><div>Sleep Calculator</div><div style="font-size:11px;color:#94a3b8;font-weight:500">90-min cycles</div></div></a>
+              <a href="/Calculator/WaistHeight" class="calc-menu-item"><div class="calc-menu-icon" style="background:#fffbeb">📏</div><div><div>Waist-to-Height</div><div style="font-size:11px;color:#94a3b8;font-weight:500">Cardiovascular risk</div></div></a>
+              <div style="height:1px;background:rgba(0,0,0,0.07);margin:4px 0"></div>
+              <a href="/Calculator" class="calc-menu-item" style="justify-content:center;color:#22c55e;font-weight:700;font-size:13px">🧮 View All →</a>
             </div>
           </div>
         </div>
