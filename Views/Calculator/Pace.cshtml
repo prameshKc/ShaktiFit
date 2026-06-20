@@ -16,10 +16,8 @@
     double speedMph = has ? (double)ViewBag.SpeedMph : 0;
 
     // Form state
-    double distVal  = ViewBag.DistVal  is double dv ? dv : 0;
-    int    totalMin = ViewBag.TotalMin is int tm ? tm : 0;
-    int    totalSec = ViewBag.TotalSec is int ts ? ts : 0;
-    string unit     = ViewBag.Unit as string ?? "km";
+    double distVal = ViewBag.DistVal is double dv ? dv : 0;
+    string unit    = ViewBag.Unit as string ?? "km";
 
     bool hasPred = ViewBag.Pred5k != null;
 }
@@ -78,11 +76,12 @@
         <div class="bp-lbl" id="distLabel">Distance (@(unit=="mi"?"miles":"km"))</div>
         <input class="bp-inp" type="number" name="distVal" id="distInput" placeholder="@(unit=="mi"?"e.g. 3.1":"e.g. 5")" min="0.01" max="1000" step="any" value="@(distVal>0?distVal.ToString():"")" inputmode="decimal" required />
 
-        <div class="bp-lbl">Time — Minutes</div>
-        <input class="bp-inp" type="number" name="totalMin" placeholder="e.g. 25" min="0" max="9999" value="@(totalMin>0?totalMin.ToString():"")" inputmode="numeric" required />
-
-        <div class="bp-lbl">Time — Seconds</div>
-        <input class="bp-inp" type="number" name="totalSec" placeholder="e.g. 30" min="0" max="59" value="@(totalSec>0?totalSec.ToString():"")" inputmode="numeric" />
+        <div class="bp-lbl">Time <span style="font-weight:400;color:#a1a1aa">(hh:mm:ss or mm:ss)</span></div>
+        <input class="bp-inp" type="text" name="timeStr" id="timeStr"
+               placeholder="e.g. 25:30 or 1:45:00"
+               value="@(ViewBag.TimeStr as string ?? "")"
+               pattern="^(\d{1,2}:)?\d{1,2}:\d{2}$"
+               inputmode="numeric" autocomplete="off" required />
 
         <button class="bp-btn" type="submit" style="background:#ef4444">Calculate Pace</button>
       </form>

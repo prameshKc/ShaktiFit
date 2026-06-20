@@ -153,10 +153,20 @@ public class CalculatorController : Controller
     public IActionResult Pace() { SetGuest(); ViewBag.ActiveNav = "calculators"; return View(); }
 
     [HttpPost]
-    public IActionResult Pace(double distVal, int totalMin, int totalSec, string unit = "km")
+    public IActionResult Pace(double distVal, string timeStr, string unit = "km")
     {
         SetGuest();
-        double totalSeconds = totalMin * 60 + totalSec;
+        // Parse hh:mm:ss or mm:ss
+        double totalSeconds = 0;
+        if (!string.IsNullOrWhiteSpace(timeStr))
+        {
+            var parts = timeStr.Trim().Split(':');
+            if (parts.Length == 3)
+                totalSeconds = int.Parse(parts[0]) * 3600 + int.Parse(parts[1]) * 60 + int.Parse(parts[2]);
+            else if (parts.Length == 2)
+                totalSeconds = int.Parse(parts[0]) * 60 + int.Parse(parts[1]);
+        }
+        ViewBag.TimeStr = timeStr;
         if (totalSeconds <= 0 || distVal <= 0) return View();
 
         // Normalise to km for all calculations
@@ -183,8 +193,7 @@ public class CalculatorController : Controller
         ViewBag.Pred10k      = Fmt(totalSeconds * Math.Pow(10.0    / distKm, 1.06));
         ViewBag.PredHalf     = Fmt(totalSeconds * Math.Pow(21.0975 / distKm, 1.06));
         ViewBag.PredMarathon = Fmt(totalSeconds * Math.Pow(42.195  / distKm, 1.06));
-        ViewBag.DistVal = distVal; ViewBag.TotalMin = totalMin;
-        ViewBag.TotalSec = totalSec; ViewBag.Unit = unit;
+        ViewBag.DistVal = distVal; ViewBag.Unit = unit;
         ViewBag.ActiveNav = "calculators";
         return View();
     }
